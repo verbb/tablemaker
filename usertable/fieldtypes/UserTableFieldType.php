@@ -58,9 +58,14 @@ class UserTableFieldType extends BaseFieldType
 	{
 
 		// make input
-		$input = '<input type="hidden" name="'.$name.'" value="'.$value.'">';
+		$input = '<input class="user-table-field" type="hidden" name="'.$name.'" value="">';
 
-		// $value needs to give us these eventually
+
+		// $value needs to give us these with col types
+		// $columns = $value['columns'];
+		// $rows = $value['rows'];
+
+
 		if ( ! isset($columns) )
 		{
 			$columns = array('col1' => array('heading' => '', 'type' => 'singleline'));
@@ -86,6 +91,7 @@ class UserTableFieldType extends BaseFieldType
 		craft()->templates->includeJsResource('usertable/js/usertable.js');
 
 		craft()->templates->includeJs('new Craft.UserTable(' .
+			'"'.craft()->templates->namespaceInputId($name).'", ' .
 			'"'.craft()->templates->namespaceInputId('columns').'", ' .
 			'"'.craft()->templates->namespaceInputId('rows').'", ' .
 			'"'.craft()->templates->namespaceInputName('columns').'", ' .

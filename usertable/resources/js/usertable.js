@@ -24,14 +24,16 @@ Craft.UserTable = Garnish.Base.extend(
 	columns: null,
 	rows: null,
 	columnSettings: null,
+  fieldId: null,
 
 	columnsTable: null,
 	rowsTable: null,
 
 	$columnsTable: null,
 	$rowsTable: null,
+  $input: null,
 
-	init: function(columnsTableId, rowsTableId, columnsTableName, rowsTableName, columns, rows, columnSettings)
+	init: function(fieldId, columnsTableId, rowsTableId, columnsTableName, rowsTableName, columns, rows, columnSettings)
 	{
 
 		this.columnsTableId = columnsTableId;
@@ -43,22 +45,16 @@ Craft.UserTable = Garnish.Base.extend(
 		this.columns = columns;
 		this.rows = rows;
 		this.columnSettings = columnSettings;
+    this.fieldId = fieldId
 
 
 		this.$columnsTable = $('#'+this.columnsTableId);
 		this.$rowsTable = $('#'+this.rowsTableId);
+    this.$input = $('#'+fieldId+'-field').find('input.user-table-field');
 
 
 		// set up columns table
-		this.columnsTable = new Craft.EditableTable(this.columnsTableId, this.columnsTableName, this.columnSettings, {
-			rowIdPrefix: 'col',
-			onAddRow: $.proxy(this, 'onAddRow'),
-			onDeleteRow: $.proxy(this, 'reconstructRowsTable')
-		});
-
-		this.bindColumnsTableTextChanges(this.columnsTable.$tbody);
-
-		this.columnsTable.sorter.settings.onSortChange = $.proxy(this, 'reconstructRowsTable');
+		this.initColumnsTable();
 
 		// set up rows table
 		this.initRowsTable();
@@ -81,14 +77,41 @@ Craft.UserTable = Garnish.Base.extend(
 
 	},
 
+  bindRowsTableTextChanges: function($container)
+  {
+
+    var $textareas = $container.find('textarea');
+    this.addListener($textareas, 'textchange', 'makeDataBlob');
+
+  },
+
+	initColumnsTable: function()
+	{
+
+		this.columnsTable = new Craft.EditableTable(this.columnsTableId, this.columnsTableName, this.columnSettings, {
+			rowIdPrefix: 'col',
+			onAddRow: $.proxy(this, 'onAddRow'),
+			onDeleteRow: $.proxy(this, 'reconstructRowsTable')
+		});
+
+		this.bindColumnsTableTextChanges(this.columnsTable.$tbody);
+
+		this.columnsTable.sorter.settings.onSortChange = $.proxy(this, 'reconstructRowsTable');
+
+	},
+
 	initRowsTable: function()
 	{
 
 		this.rowsTable = new Craft.EditableTable(this.rowsTableId, this.rowsTableName, this.columns, {
 			rowIdPrefix: 'row',
-			onAddRow: $.proxy(this, 'makeDataBlob'),
-			onDeleteRow: $.proxy(this, 'makeDataBlob')
+			onAddRow: $.proxy(this, 'reconstructRowsTable'),
+			onDeleteRow: $.proxy(this, 'reconstructRowsTable')
 		});
+
+		this.bindRowsTableTextChanges(this.rowsTable.$tbody);
+
+		this.rowsTable.sorter.settings.onSortChange = $.proxy(this, 'makeDataBlob');
 
 	},
 
@@ -97,9 +120,9 @@ Craft.UserTable = Garnish.Base.extend(
 
 		// get data out from the tables
 		var columnsTableData = Craft.expandPostArray(Garnish.getPostData(this.columnsTable.$tbody)),
-			rowsTableData = Craft.expandPostArray(Garnish.getPostData(this.rowsTable.$tbody)),
-			columns = columnsTableData,
-			rows = rowsTableData;
+				rowsTableData = Craft.expandPostArray(Garnish.getPostData(this.rowsTable.$tbody)),
+				columns = columnsTableData,
+				rows = rowsTableData;
 
 		// travel down the input path to find where the data we’re interested in actually is
 		for (var i = 0; i < this.columnsTableInputPath.length; i++)
@@ -144,14 +167,39 @@ Craft.UserTable = Garnish.Base.extend(
 		this.rowsTable.$table.replaceWith(tableHtml);
 		this.rowsTable.destroy();
 		delete this.rowsTable;
-		this.initRowsTable(columns);
-
-
+		this.initRowsTable();
+		this.makeDataBlob();
 	},
 
 	makeDataBlob: function()
 	{
-		console.log('make data blob');
+
+    // get data out from the tables
+    var columnsTableData = Craft.expandPostArray(Garnish.getPostData(this.columnsTable.$tbody)),
+        rowsTableData = Craft.expandPostArray(Garnish.getPostData(this.rowsTable.$tbody)),
+        columns = columnsTableData,
+        rows = rowsTableData;
+
+    // travel down the input path to find where the data we’re interested in actually is
+    for (var i = 0; i < this.columnsTableInputPath.length; i++)
+    {
+      var key = this.columnsTableInputPath[i];
+      columns = columns[key];
+    }
+
+    for (var i = 0; i < this.rowsTableInputPath.length; i++)
+    {
+      var key = this.rowsTableInputPath[i];
+      rows = rows[key];
+    }
+
+
+    var dataBlob = {
+      'columns' : columns,
+      'rows' : rows
+    };
+
+    this.$input.val(JSON.stringify(dataBlob));
 	}
 
 });
