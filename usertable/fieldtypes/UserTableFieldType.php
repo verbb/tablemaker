@@ -79,6 +79,8 @@ class UserTableFieldType extends BaseFieldType
 		craft()->templates->includeJsResource('usertable/js/usertable.js');
 
 		craft()->templates->includeJs('new Craft.UserTable(' .
+			'"'.craft()->templates->namespaceInputId('columns').'", ' .
+			'"'.craft()->templates->namespaceInputId('rows').'", ' .
 			'"'.craft()->templates->namespaceInputName('columns').'", ' .
 			'"'.craft()->templates->namespaceInputName('rows').'", ' .
 			JsonHelper::encode($columns).', ' .
