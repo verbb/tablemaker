@@ -50,6 +50,9 @@ class UserTableFieldType extends BaseFieldType
 	public function getInputHtml($name, $value)
 	{
 
+		// make input
+		$input = '<input type="hidden" name="'.$name.'" value="'.$value.'">';
+
 		// $value needs to give us these eventually
 		if ( ! isset($columns) )
 		{
@@ -108,7 +111,7 @@ class UserTableFieldType extends BaseFieldType
 			)
 		));
 
-		return $columnsField . $rowsField;
+		return $input . $columnsField . $rowsField;
 
 	}
 
