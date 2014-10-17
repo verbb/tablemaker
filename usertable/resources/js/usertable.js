@@ -13,17 +13,26 @@
 Craft.UserTable = Garnish.Base.extend(
 {
 
-  id: null,
+  columnsTableId: null,
+  rowsTableId: null,
+  columns: null,
+  rows: null,
+  columnSettings: null,
 
-  $elem: null,
+  $columnsTable: null,
+  $rowsTable: null,
 
-  init: function(id)
+  init: function(columnsTableId, rowsTableId, columns, rows, columnSettings)
   {
 
-    this.id = id;
-    this.$elem = $('#'+this.id);
+    this.columnsTableId = columnsTableId;
+    this.rowsTableId = rowsTableId;
 
-    console.log(this.id);
+    this.$columnsTable = $('#'+this.columnsTableId);
+    this.$rowsTable = $('#'+this.rowsTableId);
+
+
+    console.log('Woah.');
 
   }
 

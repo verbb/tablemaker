@@ -50,10 +50,26 @@ class UserTableFieldType extends BaseFieldType
 	public function getInputHtml($name, $value)
 	{
 
-		// $value needs to give us everything:
-		$columnSettings = array();
-		$columns = array();
-		$rows = array();
+		// $value needs to give us these eventually
+		if ( ! isset($columns) )
+		{
+			$columns = array('col1' => array('heading' => '', 'type' => 'singleline'));
+		}
+
+		if ( ! isset($rows) )
+		{
+			$rows = array('row1' => array());
+		}
+
+
+		$columnSettings = array(
+			'heading' => array(
+				'heading' => Craft::t('Column Heading'),
+				'type' => 'singleline'
+			)
+		);
+
+
 
 		// js needs to set up top field to add to bottom field
 
