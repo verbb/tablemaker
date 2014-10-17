@@ -21,6 +21,9 @@ Craft.UserTable = Garnish.Base.extend(
   rows: null,
   columnSettings: null,
 
+  columnsTable: null,
+  rowsTable: null,
+
   $columnsTable: null,
   $rowsTable: null,
 
@@ -39,30 +42,53 @@ Craft.UserTable = Garnish.Base.extend(
     this.$rowsTable = $('#'+this.rowsTableId);
 
 
-    console.log('Woah.');
-
-    var columnsTable = new Craft.EditableTable(this.columnsTableId, this.columnsTableName, this.columns, {
-      onAddRow: $.proxy(this, 'bindTextChanges'),
-      onDeleteRow: $.proxy(this, 'reconstructRows')
+    // set up columns table
+    this.columnsTable = new Craft.EditableTable(this.columnsTableId, this.columnsTableName, this.columnSettings, {
+      rowIdPrefix: 'col',
+      onAddRow: $.proxy(this, 'onAddRow'),
+      onDeleteRow: $.proxy(this, 'reconstructRowsTable')
     });
 
-    // this.bindTextchanges({
-    //   tableId: '".$id."',
-    //   fieldHandle: '".$field->handle."'
-    // });
-    //
-    columnsTable.sorter.settings.onSortChange = $.proxy(this, 'reconstructRows');
+    this.bindColumnsTableTextChanges(this.columnsTable.$tbody);
+
+    this.columnsTable.sorter.settings.onSortChange = $.proxy(this, 'reconstructRowsTable');
+
+
+    // set up rows table
+    this.rowsTable = new Craft.EditableTable(this.rowsTableId, this.rowsTableName, this.columns, {
+      rowIdPrefix: 'row',
+      onAddRow: $.proxy(this, 'makeDataBlob'),
+      onDeleteRow: $.proxy(this, 'makeDataBlob')
+    });
 
   },
 
-  bindTextChanges: function()
+  onAddRow: function($tr)
   {
+
+    this.bindColumnsTableTextChanges($tr);
+    this.reconstructRowsTable();
 
   },
 
-  reconstructRows: function()
+  bindColumnsTableTextChanges: function($container)
   {
 
+    var $textareas = $container.find('textarea');
+    this.addListener($textareas, 'textchange', 'reconstructRowsTable');
+
+  },
+
+  reconstructRowsTable: function()
+  {
+
+    console.log('reconstructing rows table');
+
+  },
+
+  makeDataBlob: function()
+  {
+    console.log('make data blob');
   }
 
 });
