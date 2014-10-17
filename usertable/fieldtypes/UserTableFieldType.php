@@ -4,8 +4,15 @@ namespace Craft;
 /**
  * UserTable by Supercool
  *
- * No settings right now - one day we might add some that
- * let you set max cols and max rows etc
+ * This bears an un-canny resemblence to the normal Table FieldType.
+ * The code is mostly the same, just twiddled with a bit.
+ *
+ * These options should be added to the columns table:
+ * - width
+ * - alignment
+ *
+ * There are no settings right now - one day we might add some that
+ * let you set max cols / rows or somesuch excitement.
  *
  * @package   UserTable
  * @author    Josh Angell
