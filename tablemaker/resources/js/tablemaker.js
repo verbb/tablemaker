@@ -8,11 +8,11 @@
 
 
 /**
- * UserTable Class
+ * TableMaker Class
  *
  * An awful lot of this is taken directly from TableFieldsSettings.js
  */
-Craft.UserTable = Garnish.Base.extend(
+Craft.TableMaker = Garnish.Base.extend(
 {
 
 	columnsTableId: null,

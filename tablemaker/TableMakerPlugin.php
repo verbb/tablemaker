@@ -2,20 +2,20 @@
 namespace Craft;
 
 /**
- * UserTable by Supercool
+ * TableMaker by Supercool
  *
- * @package   UserTable
+ * @package   TableMaker
  * @author    Josh Angell
  * @copyright Copyright (c) 2014, Supercool Ltd
  * @link      http://www.supercooldesign.co.uk
  */
 
-class UserTablePlugin extends BasePlugin
+class TableMakerPlugin extends BasePlugin
 {
 
   public function getName()
   {
-    return Craft::t('User Table');
+    return Craft::t('Table Maker');
   }
 
   public function getVersion()

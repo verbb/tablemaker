@@ -1,1 +1,1 @@
-# User Table - a plugin for Craft
+# Table Maker - a plugin for Craft

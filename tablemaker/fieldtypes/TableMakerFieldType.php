@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * UserTable by Supercool
+ * TableMaker by Supercool
  *
  * This bears an un-canny resemblence to the normal Table FieldType.
  * The code is mostly the same, just twiddled with a bit.
@@ -20,7 +20,7 @@ namespace Craft;
  * @link      http://www.supercooldesign.co.uk
  */
 
-class UserTableFieldType extends BaseFieldType
+class TableMakerFieldType extends BaseFieldType
 {
 
 	// Public Methods
@@ -33,7 +33,7 @@ class UserTableFieldType extends BaseFieldType
 	 */
 	public function getName()
 	{
-		return Craft::t('User Table');
+		return Craft::t('Table Maker');
 	}
 
 	/**
@@ -58,7 +58,7 @@ class UserTableFieldType extends BaseFieldType
 	{
 
 		// make input
-		$input = '<input class="user-table-field" type="hidden" name="'.$name.'" value="">';
+		$input = '<input class="table-maker-field" type="hidden" name="'.$name.'" value="">';
 
 
 		// $value needs to give us these with col types
@@ -88,9 +88,9 @@ class UserTableFieldType extends BaseFieldType
 
 		// js needs to set up top field to add to bottom field
 
-		craft()->templates->includeJsResource('usertable/js/usertable.js');
+		craft()->templates->includeJsResource('tablemaker/js/tablemaker.js');
 
-		craft()->templates->includeJs('new Craft.UserTable(' .
+		craft()->templates->includeJs('new Craft.TableMaker(' .
 			'"'.craft()->templates->namespaceInputId($name).'", ' .
 			'"'.craft()->templates->namespaceInputId('columns').'", ' .
 			'"'.craft()->templates->namespaceInputId('rows').'", ' .
