@@ -14,7 +14,7 @@ namespace Craft;
  * There are no settings right now - one day we might add some that
  * let you set max cols / rows or somesuch excitement.
  *
- * @package   UserTable
+ * @package   TableMaker
  * @author    Josh Angell
  * @copyright Copyright (c) 2014, Supercool Ltd
  * @link      http://www.supercooldesign.co.uk

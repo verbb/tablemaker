@@ -50,7 +50,7 @@ Craft.TableMaker = Garnish.Base.extend(
 
 		this.$columnsTable = $('#'+this.columnsTableId);
 		this.$rowsTable = $('#'+this.rowsTableId);
-    this.$input = $('#'+fieldId+'-field').find('input.user-table-field');
+    this.$input = $('#'+fieldId+'-field').find('input.table-maker-field');
 
 
 		// set up columns table
