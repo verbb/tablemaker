@@ -109,8 +109,8 @@ Craft.TableMaker = Garnish.Base.extend(
 
 		this.rowsTable = new Craft.EditableTable(this.rowsTableId, this.rowsTableName, this.columns, {
 			rowIdPrefix: 'row',
-			onAddRow: $.proxy(this, 'reconstructRowsTable'),
-			onDeleteRow: $.proxy(this, 'reconstructRowsTable')
+			// onAddRow: $.proxy(this, 'reconstructRowsTable'),
+			// onDeleteRow: $.proxy(this, 'reconstructRowsTable')
 		});
 
 		this.bindRowsTableTextChanges(this.rowsTable.$tbody);
@@ -122,24 +122,8 @@ Craft.TableMaker = Garnish.Base.extend(
 	reconstructRowsTable: function()
 	{
 
-		// get data out from the tables
-		var columnsTableData = Craft.expandPostArray(Garnish.getPostData(this.columnsTable.$tbody)),
-				rowsTableData = Craft.expandPostArray(Garnish.getPostData(this.rowsTable.$tbody)),
-				columns = columnsTableData,
-				rows = rowsTableData;
-
-		// travel down the input path to find where the data we’re interested in actually is
-		for (var i = 0; i < this.columnsTableInputPath.length; i++)
-		{
-			var key = this.columnsTableInputPath[i];
-			columns = columns[key];
-		}
-
-		for (var i = 0; i < this.rowsTableInputPath.length; i++)
-		{
-			var key = this.rowsTableInputPath[i];
-			rows = rows[key];
-		}
+		// get data
+		this.getDataFromTables();
 
 		// prep table
 		var tableHtml = '<table id="'+this.rowsTableId+'" class="editable shadow-box">' +
@@ -147,11 +131,11 @@ Craft.TableMaker = Garnish.Base.extend(
 				 '<tr>';
 
 		// re-do columns of rowsTable
-		for (var colId in columns)
+		for (var colId in this.columns)
 		{
 			// force type of col to be textual
-			columns[colId].type = 'singleline';
-			tableHtml += '<th scope="col" class="header">'+(columns[colId].heading ? columns[colId].heading : '&nbsp;')+'</th>';
+			this.columns[colId].type = 'singleline';
+			tableHtml += '<th scope="col" class="header">'+(this.columns[colId].heading ? this.columns[colId].heading : '&nbsp;')+'</th>';
 		}
 
 		tableHtml += '<th class="header" colspan="2"></th>' +
@@ -160,9 +144,9 @@ Craft.TableMaker = Garnish.Base.extend(
 			 '<tbody>';
 
 		// merge in the current rows content
-		for (var rowId in rows)
+		for (var rowId in this.rows)
 		{
-			tableHtml += Craft.EditableTable.getRowHtml(rowId, columns, this.rowsTableName, rows[rowId]);
+			tableHtml += Craft.EditableTable.getRowHtml(rowId, this.columns, this.rowsTableName, this.rows[rowId]);
 		}
 
 		tableHtml += '</tbody>' +
@@ -175,35 +159,44 @@ Craft.TableMaker = Garnish.Base.extend(
 		this.makeDataBlob();
 	},
 
+	getDataFromTables: function()
+	{
+
+		// get data out from the tables
+		var columns = Craft.expandPostArray(Garnish.getPostData(this.columnsTable.$tbody)),
+				rows = Craft.expandPostArray(Garnish.getPostData(this.rowsTable.$tbody));
+
+		// travel down the input path to find where the data we’re interested in actually is
+		for (var i = 0; i < this.columnsTableInputPath.length; i++)
+		{
+			var key = this.columnsTableInputPath[i];
+			columns = columns[key];
+		}
+
+		this.columns = columns;
+
+		for (var i = 0; i < this.rowsTableInputPath.length; i++)
+		{
+			var key = this.rowsTableInputPath[i];
+			rows = rows[key];
+		}
+
+		this.rows = rows;
+
+	},
+
 	makeDataBlob: function()
 	{
 
-    // get data out from the tables
-    var columnsTableData = Craft.expandPostArray(Garnish.getPostData(this.columnsTable.$tbody)),
-        rowsTableData = Craft.expandPostArray(Garnish.getPostData(this.rowsTable.$tbody)),
-        columns = columnsTableData,
-        rows = rowsTableData;
+		// get data
+		this.getDataFromTables();
 
-    // travel down the input path to find where the data we’re interested in actually is
-    for (var i = 0; i < this.columnsTableInputPath.length; i++)
-    {
-      var key = this.columnsTableInputPath[i];
-      columns = columns[key];
-    }
+		var dataBlob = {
+			'columns' : this.columns,
+			'rows' : this.rows
+		};
 
-    for (var i = 0; i < this.rowsTableInputPath.length; i++)
-    {
-      var key = this.rowsTableInputPath[i];
-      rows = rows[key];
-    }
-
-
-    var dataBlob = {
-      'columns' : columns,
-      'rows' : rows
-    };
-
-    this.$input.val(JSON.stringify(dataBlob));
+		this.$input.val(JSON.stringify(dataBlob));
 	}
 
 });
