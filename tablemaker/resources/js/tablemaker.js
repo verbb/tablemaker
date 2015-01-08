@@ -65,11 +65,19 @@ Craft.TableMaker = Garnish.Base.extend(
 
 	},
 
-	onAddRow: function($tr)
+	onColumnsAddRow: function($tr)
 	{
 
 		this.bindColumnsTableTextChanges($tr);
 		this.reconstructRowsTable();
+
+	},
+
+	onRowsAddRow: function()
+	{
+
+		this.bindRowsTableTextChanges();
+		this.makeDataBlob();
 
 	},
 
@@ -95,7 +103,7 @@ Craft.TableMaker = Garnish.Base.extend(
 
 		this.columnsTable = new Craft.EditableTable(this.columnsTableId, this.columnsTableName, this.columnSettings, {
 			rowIdPrefix: 'col',
-			onAddRow: $.proxy(this, 'onAddRow'),
+			onAddRow: $.proxy(this, 'onColumnsAddRow'),
 			onDeleteRow: $.proxy(this, 'reconstructRowsTable')
 		});
 
@@ -110,7 +118,7 @@ Craft.TableMaker = Garnish.Base.extend(
 
 		this.rowsTable = new Craft.EditableTable(this.rowsTableId, this.rowsTableName, this.columns, {
 			rowIdPrefix: 'row',
-			onAddRow: $.proxy(this, 'bindRowsTableTextChanges'),
+			onAddRow: $.proxy(this, 'onRowsAddRow'),
 			onDeleteRow: $.proxy(this, 'makeDataBlob')
 		});
 
@@ -167,19 +175,30 @@ Craft.TableMaker = Garnish.Base.extend(
 		var columns = Craft.expandPostArray(Garnish.getPostData(this.columnsTable.$tbody)),
 				rows = Craft.expandPostArray(Garnish.getPostData(this.rowsTable.$tbody));
 
-		// travel down the input path to find where the data we’re interested in actually is
-		for (var i = 0; i < this.columnsTableInputPath.length; i++)
+		// travel down the input paths to find where the data we’re interested in actually is
+
+		if ( ! $.isEmptyObject(columns) )
 		{
-			var key = this.columnsTableInputPath[i];
-			columns = columns[key];
+
+			for (var i = 0; i < this.columnsTableInputPath.length; i++)
+			{
+				var key = this.columnsTableInputPath[i];
+				columns = columns[key];
+			}
+
 		}
 
 		this.columns = columns;
 
-		for (var i = 0; i < this.rowsTableInputPath.length; i++)
+		if ( ! $.isEmptyObject(rows) )
 		{
-			var key = this.rowsTableInputPath[i];
-			rows = rows[key];
+
+			for (var i = 0; i < this.rowsTableInputPath.length; i++)
+			{
+				var key = this.rowsTableInputPath[i];
+				rows = rows[key];
+			}
+
 		}
 
 		this.rows = rows;
