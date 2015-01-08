@@ -68,10 +68,10 @@ Craft.TableMaker = Garnish.Base.extend(
 
 	},
 
-	onColumnsAddRow: function($tr)
+	onColumnsAddRow: function()
 	{
 
-		this.bindColumnsTableTextChanges($tr);
+		this.bindColumnsTableChanges();
 		this.reconstructRowsTable();
 
 	},
@@ -84,11 +84,16 @@ Craft.TableMaker = Garnish.Base.extend(
 
 	},
 
-	bindColumnsTableTextChanges: function($container)
+	bindColumnsTableChanges: function()
 	{
 
-		var $textareas = $container.find('textarea');
+		// text changes
+		var $textareas = this.columnsTable.$tbody.find('textarea');
 		this.addListener($textareas, 'textchange', 'reconstructRowsTable');
+
+		// select changes
+		var $selects = this.columnsTable.$tbody.find('select');
+		this.addListener($selects, 'change', 'reconstructRowsTable');
 
 	},
 
@@ -96,7 +101,6 @@ Craft.TableMaker = Garnish.Base.extend(
 	{
 
 		var $textareas = this.rowsTable.$tbody.find('textarea');
-		this.removeListener($textareas, 'textchange'); // not sure if we need this
 		this.addListener($textareas, 'textchange', 'makeDataBlob');
 
 	},
@@ -110,7 +114,7 @@ Craft.TableMaker = Garnish.Base.extend(
 			onDeleteRow: $.proxy(this, 'reconstructRowsTable')
 		});
 
-		this.bindColumnsTableTextChanges(this.columnsTable.$tbody);
+		this.bindColumnsTableChanges();
 
 		this.columnsTable.sorter.settings.onSortChange = $.proxy(this, 'reconstructRowsTable');
 
