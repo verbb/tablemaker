@@ -270,7 +270,7 @@ class TableMakerFieldType extends BaseFieldType
 						{
 							foreach ($value['columns'] as $col)
 							{
-								$html .= '<th>' . $col['heading'] . '</th>';
+								$html .= '<th align="' . $col['align'] . '" width="' . $col['width'] . '">' . $col['heading'] . '</th>';
 							}
 						}
 
@@ -290,8 +290,10 @@ class TableMakerFieldType extends BaseFieldType
 
 						$html .= '<tr>';
 
+						$i = 0;
 						foreach ($row as $cell) {
-							$html .= '<td>' . $cell . '</td>';
+							$html .= '<td align="' . $value['columns'][$i]['align'] . '">' . $cell . '</td>';
+							$i++;
 						}
 
 						$html .= '</tr>';
