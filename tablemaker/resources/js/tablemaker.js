@@ -63,6 +63,9 @@ Craft.TableMaker = Garnish.Base.extend(
 		// set up rows table
 		this.initRowsTable();
 
+		// make the data blob
+		this.makeDataBlob();
+
 	},
 
 	onColumnsAddRow: function($tr)

@@ -59,8 +59,6 @@ class TableMakerFieldType extends BaseFieldType
 
 		// make input
 		$input = '<input class="table-maker-field" type="hidden" name="'.$name.'" value="">';
-		// TODO: this needs the value from the db
-		// JsonHelper::encode($value) - quotes are all weird
 
 
 		// get columns from db or fall back to default
