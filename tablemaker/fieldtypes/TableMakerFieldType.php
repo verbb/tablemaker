@@ -14,10 +14,10 @@ namespace Craft;
  * There are no settings right now - one day we might add some that
  * let you set max cols / rows or somesuch excitement.
  *
- * @package   TableMaker
- * @author    Josh Angell
+ * @package	 	TableMaker
+ * @author		Josh Angell
  * @copyright Copyright (c) 2014, Supercool Ltd
- * @link      http://www.supercooldesign.co.uk
+ * @link			http://www.supercooldesign.co.uk
  */
 
 class TableMakerFieldType extends BaseFieldType
@@ -50,7 +50,7 @@ class TableMakerFieldType extends BaseFieldType
 	 * @inheritDoc IFieldType::getInputHtml()
 	 *
 	 * @param string $name
-	 * @param mixed  $value
+	 * @param mixed	$value
 	 *
 	 * @return string
 	 */
@@ -103,26 +103,26 @@ class TableMakerFieldType extends BaseFieldType
 
 		$columnsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
 			array(
-				'label'        => Craft::t('Table Columns'),
+				'label'				=> Craft::t('Table Columns'),
 				'instructions' => Craft::t('Define the columns your table should have.'),
-				'id'           => 'columns',
-				'name'         => 'columns',
-				'cols'         => $columnSettings,
-				'rows'         => $columns,
-				'addRowLabel'  => Craft::t('Add a column'),
-				'initJs'       => false
+				'id'					 => 'columns',
+				'name'				 => 'columns',
+				'cols'				 => $columnSettings,
+				'rows'				 => $columns,
+				'addRowLabel'	=> Craft::t('Add a column'),
+				'initJs'			 => false
 			)
 		));
 
 		$rowsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
 			array(
-				'label'        => Craft::t('Table Content'),
+				'label'				=> Craft::t('Table Content'),
 				'instructions' => Craft::t('Input the content of your table.'),
-				'id'           => 'rows',
-				'name'         => 'rows',
-				'cols'         => $columns,
-				'rows'         => $rows,
-				'initJs'       => false
+				'id'					 => 'rows',
+				'name'				 => 'rows',
+				'cols'				 => $columns,
+				'rows'				 => $rows,
+				'initJs'			 => false
 			)
 		));
 

@@ -24,33 +24,37 @@ Craft.TableMaker = Garnish.Base.extend(
 	columns: null,
 	rows: null,
 	columnSettings: null,
-  fieldId: null,
+	fieldId: null,
 
 	columnsTable: null,
 	rowsTable: null,
 
 	$columnsTable: null,
 	$rowsTable: null,
-  $input: null,
+	$input: null,
 
 	init: function(fieldId, columnsTableId, rowsTableId, columnsTableName, rowsTableName, columns, rows, columnSettings)
 	{
 
 		this.columnsTableId = columnsTableId;
 		this.rowsTableId = rowsTableId;
+
 		this.columnsTableName = columnsTableName;
 		this.rowsTableName = rowsTableName;
+
 		this.columnsTableInputPath = this.columnsTableId.split('-');
 		this.rowsTableInputPath = this.rowsTableId.split('-');
+
 		this.columns = columns;
 		this.rows = rows;
+
 		this.columnSettings = columnSettings;
-    this.fieldId = fieldId
+		this.fieldId = fieldId
 
 
 		this.$columnsTable = $('#'+this.columnsTableId);
 		this.$rowsTable = $('#'+this.rowsTableId);
-    this.$input = $('#'+fieldId+'-field').find('input.table-maker-field');
+		this.$input = $('#'+fieldId+'-field').find('input.table-maker-field');
 
 
 		// set up columns table
@@ -77,13 +81,13 @@ Craft.TableMaker = Garnish.Base.extend(
 
 	},
 
-  bindRowsTableTextChanges: function($container)
-  {
+	bindRowsTableTextChanges: function($container)
+	{
 
-    var $textareas = $container.find('textarea');
-    this.addListener($textareas, 'textchange', 'makeDataBlob');
+		var $textareas = $container.find('textarea');
+		this.addListener($textareas, 'textchange', 'makeDataBlob');
 
-  },
+	},
 
 	initColumnsTable: function()
 	{
