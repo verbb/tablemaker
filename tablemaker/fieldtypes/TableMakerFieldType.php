@@ -74,7 +74,6 @@ class TableMakerFieldType extends BaseFieldType
 		// make input
 		$input = '<input class="table-maker-field" type="hidden" name="'.$name.'" value="">';
 
-
 		// get columns from db or fall back to default
 		if ( ! empty($value['columns']) )
 		{
@@ -83,6 +82,7 @@ class TableMakerFieldType extends BaseFieldType
 
 				$columns['col'.$key] = array(
 					'heading' => $val['heading'],
+					'align' => $val['align'],
 					'type' => 'singleline'
 				);
 
@@ -92,7 +92,13 @@ class TableMakerFieldType extends BaseFieldType
 		else
 		{
 
-			$columns = array('col1' => array('heading' => '', 'type' => 'singleline'));
+			$columns = array(
+				'col1' => array(
+					'heading' => '',
+					'align' => '',
+					'type' => 'singleline'
+				)
+			);
 
 		}
 
@@ -125,17 +131,24 @@ class TableMakerFieldType extends BaseFieldType
 		// prep col settings
 		$columnSettings = array(
 			'heading' => array(
-				'heading' => Craft::t('Column Heading'),
+				'heading' => Craft::t('Heading'),
 				'type' => 'singleline'
+			),
+			'align' => array(
+				'heading' => Craft::t('Alignment'),
+				'class' => 'thin',
+				'type' => 'select',
+				'options' => array(
+					'left' => Craft::t('Left'),
+					'center' => Craft::t('Center'),
+					'right' => Craft::t('Right')
+				)
 			)
 		);
 
 
-
-		// set up top table to add to bottom table
-
+		// init the js
 		craft()->templates->includeJsResource('tablemaker/js/tablemaker.js');
-
 		craft()->templates->includeJs('new Craft.TableMaker(' .
 			'"'.craft()->templates->namespaceInputId($name).'", ' .
 			'"'.craft()->templates->namespaceInputId('columns').'", ' .
@@ -147,6 +160,8 @@ class TableMakerFieldType extends BaseFieldType
 			JsonHelper::encode($columnSettings) .
 		');');
 
+
+		// render the two tables
 		$fieldSettings = $this->getSettings();
 
 		$columnsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
