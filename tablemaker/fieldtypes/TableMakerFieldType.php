@@ -277,7 +277,9 @@ class TableMakerFieldType extends BaseFieldType
 			</table>
 		';
 
-		return TemplateHelper::getRaw($html);
+		$value['table'] = TemplateHelper::getRaw($html);
+
+		return $value;
 
 	}
 
