@@ -212,14 +212,15 @@ class TableMakerFieldType extends BaseFieldType
 			// drop keys from the rows array
 			$value['rows'] = array_values($value['rows']);
 
-			// drop each rows content array keys
-			foreach ($value['rows'] as &$rowArray)
+			// loop each row
+			foreach ($value['rows'] as &$row)
 			{
 
-				if ( is_array($rowArray) )
+				if ( is_array($row) )
 				{
 
-					$rowArray = array_values($rowArray);
+					// drop those array keys
+					$row = array_values($row);
 
 				}
 
