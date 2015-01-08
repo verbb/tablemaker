@@ -60,28 +60,57 @@ class TableMakerFieldType extends BaseFieldType
 		// make input
 		$input = '<input class="table-maker-field" type="hidden" name="'.$name.'" value="">';
 		// TODO: this needs the value from the db
+		// JsonHelper::encode($value) - quotes are all weird
 
 
-		// $value needs to give us these with col types
-		// $columns = $value['columns'];
-		// $rows = $value['rows'];
-		echo "<pre>";
-		print_r($value);
-		echo "</pre>";
-		// JsonHelper::encode($value)
-
-
-		if ( ! isset($columns) )
+		// get columns from db or fall back to default
+		if ( ! empty($value['columns']) )
 		{
+
+			foreach ($value['columns'] as $key => $val) {
+
+				$columns['col'.$key] = array(
+					'heading' => $val['heading'],
+					'type' => 'singleline'
+				);
+
+			}
+
+		}
+		else
+		{
+
 			$columns = array('col1' => array('heading' => '', 'type' => 'singleline'));
+
 		}
 
-		if ( ! isset($rows) )
+
+		// get rows from db or fall back to default
+		if ( ! empty($value['rows']) )
 		{
+
+			// walk down the rows and cells appending 'row' to the rows' keys
+			// and 'col' to the cells' keys
+			foreach ($value['rows'] as $rowKey => $rowVal) {
+
+				foreach ($rowVal as $colKey => $colVal) {
+
+					$rows['row'.$rowKey]['col'.$colKey] = $colVal;
+
+				}
+
+			}
+
+		}
+		else
+		{
+
 			$rows = array('row1' => array());
+
 		}
 
 
+		// prep col settings
 		$columnSettings = array(
 			'heading' => array(
 				'heading' => Craft::t('Column Heading'),
@@ -91,7 +120,7 @@ class TableMakerFieldType extends BaseFieldType
 
 
 
-		// js needs to set up top field to add to bottom field
+		// set up top table to add to bottom table
 
 		craft()->templates->includeJsResource('tablemaker/js/tablemaker.js');
 
