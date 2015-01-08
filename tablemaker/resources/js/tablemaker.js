@@ -81,10 +81,11 @@ Craft.TableMaker = Garnish.Base.extend(
 
 	},
 
-	bindRowsTableTextChanges: function($container)
+	bindRowsTableTextChanges: function()
 	{
 
-		var $textareas = $container.find('textarea');
+		var $textareas = this.rowsTable.$tbody.find('textarea');
+		this.removeListener($textareas, 'textchange'); // not sure if we need this
 		this.addListener($textareas, 'textchange', 'makeDataBlob');
 
 	},
@@ -109,11 +110,11 @@ Craft.TableMaker = Garnish.Base.extend(
 
 		this.rowsTable = new Craft.EditableTable(this.rowsTableId, this.rowsTableName, this.columns, {
 			rowIdPrefix: 'row',
-			// onAddRow: $.proxy(this, 'reconstructRowsTable'),
-			// onDeleteRow: $.proxy(this, 'reconstructRowsTable')
+			onAddRow: $.proxy(this, 'bindRowsTableTextChanges'),
+			onDeleteRow: $.proxy(this, 'makeDataBlob')
 		});
 
-		this.bindRowsTableTextChanges(this.rowsTable.$tbody);
+		this.bindRowsTableTextChanges();
 
 		this.rowsTable.sorter.settings.onSortChange = $.proxy(this, 'makeDataBlob');
 
