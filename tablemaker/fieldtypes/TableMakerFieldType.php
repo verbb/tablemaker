@@ -225,6 +225,62 @@ class TableMakerFieldType extends BaseFieldType
 
 	}
 
+	/**
+	 * @inheritDoc IFieldType::prepValue()
+	 *
+	 * @param mixed $value
+	 *
+	 * @return mixed
+	 */
+	public function prepValue($value)
+	{
+
+		// make an html table
+
+		$html = '
+			<table>
+
+				<thead>
+					<tr>
+		';
+
+						foreach ($value['columns'] as $col)
+						{
+							$html .= '<th>' . $col['heading'] . '</th>';
+						}
+
+		$html .= '
+					</tr>
+				</thead>
+
+				<tbody>
+
+		';
+
+				foreach ($value['rows'] as $row)
+				{
+
+					$html .= '<tr>';
+
+					foreach ($row as $cell) {
+						$html .= '<td>' . $cell . '</td>';
+					}
+
+					$html .= '</tr>';
+
+				}
+
+		$html .= '
+
+				</tbody>
+
+			</table>
+		';
+
+		return TemplateHelper::getRaw($html);
+
+	}
+
 
 	// Protected Methods
 	// =========================================================================
