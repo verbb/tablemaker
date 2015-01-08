@@ -47,6 +47,20 @@ class TableMakerFieldType extends BaseFieldType
 	}
 
 	/**
+	 * @inheritDoc ISavableComponentType::getSettingsHtml()
+	 *
+	 * @return string|null
+	 */
+	public function getSettingsHtml()
+	{
+
+		return craft()->templates->render('tablemaker/settings', array(
+			'settings' => $this->getSettings()
+		));
+
+	}
+
+	/**
 	 * @inheritDoc IFieldType::getInputHtml()
 	 *
 	 * @param string $name
@@ -133,28 +147,31 @@ class TableMakerFieldType extends BaseFieldType
 			JsonHelper::encode($columnSettings) .
 		');');
 
+		$fieldSettings = $this->getSettings();
+
 		$columnsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
 			array(
-				'label'				=> Craft::t('Table Columns'),
-				'instructions' => Craft::t('Define the columns your table should have.'),
-				'id'					 => 'columns',
-				'name'				 => 'columns',
-				'cols'				 => $columnSettings,
-				'rows'				 => $columns,
-				'addRowLabel'	=> Craft::t('Add a column'),
-				'initJs'			 => false
+				'label'					=> $fieldSettings['columnsLabel'] ? Craft::t($fieldSettings['columnsLabel']) : Craft::t('Table Columns'),
+				'instructions'	=> $fieldSettings['columnsInstructions'] ? Craft::t($fieldSettings['columnsInstructions']) : Craft::t('Define the columns your table should have.'),
+				'id'						=> 'columns',
+				'name'					=> 'columns',
+				'cols'					=> $columnSettings,
+				'rows'					=> $columns,
+				'addRowLabel'		=> $fieldSettings['columnsAddRowLabel'] ? Craft::t($fieldSettings['columnsAddRowLabel']) : Craft::t('Add a column'),
+				'initJs'				=> false
 			)
 		));
 
 		$rowsField = craft()->templates->renderMacro('_includes/forms', 'editableTableField', array(
 			array(
-				'label'				=> Craft::t('Table Content'),
-				'instructions' => Craft::t('Input the content of your table.'),
-				'id'					 => 'rows',
-				'name'				 => 'rows',
-				'cols'				 => $columns,
-				'rows'				 => $rows,
-				'initJs'			 => false
+				'label'					=> $fieldSettings['rowsLabel'] ? Craft::t($fieldSettings['rowsLabel']) : Craft::t('Table Content'),
+				'instructions'	=> $fieldSettings['rowsInstructions'] ? Craft::t($fieldSettings['rowsInstructions']) : Craft::t('Input the content of your table.'),
+				'id'						=> 'rows',
+				'name'					=> 'rows',
+				'cols'					=> $columns,
+				'rows'					=> $rows,
+				'addRowLabel'		=> $fieldSettings['rowsAddRowLabel'] ? Craft::t($fieldSettings['rowsAddRowLabel']) : Craft::t('Add a row'),
+				'initJs'				=> false
 			)
 		));
 
@@ -220,8 +237,12 @@ class TableMakerFieldType extends BaseFieldType
 	protected function defineSettings()
 	{
 		return array(
-			'columns' => AttributeType::Mixed,
-			'rows' => AttributeType::Mixed
+			'columnsLabel' => AttributeType::String,
+			'columnsInstructions' => AttributeType::String,
+			'columnsAddRowLabel' => AttributeType::String,
+			'rowsLabel' => AttributeType::String,
+			'rowsInstructions' => AttributeType::String,
+			'rowsAddRowLabel' => AttributeType::String
 		);
 	}
 

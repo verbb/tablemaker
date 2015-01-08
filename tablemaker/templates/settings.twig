@@ -1,0 +1,53 @@
+{% import "_includes/forms" as forms %}
+
+<h2>Columns Table</h2>
+
+{{ forms.textField({
+  label: "Label"|t,
+  id: 'columnsLabel',
+  name: 'columnsLabel',
+  value: settings.columnsLabel,
+  errors: settings.getErrors('columnsLabel'),
+}) }}
+
+{{ forms.textareaField({
+  label: "Instructions"|t,
+  id: 'columnsInstructions',
+  name: 'columnsInstructions',
+  value: settings.columnsInstructions,
+  errors: settings.getErrors('columnsInstructions'),
+}) }}
+
+{{ forms.textField({
+  label: "Add column label"|t,
+  id: 'columnsAddRowLabel',
+  name: 'columnsAddRowLabel',
+  value: settings.columnsAddRowLabel,
+  errors: settings.getErrors('columnsAddRowLabel'),
+}) }}
+
+<h2>Rows Table</h2>
+
+{{ forms.textField({
+  label: "Label"|t,
+  id: 'rowsLabel',
+  name: 'rowsLabel',
+  value: settings.rowsLabel,
+  errors: settings.getErrors('rowsLabel'),
+}) }}
+
+{{ forms.textareaField({
+  label: "Instructions"|t,
+  id: 'rowsInstructions',
+  name: 'rowsInstructions',
+  value: settings.rowsInstructions,
+  errors: settings.getErrors('rowsInstructions'),
+}) }}
+
+{{ forms.textField({
+  label: "Add row label"|t,
+  id: 'rowsAddRowLabel',
+  name: 'rowsAddRowLabel',
+  value: settings.rowsAddRowLabel,
+  errors: settings.getErrors('rowsAddRowLabel'),
+}) }}
