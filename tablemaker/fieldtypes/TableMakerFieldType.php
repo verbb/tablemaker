@@ -59,11 +59,16 @@ class TableMakerFieldType extends BaseFieldType
 
 		// make input
 		$input = '<input class="table-maker-field" type="hidden" name="'.$name.'" value="">';
+		// TODO: this needs the value from the db
 
 
 		// $value needs to give us these with col types
 		// $columns = $value['columns'];
 		// $rows = $value['rows'];
+		echo "<pre>";
+		print_r($value);
+		echo "</pre>";
+		// JsonHelper::encode($value)
 
 
 		if ( ! isset($columns) )
@@ -127,6 +132,52 @@ class TableMakerFieldType extends BaseFieldType
 		));
 
 		return $input . $columnsField . $rowsField;
+
+	}
+
+	/**
+	 * @inheritDoc IFieldType::prepValueFromPost()
+	 *
+	 * @param mixed $value
+	 *
+	 * @return mixed
+	 */
+	public function prepValueFromPost($value)
+	{
+
+		$value = JsonHelper::decode($value);
+
+		if ( is_array($value['rows']) )
+		{
+
+			// drop keys from the rows array
+			$value['rows'] = array_values($value['rows']);
+
+			// drop each rows content array keys
+			foreach ($value['rows'] as &$rowArray)
+			{
+
+				if ( is_array($rowArray) )
+				{
+
+					$rowArray = array_values($rowArray);
+
+				}
+
+			}
+
+		}
+
+
+		// drop keys from the columns array
+		if ( is_array($value['columns']) )
+		{
+
+			$value['columns'] = array_values($value['columns']);
+
+		}
+
+		return JsonHelper::encode($value);
 
 	}
 
