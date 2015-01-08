@@ -83,6 +83,7 @@ class TableMakerFieldType extends BaseFieldType
 				$columns['col'.$key] = array(
 					'heading' => $val['heading'],
 					'align' => $val['align'],
+					'width' => $val['width'],
 					'type' => 'singleline'
 				);
 
@@ -96,6 +97,7 @@ class TableMakerFieldType extends BaseFieldType
 				'col1' => array(
 					'heading' => '',
 					'align' => '',
+					'width' => '',
 					'type' => 'singleline'
 				)
 			);
@@ -133,6 +135,12 @@ class TableMakerFieldType extends BaseFieldType
 			'heading' => array(
 				'heading' => Craft::t('Heading'),
 				'type' => 'singleline'
+			),
+			'width' => array(
+				'heading' => Craft::t('Width'),
+				'class' => 'code',
+				'type' => 'singleline',
+				'width' => 50
 			),
 			'align' => array(
 				'heading' => Craft::t('Alignment'),
