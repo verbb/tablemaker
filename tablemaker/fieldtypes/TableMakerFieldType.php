@@ -236,17 +236,18 @@ class TableMakerFieldType extends BaseFieldType
 	{
 
 		// make an html table
-
 		$html = '
 			<table>
 
 				<thead>
 					<tr>
 		';
-
-						foreach ($value['columns'] as $col)
+						if ( ! empty($value['columns']) )
 						{
-							$html .= '<th>' . $col['heading'] . '</th>';
+							foreach ($value['columns'] as $col)
+							{
+								$html .= '<th>' . $col['heading'] . '</th>';
+							}
 						}
 
 		$html .= '
@@ -257,16 +258,21 @@ class TableMakerFieldType extends BaseFieldType
 
 		';
 
-				foreach ($value['rows'] as $row)
+				if ( ! empty($value['rows']) )
 				{
 
-					$html .= '<tr>';
+					foreach ($value['rows'] as $row)
+					{
 
-					foreach ($row as $cell) {
-						$html .= '<td>' . $cell . '</td>';
+						$html .= '<tr>';
+
+						foreach ($row as $cell) {
+							$html .= '<td>' . $cell . '</td>';
+						}
+
+						$html .= '</tr>';
+
 					}
-
-					$html .= '</tr>';
 
 				}
 
