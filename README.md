@@ -1,32 +1,11 @@
 # Table Maker - a plugin for Craft
 
+A field type that enables your users to create their own columns, controlling the width and alignment of each:
 
-## Auto
-```
-{{ entry.plops.table }}
-```
+![columns](http://s3-eu-west-1.amazonaws.com/supercoolplugins/Table-Maker/columns.jpg)
 
-## Manual
-```
-<table>
+They can then fill in the data like a normal Table field and access both the columns and rows in Twig:
 
-  <thead>
-    <tr>
-      {% for col in entry.plops.columns %}
-      <th align="{{ col.align }}">{{ col.heading }}</th>
-      {% endfor %}
-    </tr>
-  </thead>
+![rows](http://s3-eu-west-1.amazonaws.com/supercoolplugins/Table-Maker/rows.jpg)
 
-  <tbody>
-    {% for row in entry.plops.rows %}
-    <tr>
-      {% for cell in row %}
-      <td align="{{ entry.plops.columns[loop.index0].align }}">{{ cell }}</td>
-      {% endfor %}
-    </tr>
-    {% endfor %}
-  </tbody>
-
-</table>
-```
+See the [docs](http://plugins.supercooldesign.co.uk/plugin/table-maker/docs) for more details on installation and templating.

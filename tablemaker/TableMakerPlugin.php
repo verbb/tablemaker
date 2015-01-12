@@ -20,7 +20,7 @@ class TableMakerPlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '0.1';
+		return '1.0';
 	}
 
 	public function getDeveloper()
@@ -30,7 +30,7 @@ class TableMakerPlugin extends BasePlugin
 
 	public function getDeveloperUrl()
 	{
-		return 'http://www.supercooldesign.co.uk';
+		return 'http://plugins.supercooldesign.co.uk';
 	}
 
 }
