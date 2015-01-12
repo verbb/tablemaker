@@ -1,7 +1,7 @@
 [
   {
-    "version" : "0.1",
-    "date"    : "9-1-2015",
+    "version" : "1.0",
+    "date"    : "12-1-2015",
     "notes"   : [
       {
         "type"    : "added",
