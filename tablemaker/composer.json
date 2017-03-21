@@ -1,0 +1,39 @@
+{
+    "name": "supercool/tablemaker",
+    "description": "A user-definable table field type for Craft CMS",
+    "type": "craft-plugin",
+    "version": "1.0.0",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "tablemaker"
+    ],
+    "support": {
+        "docs": "https://github.com/supercool/tablemaker/blob/master/README.md",
+        "issues": "https://github.com/supercool/tablemaker/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Supercool",
+            "homepage": "http://supercooldesign.co.uk"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "~3.0.0-beta.7"
+    },
+    "autoload": {
+        "psr-4": {
+          "supercool\\tablemaker\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Table Maker",
+        "handle": "tablemaker",
+        "schemaVersion": "1.0.0",
+        "changelogUrl": "https://raw.githubusercontent.com/supercool/tablemaker/master/CHANGELOG.md",
+        "class": "supercool\\tablemaker\\TableMaker"
+    }
+}
