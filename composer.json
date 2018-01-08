@@ -8,7 +8,7 @@
         "cms",
         "craftcms",
         "craft-plugin",
-        "tablemaker"
+        "table maker"
     ],
     "support": {
         "docs": "https://github.com/supercool/tablemaker/blob/master/README.md",
@@ -17,12 +17,12 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "Supercool",
-            "homepage": "http://supercooldesign.co.uk"
+            "name": "Supercool Ltd",
+            "homepage": "http://www.supercooldesign.co.uk/"
         }
     ],
     "require": {
-        "craftcms/cms": "~3.0.0-beta.7"
+        "craftcms/cms": "^3.0.0-RC1"
     },
     "autoload": {
         "psr-4": {
@@ -33,6 +33,8 @@
         "name": "Table Maker",
         "handle": "tablemaker",
         "schemaVersion": "1.0.0",
+        "hasCpSettings": false,
+        "hasCpSection": false,
         "changelogUrl": "https://raw.githubusercontent.com/supercool/tablemaker/master/CHANGELOG.md",
         "class": "supercool\\tablemaker\\TableMaker"
     }

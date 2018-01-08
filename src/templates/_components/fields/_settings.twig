@@ -1,12 +1,13 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
 {#
 /**
- * TableMaker plugin for Craft CMS
+ * Table Maker plugin for Craft CMS
  *
- * TableMaker Field Settings
+ *  Field Settings
  *
- * @author    Supercool
- * @copyright Copyright (c) 2017 Supercool
- * @link      http://supercooldesign.co.uk
+ * @author    Supercool Ltd
+ * @copyright Copyright (c) 2018 Supercool Ltd
+ * @link      http://www.supercooldesign.co.uk/
  * @package   TableMaker
  * @since     1.0.0
  */
@@ -14,7 +15,8 @@
 
 {% import "_includes/forms" as forms %}
 
-{% do view.registerAssetBundle("supercool\\tablemaker\\assetbundles\\tablemakerfield\\TableMakerFieldAsset") %}
+{% do view.registerAssetBundle("supercool\\tablemaker\\assetbundles\\field\\FieldAsset") %}
+
 
 <h2>Columns Table</h2>
 
@@ -61,5 +63,3 @@
   name: 'rowsAddRowLabel',
   value: field['rowsAddRowLabel'],
 }) }}
-
-
