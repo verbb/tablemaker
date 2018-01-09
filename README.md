@@ -2,7 +2,7 @@
 
 A user-definable table field type for Craft CMS
 
-![Screenshot](resources/img/plugin-logo.png)
+![Screenshot](resources/img/icon.svg)
 
 ## Requirements
 
