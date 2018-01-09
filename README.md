@@ -6,7 +6,7 @@ A user-definable table field type for Craft CMS
 
 ## Requirements
 
-This plugin requires Craft CMS 3.0.0-beta.23 or later.
+This plugin requires Craft CMS 3.0.0 RC or later.
 
 ## Installation
 
@@ -24,20 +24,14 @@ To install the plugin, follow these instructions.
 
 ## Table Maker Overview
 
--Insert text here-
+A field type that enables your users to create their own columns, controlling the width and alignment of each:
 
-## Configuring Table Maker
+![columns](http://s3-eu-west-1.amazonaws.com/supercoolplugins/Table-Maker/columns.jpg)
 
--Insert text here-
+They can then fill in the data like a normal Table field and access both the columns and rows in Twig:
 
-## Using Table Maker
+![rows](http://s3-eu-west-1.amazonaws.com/supercoolplugins/Table-Maker/rows.jpg)
 
--Insert text here-
-
-## Table Maker Roadmap
-
-Some things to do, and ideas for potential features:
-
-* Release it
+See the [docs](http://plugins.supercooldesign.co.uk/plugin/table-maker/docs) for more details on installation and templating.
 
 Brought to you by [Supercool Ltd](http://www.supercooldesign.co.uk/)
