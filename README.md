@@ -2,8 +2,6 @@
 
 A user-definable table field type for Craft CMS
 
-![Screenshot](resources/img/icon.svg)
-
 ## Requirements
 
 This plugin requires Craft CMS 3.0.0 RC or later.
