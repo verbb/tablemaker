@@ -183,7 +183,7 @@ class TableMakerField extends Field
     public function serializeValue($value, ElementInterface $element = null)
     {
 
-        if ( is_array($value['rows']) )
+        if ( !empty($value['rows']) && is_array($value['rows']) )
         {
             // drop keys from the rows array
             $value['rows'] = array_values($value['rows']);
@@ -198,7 +198,7 @@ class TableMakerField extends Field
             }
         }
         // drop keys from the columns array
-        if ( is_array($value['columns']) )
+        if ( !empty($value['columns']) && is_array($value['columns']) )
         {
             $value['columns'] = array_values($value['columns']);
         }
