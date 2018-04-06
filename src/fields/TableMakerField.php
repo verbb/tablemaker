@@ -165,6 +165,7 @@ class TableMakerField extends Field
 
         return $value;
     }
+    
 
     /**
      * Modifies an element query.
@@ -342,7 +343,7 @@ class TableMakerField extends Field
                 'name'              => 'rows',
                 'cols'              => $columns,
                 'rows'              => $rows,
-                'addRowLabel'       => $fieldSettings['rowsAddRowLabel'] ? Craft::t($fieldSettings['rowsAddRowLabel']) : Craft::t('tablemaker', 'Add a row'),
+                'addRowLabel'       => $fieldSettings['rowsAddRowLabel'] ? Craft::t('tablemaker', $fieldSettings['rowsAddRowLabel']) : Craft::t('tablemaker', 'Add a row'),
                 'initJs'            => false
             )
         ));

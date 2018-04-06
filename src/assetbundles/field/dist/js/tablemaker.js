@@ -206,7 +206,6 @@ Craft.TableMaker = Garnish.Base.extend(
              '</thead>' +
              '<tbody>';
 
-
         // merge in the current rows content
         for (var rowId in this.rows)
         {
@@ -215,11 +214,12 @@ Craft.TableMaker = Garnish.Base.extend(
             }
 
             var myRow = Craft.EditableTable.createRow(rowId, this.columns, this.rowsTableName, this.rows[rowId]).get(0);
-            // We are doing this as Craft is setting textarea value in a value attribute instead of within textarea tags
+            // We are doing this as Craft is not setting the value of textarea
+            var self = this;
             $.each($(myRow).find('td textarea'), function(index, value) {
-                if ( $(value).attr('value') !== "" )
+                if ( self.rows[rowId]['col'+index] !== "" ) 
                 {
-                    $(value).text($(value).attr('value'));
+                    $(value).text(self.rows[rowId]['col'+index]);
                 }
             });
 
