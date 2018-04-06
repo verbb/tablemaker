@@ -2,7 +2,7 @@
     "name": "supercool/tablemaker",
     "description": "A user-definable table field type for Craft CMS",
     "type": "craft-plugin",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "keywords": [
         "craft",
         "cms",
