@@ -108,8 +108,16 @@ class TableMakerField extends Field
     public function normalizeValue($value, ElementInterface $element = null)
     {
 
-        $value = Json::decode($value);
-        
+        if ( !is_array($value) )
+        {
+            $value = Json::decode($value);
+        }
+
+        if ( !isset($value['rows']) )
+        {
+            $value['rows'] = [];
+        }
+
         // make an html table
         $html = '
             <table>
@@ -117,7 +125,7 @@ class TableMakerField extends Field
                     <tr>
         ';
 
-        if ( ! empty($value['columns']) )
+        if ( !empty($value['columns']) )
         {
             foreach ($value['columns'] as $col)
             {
@@ -133,7 +141,7 @@ class TableMakerField extends Field
 
         ';
 
-        if ( ! empty($value['rows']) )
+        if ( !empty($value['rows']) )
         {
 
             foreach ($value['rows'] as $row)
@@ -187,6 +195,7 @@ class TableMakerField extends Field
         {
             // drop keys from the rows array
             $value['rows'] = array_values($value['rows']);
+
             // loop each row
             foreach ($value['rows'] as &$row)
             {
@@ -197,7 +206,8 @@ class TableMakerField extends Field
                 }
             }
         }
-        // drop keys from the columns array
+
+        // // drop keys from the columns array
         if ( !empty($value['columns']) && is_array($value['columns']) )
         {
             $value['columns'] = array_values($value['columns']);
@@ -235,16 +245,24 @@ class TableMakerField extends Field
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
+        $view = Craft::$app->getView();
+
         // Register our asset bundle
-        Craft::$app->getView()->registerAssetBundle(FieldAsset::class);
+        $view->registerAssetBundle(FieldAsset::class);
 
         $name = $this->handle;
+
+        $columnsInput = $name.'[columns]';
+        $rowsInput    = $name.'[rows]';
+
+        $columnsInputId = $name.'-columns';
+        $rowsInputId = $name.'-rows';
 
         // make input
         $input = '<input class="table-maker-field" type="hidden" name="'.$name.'" value="">';
         
         // get columns from db or fall back to default
-        if ( ! empty($value['columns']) )
+        if ( !empty($value['columns']) )
         {
             foreach ($value['columns'] as $key => $val) {
                 $columns['col'.$key] = array(
@@ -267,8 +285,9 @@ class TableMakerField extends Field
             );
         }
 
+
         // get rows from db or fall back to default
-        if ( ! empty($value['rows']) )
+        if ( !empty($value['rows']) )
         {
             // walk down the rows and cells appending 'row' to the rows' keys
             // and 'col' to the cells' keys
@@ -280,7 +299,7 @@ class TableMakerField extends Field
         }
         else
         {
-            $rows = array('row1' => array());
+            $rows = array('row0' => array());
         }
 
         // prep col settings
@@ -300,34 +319,33 @@ class TableMakerField extends Field
                 'class' => 'thin',
                 'type' => 'select',
                 'options' => array(
-                    'left' => Craft::t('tablemaker', 'Left'),
+                    'left'   => Craft::t('tablemaker', 'Left'),
                     'center' => Craft::t('tablemaker', 'Center'),
-                    'right' => Craft::t('tablemaker', 'Right')
+                    'right'  => Craft::t('tablemaker', 'Right')
                 )
             )
         );
 
         // init the js
-        Craft::$app->getView()->registerJs('new Craft.TableMaker(' .
-            '"'.Craft::$app->getView()->namespaceInputId($name).'", ' .
-            '"'.Craft::$app->getView()->namespaceInputId('columns').'", ' .
-            '"'.Craft::$app->getView()->namespaceInputId('rows').'", ' .
-            '"'.Craft::$app->getView()->namespaceInputName('columns').'", ' .
-            '"'.Craft::$app->getView()->namespaceInputName('rows').'", ' .
-            Json::encode($columns).', ' .
-            Json::encode($rows).', ' .
-            Json::encode($columnSettings) .
+        $view->registerJs('new Craft.TableMaker(' .
+            Json::encode($view->namespaceInputId($name), JSON_UNESCAPED_UNICODE).', ' .
+            Json::encode($view->namespaceInputId($columnsInputId), JSON_UNESCAPED_UNICODE).', ' .
+            Json::encode($view->namespaceInputId($rowsInputId), JSON_UNESCAPED_UNICODE).', ' .
+            Json::encode($view->namespaceInputName($columnsInput), JSON_UNESCAPED_UNICODE).', ' .
+            Json::encode($view->namespaceInputName($rowsInput), JSON_UNESCAPED_UNICODE).', ' .
+            Json::encode($columns, JSON_UNESCAPED_UNICODE).', ' .
+            Json::encode($rows, JSON_UNESCAPED_UNICODE).', ' .
+            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) .
         ');');
-
 
         // render the two tables
         $fieldSettings = $this->getSettings();
-        $columnsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField', array(
+        $columnsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', array(
             array(
                 'label' => $fieldSettings['columnsLabel'] ? Craft::t('tablemaker', $fieldSettings['columnsLabel']) : Craft::t('tablemaker', 'Table Columns'),
-                'instructions'  => $fieldSettings['columnsInstructions'] ? Craft::t('tablemaker', $fieldSettings['columnsInstructions']) : Craft::t('tablemaker', 'tablemaker', 'Define the columns your table should have.'),
-                'id'    => 'columns',
-                'name'  => 'columns',
+                'instructions'  => $fieldSettings['columnsInstructions'] ? Craft::t('tablemaker', $fieldSettings['columnsInstructions']) : Craft::t('tablemaker', 'Define the columns your table should have.'),
+                'id'    => $columnsInputId,
+                'name'  => $columnsInput,
                 'cols'  => $columnSettings,
                 'rows'  => $columns,
                 'addRowLabel'   => $fieldSettings['columnsAddRowLabel'] ? Craft::t('tablemaker', $fieldSettings['columnsAddRowLabel']) : Craft::t('tablemaker', 'Add a column'),
@@ -335,12 +353,12 @@ class TableMakerField extends Field
             )
         ));
 
-        $rowsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField', array(
+        $rowsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', array(
             array(
                 'label' => $fieldSettings['rowsLabel'] ? Craft::t('tablemaker', $fieldSettings['rowsLabel']) : Craft::t('tablemaker', 'Table Content'),
                 'instructions'  => $fieldSettings['rowsInstructions'] ? Craft::t('tablemaker', $fieldSettings['rowsInstructions']) : Craft::t('tablemaker', 'Input the content of your table.'),
-                'id'                => 'rows',
-                'name'              => 'rows',
+                'id'                => $rowsInputId,
+                'name'              => $rowsInput,
                 'cols'              => $columns,
                 'rows'              => $rows,
                 'addRowLabel'       => $fieldSettings['rowsAddRowLabel'] ? Craft::t('tablemaker', $fieldSettings['rowsAddRowLabel']) : Craft::t('tablemaker', 'Add a row'),
@@ -349,7 +367,7 @@ class TableMakerField extends Field
         ));
 
         return $input . $columnsField . $rowsField;
-
     }
+
 
 }
