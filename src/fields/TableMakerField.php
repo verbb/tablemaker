@@ -125,9 +125,11 @@ class TableMakerField extends Field
                     <tr>
         ';
 
-        if ( !empty($value['columns']) )
+        // Disregard bad keys...
+        $columns = empty($value['columns']) ? [] : array_values($value['columns']);
+        if ( !empty($columns) )
         {
-            foreach ($value['columns'] as $col)
+            foreach ($columns as $col)
             {
                 $html .= '<th align="' . $col['align'] . '" width="' . $col['width'] . '">' . $col['heading'] . '</th>';
             }
@@ -151,7 +153,7 @@ class TableMakerField extends Field
 
                 $i = 0;
                 foreach ($row as $cell) {
-                    $align = $value['columns']['col'.$i]['align'] ?? $value['columns'][$i]['align'];
+                    $align = $columns[$i]['align'];
                     $html .= '<td align="' . $align . '">' . $cell . '</td>';
                     $i++;
                 }
