@@ -189,8 +189,7 @@ Craft.TableMaker = Garnish.Base.extend(
         this.getDataFromTables();
 
         // prep table
-        var tableHtml = '<table id="'+this.rowsTableId+'" class="editable shadow-box">' +
-             '<thead>' +
+        var tableHtml = '<thead>' +
                  '<tr>';
 
         // re-do columns of rowsTable
@@ -203,8 +202,14 @@ Craft.TableMaker = Garnish.Base.extend(
 
         tableHtml += '<th class="header" colspan="2"></th>' +
                  '</tr>' +
-             '</thead>' +
-             '<tbody>';
+             '</thead>';
+
+        var $table = $('<table/>', {
+                id: this.rowsTableId,
+                'class': 'editable shadow-box'
+            }).append(tableHtml);
+
+        var $tbody = $('<tbody/>').appendTo($table);
 
         // merge in the current rows content
         for (var rowId in this.rows)
@@ -213,24 +218,11 @@ Craft.TableMaker = Garnish.Base.extend(
                 continue;
             }
 
-            var myRow = Craft.EditableTable.createRow(rowId, this.columns, this.rowsTableName, this.rows[rowId]).get(0);
-            // We are doing this as Craft is not setting the value of textarea
-            var self = this;
-            $.each($(myRow).find('td textarea'), function(index, value) {
-                if ( self.rows[rowId]['col'+index] !== "" ) 
-                {
-                    $(value).text(self.rows[rowId]['col'+index]);
-                }
-            });
-
-            tableHtml += myRow.outerHTML;
+            Craft.EditableTable.createRow(rowId, this.columns, this.rowsTableName, this.rows[rowId]).appendTo($tbody);
         }
 
-        tableHtml += '</tbody>' +
-            '</table>';
 
-
-        this.rowsTable.$table.replaceWith(tableHtml);
+        this.rowsTable.$table.replaceWith($table);
         this.rowsTable.destroy();
         delete this.rowsTable;
         this.initRowsTable(this.columns);

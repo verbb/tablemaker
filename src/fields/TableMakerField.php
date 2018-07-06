@@ -150,8 +150,8 @@ class TableMakerField extends Field
                 $html .= '<tr>';
 
                 $i = 0;
-                foreach ($row as $cell) {
-                    $align = $value['columns']['col'.$i]['align'] ?? $value['columns'][$i]['align'];
+                foreach ($row as $key => $cell) {
+                    $align = $value['columns'][$key]['align'] ?? $value['columns'][$i]['align'];
                     $html .= '<td align="' . $align . '">' . $cell . '</td>';
                     $i++;
                 }
