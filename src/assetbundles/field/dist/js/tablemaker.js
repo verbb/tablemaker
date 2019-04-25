@@ -196,7 +196,7 @@ Craft.TableMaker = Garnish.Base.extend(
         for (var colId in this.columns)
         {
             // force type of col to be textual
-            this.columns[colId].type = 'singleline';
+            this.columns[colId].type = 'multiline';
             tableHtml += '<th scope="col" class="header">'+(this.columns[colId].heading ? this.columns[colId].heading : '&nbsp;')+'</th>';
         }
 

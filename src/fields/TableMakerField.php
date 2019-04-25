@@ -76,7 +76,7 @@ class TableMakerField extends Field
 
 
     /**
-     * Returns the column type that this field should get within the content table.
+     * Returns the column   that this field should get within the content table.
      *
      * This method will only be called if [[hasContentColumn()]] returns true.
      *
@@ -173,7 +173,7 @@ class TableMakerField extends Field
 
         return $value;
     }
-    
+
 
     /**
      * Modifies an element query.
@@ -260,7 +260,7 @@ class TableMakerField extends Field
 
         // make input
         $input = '<input class="table-maker-field" type="hidden" name="'.$name.'" value="">';
-        
+
         // get columns from db or fall back to default
         if ( !empty($value['columns']) )
         {
@@ -269,7 +269,7 @@ class TableMakerField extends Field
                     'heading' => $val['heading'],
                     'align' => $val['align'],
                     'width' => $val['width'],
-                    'type' => 'singleline'
+                    'type' => 'multiline'
                 );
             }
         }
@@ -280,7 +280,7 @@ class TableMakerField extends Field
                     'heading' => '',
                     'align' => '',
                     'width' => '',
-                    'type' => 'singleline'
+                    'type' => 'multiline'
                 )
             );
         }
@@ -306,12 +306,12 @@ class TableMakerField extends Field
         $columnSettings = array(
             'heading' => array(
                 'heading' => Craft::t('tablemaker', 'Heading'),
-                'type' => 'singleline'
+                'type' => 'multiline'
             ),
             'width' => array(
                 'heading' => Craft::t('tablemaker', 'Width'),
                 'class' => 'code',
-                'type' => 'singleline',
+                'type' => 'multiline',
                 'width' => 50
             ),
             'align' => array(
