@@ -218,6 +218,36 @@ class TableMakerField extends Field
 
 
     /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        return new ObjectType([
+            'name' => $this->handle,
+            'fields' => [
+                'rows' => [
+                    'type' => Type::listOf(Type::listOf(Type::string()))
+                ],
+                'columns' => [
+                    'type' => Type::listOf(new ObjectType([
+                        'name' => $this->handle . '_column',
+                        'fields' => [
+                            'heading' => Type::string(),
+                            'width' => Type::string(),
+                            'align' => Type::string(),
+                        ],
+                    ])),
+                ],
+                'table' => [
+                    'type' => Type::string()
+                ]
+            ]
+        ]);
+    }
+
+
+    /**
      * Returns the component’s settings HTML.
      *
      * @return string|null
