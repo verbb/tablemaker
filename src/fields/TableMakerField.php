@@ -11,18 +11,17 @@
 
 namespace supercool\tablemaker\fields;
 
-use supercool\tablemaker\TableMaker;
 use supercool\tablemaker\assetbundles\field\FieldAsset;
 
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\helpers\Db;
 use yii\db\Schema;
 use craft\helpers\Json;
 use craft\helpers\Template;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
+use craft\gql\GqlEntityRegistry;
 
 /**
  * @author    Supercool Ltd
@@ -225,8 +224,10 @@ class TableMakerField extends Field
      */
     public function getContentGqlType()
     {
-        return new ObjectType([
-            'name' => $this->handle,
+        $typeName = $this->handle . '_TableMakerField';
+
+        $tableMakerType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new ObjectType([
+            'name' => $typeName,
             'fields' => [
                 'rows' => [
                     'type' => Type::listOf(Type::listOf(Type::string()))
@@ -245,7 +246,9 @@ class TableMakerField extends Field
                     'type' => Type::string()
                 ]
             ]
-        ]);
+        ]));
+
+        return $tableMakerType;
     }
 
 
