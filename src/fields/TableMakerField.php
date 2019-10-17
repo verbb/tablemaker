@@ -16,6 +16,7 @@ use supercool\tablemaker\assetbundles\field\FieldAsset;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\gql\TypeLoader;
 use yii\db\Schema;
 use craft\helpers\Json;
 use craft\helpers\Template;
@@ -247,6 +248,8 @@ class TableMakerField extends Field
                 ]
             ]
         ]));
+
+        TypeLoader::registerType($typeName, function () use ($tableMakerType) { return $tableMakerType ;});
 
         return $tableMakerType;
     }
