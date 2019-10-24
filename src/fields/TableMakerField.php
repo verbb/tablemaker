@@ -226,6 +226,16 @@ class TableMakerField extends Field
     public function getContentGqlType()
     {
         $typeName = $this->handle . '_TableMakerField';
+        $columnTypeName = 'TableMakerFieldColumn';
+
+        $columnType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($columnTypeName, new ObjectType([
+            'name' => $columnTypeName,
+            'fields' => [
+                'heading' => Type::string(),
+                'width' => Type::string(),
+                'align' => Type::string(),
+            ],
+        ]));
 
         $tableMakerType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new ObjectType([
             'name' => $typeName,
@@ -234,22 +244,13 @@ class TableMakerField extends Field
                     'type' => Type::listOf(Type::listOf(Type::string()))
                 ],
                 'columns' => [
-                    'type' => Type::listOf(new ObjectType([
-                        'name' => $this->handle . '_column',
-                        'fields' => [
-                            'heading' => Type::string(),
-                            'width' => Type::string(),
-                            'align' => Type::string(),
-                        ],
-                    ])),
+                    'type' => Type::listOf($columnType),
                 ],
                 'table' => [
                     'type' => Type::string()
                 ]
             ]
         ]));
-
-        TypeLoader::registerType($typeName, function () use ($tableMakerType) { return $tableMakerType ;});
 
         return $tableMakerType;
     }
