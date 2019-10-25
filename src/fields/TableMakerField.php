@@ -226,7 +226,7 @@ class TableMakerField extends Field
     public function getContentGqlType()
     {
         $typeName = $this->handle . '_TableMakerField';
-        $columnTypeName = 'TableMakerFieldColumn';
+        $columnTypeName = $typeName . '_column';
 
         $columnType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($columnTypeName, new ObjectType([
             'name' => $columnTypeName,
