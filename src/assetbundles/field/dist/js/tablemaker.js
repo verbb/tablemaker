@@ -71,16 +71,20 @@ Craft.TableMaker = Garnish.Base.extend(
     columns: null,
     rows: null,
     columnSettings: null,
+    columnOptions: null,
     fieldId: null,
 
     columnsTable: null,
     rowsTable: null,
 
+    dropdownSettingsHtml: null,
+    dropdownSettingsCols: null,
+
     $columnsTable: null,
     $rowsTable: null,
     $input: null,
 
-    init: function(fieldId, columnsTableId, rowsTableId, columnsTableName, rowsTableName, columns, rows, columnSettings)
+    init: function(fieldId, columnsTableId, rowsTableId, columnsTableName, rowsTableName, columns, rows, columnSettings, dropdownSettingsHtml, dropdownSettingsCols)
     {
 
         this.columnsTableId = columnsTableId;
@@ -99,9 +103,23 @@ Craft.TableMaker = Garnish.Base.extend(
         this.fieldId = fieldId
 
 
+        this.dropdownSettingsHtml = dropdownSettingsHtml;
+        this.dropdownSettingsCols = dropdownSettingsCols;
+
+
         this.$columnsTable = $('#'+this.columnsTableId);
         this.$rowsTable = $('#'+this.rowsTableId);
         this.$input = $('#'+fieldId+'-field').find('input.table-maker-field');
+
+        //load columnOptions
+        this.columnOptions = [];
+        for(var colKey in columns)
+        {
+            if(columns[colKey].type === 'select' && columns[colKey].hasOwnProperty('options'))
+            {
+                this.columnOptions[colKey] = columns[colKey].options;
+            }
+        }
 
 
         // set up columns table
@@ -155,8 +173,11 @@ Craft.TableMaker = Garnish.Base.extend(
     initColumnsTable: function()
     {
 
-        this.columnsTable = new Craft.EditableTable(this.columnsTableId, this.columnsTableName, this.columnSettings, {
+        this.columnsTable = new ColumnTable(this, this.columnsTableId, this.columnsTableName, this.columnSettings, {
             rowIdPrefix: 'col',
+            defaultValues: {
+                type: 'singleline'
+            },
             onAddRow: $.proxy(this, 'onColumnsAddRow'),
             onDeleteRow: $.proxy(this, 'reconstructRowsTable')
         });
@@ -195,8 +216,6 @@ Craft.TableMaker = Garnish.Base.extend(
         // re-do columns of rowsTable
         for (var colId in this.columns)
         {
-            // force type of col to be textual
-            this.columns[colId].type = 'singleline';
             tableHtml += '<th scope="col" class="header">'+(this.columns[colId].heading ? this.columns[colId].heading : '&nbsp;')+'</th>';
         }
 
@@ -249,6 +268,12 @@ Craft.TableMaker = Garnish.Base.extend(
 
         }
 
+        //add in options for dropdowns
+        for(var colKey in this.columnOptions)
+        {
+            columns[colKey].options = this.columnOptions[colKey];
+        }
+
         this.columns = columns;
 
         if ( ! $.isEmptyObject(rows) )
@@ -260,6 +285,26 @@ Craft.TableMaker = Garnish.Base.extend(
                 rows = rows[key];
             }
 
+        }
+
+        //convert date cells JS date object
+        var dateColIds = [];
+        for(var colKey in this.columns)
+        {
+            if(this.columns[colKey].type === 'date' || this.columns[colKey].type === 'time') dateColIds.push(colKey);
+        }
+        if(dateColIds.length)
+        {
+            for(var rowKey in rows)
+            {
+                var row = rows[rowKey];
+                for(var i = 0; i < dateColIds.length; i++)
+                {
+                    var dateArray = rows[rowKey][dateColIds[i]];
+                    var date = new Date(dateArray.date); //add check for time
+                    rows[rowKey][dateColIds[i]] = date;
+                }
+            }
         }
 
         this.rows = rows;
@@ -279,6 +324,169 @@ Craft.TableMaker = Garnish.Base.extend(
 
         this.$input.val(JSON.stringify(dataBlob));
     }
+
+});
+
+var ColumnTable = Craft.EditableTable.extend({
+    fieldSettings: null,
+
+    init: function(fieldSettings, id, baseName, columns, settings) {
+        this.fieldSettings = fieldSettings;
+        this.base(id, baseName, columns, settings);
+    },
+
+    initialize: function() {
+        if (!this.base()) {
+            return false;
+        }
+
+        return true;
+    },
+
+    createRowObj: function($tr) {
+        return new ColumnTable.Row(this, $tr);
+    }
+});
+
+ColumnTable.Row = Craft.EditableTable.Row.extend({
+    $typeSelect: null,
+    $settingsBtn: null,
+
+    options: [],
+    settingsModal: null,
+    optionsTable: null,
+    optionsInput: null,
+
+    init: function(table, tr) {
+        this.base(table, tr);
+
+        if (this.table.fieldSettings.columns[this.id]) {
+            this.options = this.table.fieldSettings.columns[this.id].options || [];
+        }
+
+        var $typeCell = this.$tr.find('td:nth-child(4)');
+        var $typeSelectContainer = $typeCell.find('.select');
+        this.$settingsBtn = $typeCell.find('.settings');
+
+        if (!this.$settingsBtn.length) {
+            this.$settingsBtn = $('<a/>', {
+                'class': 'settings light invisible',
+                role: 'button',
+                'data-icon': 'settings'
+            });
+            $('<div/>', {'class': 'flex flex-nowrap'})
+                .appendTo($typeCell)
+                .append($typeSelectContainer)
+                .append(this.$settingsBtn);
+        }
+
+        this.$typeSelect = $typeSelectContainer.find('select');
+
+        if (this.$typeSelect.val() === 'select') {
+            this.$settingsBtn.removeClass('invisible');
+        }
+        this.optionsInput = $('<input/>', {
+            type: 'hidden',
+            name: this.table.fieldSettings.columnsTableName + '[' + this.id + '][options]'
+        });
+        this.optionsInput.appendTo(this.$tr.closest('form'));
+        this.updateColumnDataWithOptions();
+
+        this.addListener(this.$typeSelect, 'change', 'handleTypeChange');
+        this.addListener(this.$settingsBtn, 'click', 'showSettingsModal');
+    },
+
+    deleteRow: function() {
+        this.optionsInput.remove();
+        this.optionsInput = null;
+        delete this.table.fieldSettings.columnOptions[this.id];
+        this.base();
+    },
+
+    handleTypeChange: function() {
+        if (this.$typeSelect.val() === 'select') {
+            this.$settingsBtn.removeClass('invisible');
+        } else {
+            this.$settingsBtn.addClass('invisible');
+        }
+
+        this.table.fieldSettings.reconstructRowsTable();
+    },
+
+    showSettingsModal: function(ev) {
+        if (!this.settingsModal) {
+            var id = 'dropdownsettingsmodal' + Math.floor(Math.random() * 1000000);
+            var $modal = $('<div/>', {'class': 'modal dropdownsettingsmodal'}).appendTo(Garnish.$bod);
+            var $body = $('<div/>', {'class': 'body'})
+                .appendTo($modal)
+                .html(this.table.fieldSettings.dropdownSettingsHtml.replace(/__ID__/g, id));
+
+            this.optionsTable = new Craft.EditableTable(id, '__NAME__', this.table.fieldSettings.dropdownSettingsCols, {
+                onAddRow: $.proxy(this, 'handleOptionsRowChange'),
+                onDeleteRow: $.proxy(this, 'handleOptionsRowChange')
+            });
+
+            if (this.options && this.options.length) {
+                var row;
+                for (var i = 0; i < this.options.length; i++) {
+                    row = this.optionsTable.addRow(false);
+                    row.$tr.find('.option-label textarea').val(this.options[i].label);
+                    row.$tr.find('.option-value textarea').val(this.options[i].value);
+                    row.$tr.find('.option-default input[type="checkbox"]').prop('checked', !!this.options[i].default);
+                }
+            } else {
+                this.optionsTable.addRow(false);
+            }
+
+            var $closeButton = $('<div/>', {
+                'class': 'btn submit',
+                role: 'button',
+                text: Craft.t('app', 'Done')
+            }).appendTo($body);
+
+            this.settingsModal = new Garnish.Modal($modal, {
+                onHide: $.proxy(this, 'handleSettingsModalHide')
+            });
+
+            this.addListener($closeButton, 'click', function() {
+                this.settingsModal.hide();
+            });
+        } else {
+            this.settingsModal.show();
+        }
+
+        setTimeout($.proxy(function() {
+            this.optionsTable.$tbody.find('textarea').first().trigger('focus')
+        }, this), 100);
+    },
+
+    handleOptionsRowChange: function() {
+        if (this.settingsModal) {
+            this.settingsModal.updateSizeAndPosition();
+        }
+    },
+
+    handleSettingsModalHide: function() {
+        this.options = [];
+        var $rows = this.optionsTable.$table.find('tbody tr');
+        for (var i = 0; i < $rows.length; i++) {
+            let $row  = $rows.eq(i);
+            this.options.push({
+                label: $row.find('.option-label textarea').val(),
+                value: $row.find('.option-value textarea').val(),
+                default: $row.find('.option-default input[type=checkbox]').prop('checked')
+            })
+        }
+
+        this.updateColumnDataWithOptions();
+
+        this.table.fieldSettings.reconstructRowsTable();
+    },
+
+    updateColumnDataWithOptions: function() {
+        this.table.fieldSettings.columnOptions[this.id] = this.options;
+        this.optionsInput.val(JSON.stringify(this.options));
+    },
 
 });
 
