@@ -172,9 +172,12 @@ class TableMakerField extends Field
 
         if ( !empty($value['columns']) )
         {
-            foreach ($value['columns'] as $col)
+            foreach ($value['columns'] as &$col)
             {
-                $html .= '<th align="' . $col['align'] . '" width="' . $col['width'] . '">' . $col['heading'] . '</th>';
+                $html .= '<th align="' . (isset($col['align']) ? $col['align'] : "left") . '" width="' . (isset($col['width']) ? $col['width'] : "") . '">' . (isset($col['heading']) ? $col['heading'] : "") . '</th>';
+                //json decode options array
+                if(isset($col['options']) && !is_array($col['options'])) $col['options'] = Json::decode($col['options']);
+                unset($col);
             }
         }
 
@@ -196,7 +199,7 @@ class TableMakerField extends Field
 
                 $i = 0;
                 foreach ($row as $key => $cell) {
-                    $type = $value['columns'][$key]['type'];
+                    $type = isset($value['columns'][$key]['type']) ? $value['columns'][$key]['type'] : "singleline";
                     $cell = $this->normalizeCellValue($type, $cell);
 
                     $align = $value['columns'][$key]['align'] ?? $value['columns'][$i]['align'];
@@ -313,6 +316,7 @@ class TableMakerField extends Field
         if ( !empty($value['columns']) )
         {
             foreach ($value['columns'] as $key => $val) {
+                $val['type'] = isset($val['type']) ? $val['type'] : "singleline";
                 $columns['col'.$key] = array(
                     'heading' => $val['heading'],
                     'align' => $val['align'],
@@ -325,6 +329,9 @@ class TableMakerField extends Field
                         $columns['col'.$key]['options'] = [];
                     } else if (is_string($val['options'])) {
                         $columns['col'.$key]['options'] = Json::decode($val['options']);
+                    }
+                    else {
+                        $columns['col'.$key]['options'] = $val['options'];
                     }
                 } else {
                     unset($columns['col'.$key]['options']);
