@@ -68,7 +68,7 @@ class TableMakerField extends Field
      *
      * @return array
      */
-    public function rules()
+    public function rules(): array
     {
         $rules = parent::rules();
         return $rules;
@@ -105,7 +105,7 @@ class TableMakerField extends Field
      *
      * @return mixed The prepared field value
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ElementInterface $element = null): mixed
     {
 
         if ( !is_array($value) )
@@ -188,7 +188,7 @@ class TableMakerField extends Field
      *
      * @return null|false `false` in the event that the method is sure that no elements are going to be found.
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue(mixed $value, ElementInterface $element = null): mixed
     {
 
         if ( !empty($value['rows']) && is_array($value['rows']) )
@@ -222,7 +222,7 @@ class TableMakerField extends Field
      *
      * @return string|null
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         // Render the settings template
         return Craft::$app->getView()->renderTemplate(
@@ -243,7 +243,7 @@ class TableMakerField extends Field
      *
      * @return string The input HTML.
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    public function getInputHtml(mixed $value, ElementInterface $element = null): string
     {
         $view = Craft::$app->getView();
 
@@ -340,33 +340,38 @@ class TableMakerField extends Field
 
         // render the two tables
         $fieldSettings = $this->getSettings();
-        $columnsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', array(
-            array(
-                'label' => $fieldSettings['columnsLabel'] ? Craft::t('tablemaker', $fieldSettings['columnsLabel']) : Craft::t('tablemaker', 'Table Columns'),
-                'instructions'  => $fieldSettings['columnsInstructions'] ? Craft::t('tablemaker', $fieldSettings['columnsInstructions']) : Craft::t('tablemaker', 'Define the columns your table should have.'),
-                'id'    => $columnsInputId,
-                'name'  => $columnsInput,
-                'cols'  => $columnSettings,
-                'rows'  => $columns,
-                'addRowLabel'   => $fieldSettings['columnsAddRowLabel'] ? Craft::t('tablemaker', $fieldSettings['columnsAddRowLabel']) : Craft::t('tablemaker', 'Add a column'),
-                'initJs'    => false
-            )
-        ));
 
-        $rowsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', array(
-            array(
-                'label' => $fieldSettings['rowsLabel'] ? Craft::t('tablemaker', $fieldSettings['rowsLabel']) : Craft::t('tablemaker', 'Table Content'),
-                'instructions'  => $fieldSettings['rowsInstructions'] ? Craft::t('tablemaker', $fieldSettings['rowsInstructions']) : Craft::t('tablemaker', 'Input the content of your table.'),
-                'id'                => $rowsInputId,
-                'name'              => $rowsInput,
-                'cols'              => $columns,
-                'rows'              => $rows,
-                'addRowLabel'       => $fieldSettings['rowsAddRowLabel'] ? Craft::t('tablemaker', $fieldSettings['rowsAddRowLabel']) : Craft::t('tablemaker', 'Add a row'),
-                'initJs'            => false
-            )
-        ));
+        $columnsField = $view->renderTemplate('_includes/forms/editableTable', [
+            'label'         => $fieldSettings['columnsLabel'] ? Craft::t('tablemaker', $fieldSettings['columnsLabel']) : Craft::t('tablemaker', 'Table Columns'),
+            'instructions'  => $fieldSettings['columnsInstructions'] ? Craft::t('tablemaker', $fieldSettings['columnsInstructions']) : Craft::t('tablemaker', 'Define the columns your table should have.'),
+            'id'            => $columnsInputId,
+            'name'          => $columnsInput,
+            'cols'          => $columnSettings,
+            'rows'          => $columns,
+            'static'        => false,
+            'allowAdd'      => true,
+            'allowDelete'   => true,
+            'allowReorder'  => true,
+            'addRowLabel'   => $fieldSettings['columnsAddRowLabel'] ? Craft::t('tablemaker', $fieldSettings['columnsAddRowLabel']) : Craft::t('tablemaker', 'Add a column'),
+            'initJs'        => false
+        ]);
 
-        return $input . $columnsField . $rowsField;
+        $rowsField = $view->renderTemplate('_includes/forms/editableTable', [
+            'label'             => $fieldSettings['rowsLabel'] ? Craft::t('tablemaker', $fieldSettings['rowsLabel']) : Craft::t('tablemaker', 'Table Content'),
+            'instructions'      => $fieldSettings['rowsInstructions'] ? Craft::t('tablemaker', $fieldSettings['rowsInstructions']) : Craft::t('tablemaker', 'Input the content of your table.'),
+            'id'                => $rowsInputId,
+            'name'              => $rowsInput,
+            'cols'              => $columns,
+            'rows'              => $rows,
+            'static'            => false,
+            'allowAdd'          => true,
+            'allowDelete'       => true,
+            'allowReorder'      => true,
+            'addRowLabel'       => $fieldSettings['rowsAddRowLabel'] ? Craft::t('tablemaker', $fieldSettings['rowsAddRowLabel']) : Craft::t('tablemaker', 'Add a row'),
+            'initJs'            => false
+        ]);
+
+        return $input . $columnsField . '<br />' . $rowsField;
     }
 
 

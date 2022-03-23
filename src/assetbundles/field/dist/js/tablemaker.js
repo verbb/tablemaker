@@ -157,6 +157,9 @@ Craft.TableMaker = Garnish.Base.extend(
 
         this.columnsTable = new Craft.EditableTable(this.columnsTableId, this.columnsTableName, this.columnSettings, {
             rowIdPrefix: 'col',
+            allowAdd: true,
+            allowDelete: true,
+            allowReorder: true,
             onAddRow: $.proxy(this, 'onColumnsAddRow'),
             onDeleteRow: $.proxy(this, 'reconstructRowsTable')
         });
@@ -172,6 +175,9 @@ Craft.TableMaker = Garnish.Base.extend(
 
         this.rowsTable = new Craft.EditableTable(this.rowsTableId, this.rowsTableName, this.columns, {
             rowIdPrefix: 'row',
+            allowAdd: true,
+            allowDelete: true,
+            allowReorder: true,
             onAddRow: $.proxy(this, 'onRowsAddRow'),
             onDeleteRow: $.proxy(this, 'makeDataBlob')
         });
