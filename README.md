@@ -4,7 +4,7 @@ A user-definable table field type for Craft CMS
 
 ## Requirements
 
-This plugin requires Craft CMS 3.0.0 RC or later.
+This plugin requires Craft CMS 3.0.0 or later.
 
 ## Installation
 
@@ -16,7 +16,7 @@ To install the plugin, follow these instructions.
 
 2. Then tell Composer to load the plugin:
 
-        composer require supercool/tablemaker
+        composer require verbb/tablemaker
 
 3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Table Maker.
 

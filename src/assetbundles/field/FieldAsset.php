@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2018 Supercool Ltd
  */
 
-namespace supercool\tablemaker\assetbundles\field;
+namespace verbb\tablemaker\assetbundles\field;
 
 use Craft;
 use craft\web\AssetBundle;
@@ -43,7 +43,7 @@ class FieldAsset extends AssetBundle
     public function init()
     {
         // define the path that your publishable resources live
-        $this->sourcePath = "@supercool/tablemaker/assetbundles/field/dist";
+        $this->sourcePath = "@verbb/tablemaker/assetbundles/field/dist";
 
         // define the dependencies
         $this->depends = [

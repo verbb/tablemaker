@@ -9,7 +9,7 @@
  * @copyright Copyright (c) 2018 Supercool Ltd
  */
 
-namespace supercool\tablemaker;
+namespace verbb\tablemaker;
 
 
 use Craft;
@@ -19,7 +19,7 @@ use craft\events\PluginEvent;
 use craft\services\Fields;
 use craft\events\RegisterComponentTypesEvent;
 
-use supercool\tablemaker\fields\TableMakerField;
+use verbb\tablemaker\fields\TableMakerField;
 
 use yii\base\Event;
 
@@ -36,6 +36,8 @@ class TableMaker extends Plugin
 
     public static $plugin;
     
+    public $schemaVersion = '2.0.0';
+
 
     // Public Methods
     // =========================================================================

@@ -9,10 +9,10 @@
  * @copyright Copyright (c) 2018 Supercool Ltd
  */
 
-namespace supercool\tablemaker\fields;
+namespace verbb\tablemaker\fields;
 
-use supercool\tablemaker\TableMaker;
-use supercool\tablemaker\assetbundles\field\FieldAsset;
+use verbb\tablemaker\TableMaker;
+use verbb\tablemaker\assetbundles\field\FieldAsset;
 
 use Craft;
 use craft\base\ElementInterface;
