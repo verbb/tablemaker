@@ -9,6 +9,9 @@ use craft\services\Plugins;
 
 class m190412_182837_update_craft2_fieldtype extends Migration
 {
+    // Public Methods
+    // =========================================================================
+
     public function safeUp()
     {
         echo "    > Updating Table Maker field type...\n";

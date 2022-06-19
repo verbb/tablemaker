@@ -8,6 +8,9 @@ use craft\db\Migration;
 
 class m220604_000000_verbb_migration extends Migration
 {
+    // Public Methods
+    // =========================================================================
+
     public function safeUp()
     {
         $this->update('{{%fields}}', ['type' => TableMakerField::class], ['type' => 'supercool\tablemaker\fields\TableMakerField']);

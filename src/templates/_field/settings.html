@@ -1,0 +1,49 @@
+{% import '_includes/forms' as forms %}
+
+{% do view.registerAssetBundle('verbb\\tablemaker\\assetbundles\\FieldAsset') %}
+
+<h2>{{ 'Columns Table' | t('tablemaker') }}</h2>
+
+{{ forms.textField({
+    label: 'Label' | t('tablemaker'),
+    instructions: 'The column label.' | t('tablemaker'),
+    name: 'columnsLabel',
+    value: field.columnsLabel,
+}) }}
+
+{{ forms.textareaField({
+    label: 'Instructions' | t('tablemaker'),
+    instructions: 'The column instructions.' | t('tablemaker'),
+    name: 'columnsInstructions',
+    value: field.columnsInstructions,
+}) }}
+
+{{ forms.textField({
+    label: 'Add column label' | t('tablemaker'),
+    instructions: 'The "Add new column" button label.' | t('tablemaker'),
+    name: 'columnsAddRowLabel',
+    value: field.columnsAddRowLabel,
+}) }}
+
+<h2>{{ 'Rows Table' | t('tablemaker') }}</h2>
+
+{{ forms.textField({
+    label: 'Label' | t('tablemaker'),
+    instructions: 'The row label.' | t('tablemaker'),
+    name: 'rowsLabel',
+    value: field.rowsLabel,
+}) }}
+
+{{ forms.textareaField({
+    label: 'Instructions' | t('tablemaker'),
+    instructions: 'The row instructions.' | t('tablemaker'),
+    name: 'rowsInstructions',
+    value: field.rowsInstructions,
+}) }}
+
+{{ forms.textField({
+    label: 'Add row label' | t('tablemaker'),
+    instructions: 'The "Add new row" button label.' | t('tablemaker'),
+    name: 'rowsAddRowLabel',
+    value: field.rowsAddRowLabel,
+}) }}

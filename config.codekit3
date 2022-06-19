@@ -113,6 +113,12 @@
       "oAP" : "\/src\/assetbundles",
       "oF" : 0
     },
+    "\/src\/base" : {
+      "ft" : 65536,
+      "oA" : 1,
+      "oAP" : "\/src\/base",
+      "oF" : 0
+    },
     "\/src\/fields" : {
       "ft" : 65536,
       "oA" : 1,
@@ -135,6 +141,38 @@
       "oAP" : "\/src\/migrations",
       "oF" : 0
     },
+    "\/src\/resources\/dist" : {
+      "ft" : 65536,
+      "oA" : 1,
+      "oAP" : "\/src\/resources\/dist",
+      "oF" : 0
+    },
+    "\/src\/resources\/src\/js\/tablemaker.js" : {
+      "bF" : 0,
+      "ft" : 64,
+      "ma" : 1,
+      "mi" : 1,
+      "oA" : 0,
+      "oAP" : "\/src\/resources\/dist\/js\/tablemaker.js",
+      "oF" : 0,
+      "sC" : 0,
+      "tS" : 0
+    },
+    "\/src\/resources\/src\/scss\/tablemaker.scss" : {
+      "aP" : 1,
+      "bl" : 0,
+      "co" : 0,
+      "dP" : 10,
+      "ec" : 1,
+      "ft" : 4,
+      "ma" : 0,
+      "oA" : 0,
+      "oAP" : "\/src\/resources\/dist\/css\/tablemaker.css",
+      "oF" : 0,
+      "oS" : 3,
+      "pg" : 0,
+      "sct" : 1
+    },
     "\/src\/TableMaker.php" : {
       "cB" : 0,
       "ft" : 8192,
@@ -147,12 +185,6 @@
       "ft" : 65536,
       "oA" : 1,
       "oAP" : "\/src\/templates",
-      "oF" : 0
-    },
-    "\/src\/translations" : {
-      "ft" : 65536,
-      "oA" : 1,
-      "oAP" : "\/src\/translations",
       "oF" : 0
     }
   },
