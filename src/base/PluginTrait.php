@@ -1,8 +1,6 @@
 <?php
 namespace verbb\tablemaker\base;
 
-use verbb\cloner\Cloner;
-
 use Craft;
 
 use yii\log\Logger;
