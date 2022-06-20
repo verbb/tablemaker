@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.1 - 2022-06-20
+
+### Added
+- Add Craft 2 migration (thanks @jamesmacwhite).
+- New icon.
+
 ## 3.0.0 - 2022-06-04
 
 ### Changed
