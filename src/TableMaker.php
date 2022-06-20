@@ -16,7 +16,7 @@ class TableMaker extends Plugin
     // Properties
     // =========================================================================
     
-    public string $schemaVersion = '2.0.0';
+    public string $schemaVersion = '3.0.0';
 
 
     // Traits
