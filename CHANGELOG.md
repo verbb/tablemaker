@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.0.1 - 2022-06-21
+
+### Changed
+- Now requires Table Maker `3.0.0` in order to update from Craft 3.
+
+### Removed
+- Removed Craft 2 migration.
+
 ## 4.0.0 - 2022-06-20
 
 ### Changed

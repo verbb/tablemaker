@@ -2,7 +2,7 @@
     "name": "verbb/tablemaker",
     "description": "A user-definable table field type for Craft CMS",
     "type": "craft-plugin",
-    "version": "4.0.0",
+    "version": "4.0.1",
     "keywords": [
         "craft",
         "cms",
