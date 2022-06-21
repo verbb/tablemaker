@@ -17,6 +17,7 @@ class TableMaker extends Plugin
     // =========================================================================
     
     public string $schemaVersion = '3.0.0';
+    public string $minVersionRequired = '3.0.0';
 
 
     // Traits
