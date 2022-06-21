@@ -7,6 +7,7 @@ use verbb\tablemaker\assetbundles\FieldAsset;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\Template;
@@ -210,7 +211,7 @@ class TableMakerField extends Field
         ');');
 
         $fieldSettings = $this->getSettings();
-        $columnsField = $view->renderTemplate('_includes/forms/editableTable', [
+        $columnsField = Cp::editableTableFieldHtml([
             'label' => $fieldSettings['columnsLabel'] ? Craft::t('tablemaker', $fieldSettings['columnsLabel']) : Craft::t('tablemaker', 'Table Columns'),
             'instructions' => $fieldSettings['columnsInstructions'] ? Craft::t('tablemaker', $fieldSettings['columnsInstructions']) : Craft::t('tablemaker', 'Define the columns your table should have.'),
             'id' => $columnsInputId,
@@ -225,7 +226,7 @@ class TableMakerField extends Field
             'initJs' => false,
         ]);
 
-        $rowsField = $view->renderTemplate('_includes/forms/editableTable', [
+        $rowsField = Cp::editableTableFieldHtml([
             'label' => $fieldSettings['rowsLabel'] ? Craft::t('tablemaker', $fieldSettings['rowsLabel']) : Craft::t('tablemaker', 'Table Content'),
             'instructions' => $fieldSettings['rowsInstructions'] ? Craft::t('tablemaker', $fieldSettings['rowsInstructions']) : Craft::t('tablemaker', 'Input the content of your table.'),
             'id' => $rowsInputId,
@@ -240,6 +241,6 @@ class TableMakerField extends Field
             'initJs' => false,
         ]);
 
-        return $input . $columnsField . '<br>' . $rowsField;
+        return $input . $columnsField . $rowsField;
     }
 }
