@@ -14,7 +14,7 @@ class m220604_000000_verbb_migration extends Migration
     public function safeUp()
     {
         $this->update('{{%fields}}', ['type' => TableMakerField::class], ['type' => 'supercool\tablemaker\fields\TableMakerField']);
-    
+
         // Don't make the same config changes twice
         $projectConfig = Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('plugins.tablemaker.schemaVersion', true);

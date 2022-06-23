@@ -15,7 +15,7 @@ class TableMaker extends Plugin
 {
     // Properties
     // =========================================================================
-    
+
     public $schemaVersion = '2.0.0';
 
 
@@ -42,7 +42,7 @@ class TableMaker extends Plugin
 
     // Private Methods
     // =========================================================================
-    
+
     private function _registerFieldTypes()
     {
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {

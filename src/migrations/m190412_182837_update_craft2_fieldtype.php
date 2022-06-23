@@ -17,7 +17,7 @@ class m190412_182837_update_craft2_fieldtype extends Migration
         echo "    > Updating Table Maker field type...\n";
 
         $this->update('{{%fields}}', [
-            'type' => TableMakerField::class
+            'type' => TableMakerField::class,
         ], ['type' => 'TableMaker']);
 
         // For some reason from a Craft 2 site, the field settings have ended up on the plugin settings and this causes
