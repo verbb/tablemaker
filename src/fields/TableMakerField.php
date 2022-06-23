@@ -1,13 +1,11 @@
 <?php
 namespace verbb\tablemaker\fields;
 
-use verbb\tablemaker\TableMaker;
 use verbb\tablemaker\assetbundles\FieldAsset;
 
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\Template;
 
@@ -117,7 +115,7 @@ class TableMakerField extends Field
         return parent::serializeValue($value, $element);
     }
 
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('tablemaker/_field/settings', [
             'settings' => $this->getSettings(),
@@ -132,6 +130,9 @@ class TableMakerField extends Field
         $view->registerAssetBundle(FieldAsset::class);
 
         $name = $this->handle;
+
+        $columns = [];
+        $rows = [];
 
         $columnsInput = $name . '[columns]';
         $rowsInput = $name . '[rows]';

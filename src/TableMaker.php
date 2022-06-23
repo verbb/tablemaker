@@ -4,7 +4,6 @@ namespace verbb\tablemaker;
 use verbb\tablemaker\base\PluginTrait;
 use verbb\tablemaker\fields\TableMakerField;
 
-use Craft;
 use craft\base\Plugin;
 use craft\services\Fields;
 use craft\events\RegisterComponentTypesEvent;

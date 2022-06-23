@@ -12,7 +12,7 @@ class m190412_182837_update_craft2_fieldtype extends Migration
     // Public Methods
     // =========================================================================
 
-    public function safeUp()
+    public function safeUp(): bool
     {
         echo "    > Updating Table Maker field type...\n";
 
@@ -37,7 +37,7 @@ class m190412_182837_update_craft2_fieldtype extends Migration
         return true;
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m190412_182837_tablemaker_update_fieldtype cannot be reverted.\n";
         return false;
