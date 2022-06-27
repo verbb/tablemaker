@@ -1,18 +1,21 @@
 <?php
 namespace verbb\tablemaker\fields;
 
-use verbb\tablemaker\TableMaker;
 use verbb\tablemaker\assetbundles\FieldAsset;
 
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\gql\GqlEntityRegistry;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\Template;
 
 use yii\db\Schema;
+
+use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\Type;
 
 class TableMakerField extends Field
 {
@@ -134,6 +137,9 @@ class TableMakerField extends Field
 
         $name = $this->handle;
 
+        $columns = [];
+        $rows = [];
+
         $columnsInput = $name . '[columns]';
         $rowsInput = $name . '[rows]';
 
@@ -142,7 +148,7 @@ class TableMakerField extends Field
 
         // make input
         $input = '<input class="table-maker-field" type="hidden" name="' . $name . '" value="">';
-        
+
         // get columns from db or fall back to default
         if (!empty($value['columns'])) {
             foreach ($value['columns'] as $key => $val) {
@@ -150,7 +156,7 @@ class TableMakerField extends Field
                     'heading' => $val['heading'],
                     'align' => $val['align'],
                     'width' => $val['width'],
-                    'type' => 'singleline'
+                    'type' => 'singleline',
                 ];
             }
         } else {
@@ -159,7 +165,7 @@ class TableMakerField extends Field
                     'heading' => '',
                     'align' => '',
                     'width' => '',
-                    'type' => 'singleline'
+                    'type' => 'singleline',
                 ],
             ];
         }
@@ -179,36 +185,36 @@ class TableMakerField extends Field
         $columnSettings = [
             'heading' => [
                 'heading' => Craft::t('tablemaker', 'Heading'),
-                'type' => 'singleline'
+                'type' => 'singleline',
             ],
             'width' => [
                 'heading' => Craft::t('tablemaker', 'Width'),
                 'class' => 'code',
                 'type' => 'singleline',
-                'width' => 50
+                'width' => 50,
             ],
             'align' => [
                 'heading' => Craft::t('tablemaker', 'Alignment'),
                 'class' => 'thin',
                 'type' => 'select',
                 'options' => [
-                    'left'   => Craft::t('tablemaker', 'Left'),
+                    'left' => Craft::t('tablemaker', 'Left'),
                     'center' => Craft::t('tablemaker', 'Center'),
-                    'right'  => Craft::t('tablemaker', 'Right')
+                    'right' => Craft::t('tablemaker', 'Right'),
                 ],
             ],
         ];
 
         $view->registerJs('new Craft.TableMaker(' .
-            Json::encode($view->namespaceInputId($name), JSON_UNESCAPED_UNICODE).', ' .
-            Json::encode($view->namespaceInputId($columnsInputId), JSON_UNESCAPED_UNICODE).', ' .
-            Json::encode($view->namespaceInputId($rowsInputId), JSON_UNESCAPED_UNICODE).', ' .
-            Json::encode($view->namespaceInputName($columnsInput), JSON_UNESCAPED_UNICODE).', ' .
-            Json::encode($view->namespaceInputName($rowsInput), JSON_UNESCAPED_UNICODE).', ' .
-            Json::encode($columns, JSON_UNESCAPED_UNICODE).', ' .
-            Json::encode($rows, JSON_UNESCAPED_UNICODE).', ' .
+            Json::encode($view->namespaceInputId($name), JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($view->namespaceInputId($columnsInputId), JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($view->namespaceInputId($rowsInputId), JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($view->namespaceInputName($columnsInput), JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($view->namespaceInputName($rowsInput), JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($columns, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($rows, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) .
-        ');');
+            ');');
 
         $fieldSettings = $this->getSettings();
         $columnsField = Cp::editableTableFieldHtml([
@@ -242,5 +248,37 @@ class TableMakerField extends Field
         ]);
 
         return $input . $columnsField . $rowsField;
+    }
+
+    public function getContentGqlType()
+    {
+        $typeName = $this->handle . '_TableMakerField';
+        $columnTypeName = $typeName . '_column';
+
+        $columnType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($columnTypeName, new ObjectType([
+            'name' => $columnTypeName,
+            'fields' => [
+                'heading' => Type::string(),
+                'width' => Type::string(),
+                'align' => Type::string(),
+            ],
+        ]));
+
+        $tableMakerType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new ObjectType([
+            'name' => $typeName,
+            'fields' => [
+                'rows' => [
+                    'type' => Type::listOf(Type::listOf(Type::string())),
+                ],
+                'columns' => [
+                    'type' => Type::listOf($columnType),
+                ],
+                'table' => [
+                    'type' => Type::string(),
+                ],
+            ],
+        ]));
+
+        return $tableMakerType;
     }
 }

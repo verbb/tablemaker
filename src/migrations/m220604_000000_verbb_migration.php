@@ -11,10 +11,10 @@ class m220604_000000_verbb_migration extends Migration
     // Public Methods
     // =========================================================================
 
-    public function safeUp()
+    public function safeUp(): bool
     {
         $this->update('{{%fields}}', ['type' => TableMakerField::class], ['type' => 'supercool\tablemaker\fields\TableMakerField']);
-    
+
         // Don't make the same config changes twice
         $projectConfig = Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('plugins.tablemaker.schemaVersion', true);
@@ -42,7 +42,7 @@ class m220604_000000_verbb_migration extends Migration
         return true;
     }
 
-    public function safeDown()
+    public function safeDown(): bool
     {
         echo "m220604_000000_verbb_migration cannot be reverted.\n";
         return false;

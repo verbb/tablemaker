@@ -4,7 +4,6 @@ namespace verbb\tablemaker;
 use verbb\tablemaker\base\PluginTrait;
 use verbb\tablemaker\fields\TableMakerField;
 
-use Craft;
 use craft\base\Plugin;
 use craft\services\Fields;
 use craft\events\RegisterComponentTypesEvent;
@@ -43,7 +42,7 @@ class TableMaker extends Plugin
 
     // Private Methods
     // =========================================================================
-    
+
     private function _registerFieldTypes()
     {
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function(RegisterComponentTypesEvent $event) {
