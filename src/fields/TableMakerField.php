@@ -6,10 +6,14 @@ use verbb\tablemaker\assetbundles\FieldAsset;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\gql\GqlEntityRegistry;
 use craft\helpers\Json;
 use craft\helpers\Template;
 
 use yii\db\Schema;
+
+use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\Type;
 
 class TableMakerField extends Field
 {
@@ -238,5 +242,37 @@ class TableMakerField extends Field
         ]);
 
         return $input . $columnsField . $rowsField;
+    }
+
+    public function getContentGqlType()
+    {
+        $typeName = $this->handle . '_TableMakerField';
+        $columnTypeName = $typeName . '_column';
+
+        $columnType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($columnTypeName, new ObjectType([
+            'name' => $columnTypeName,
+            'fields' => [
+                'heading' => Type::string(),
+                'width' => Type::string(),
+                'align' => Type::string(),
+            ],
+        ]));
+
+        $tableMakerType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new ObjectType([
+            'name' => $typeName,
+            'fields' => [
+                'rows' => [
+                    'type' => Type::listOf(Type::listOf(Type::string())),
+                ],
+                'columns' => [
+                    'type' => Type::listOf($columnType),
+                ],
+                'table' => [
+                    'type' => Type::string(),
+                ],
+            ],
+        ]));
+
+        return $tableMakerType;
     }
 }
