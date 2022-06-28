@@ -250,7 +250,7 @@ class TableMakerField extends Field
         return $input . $columnsField . $rowsField;
     }
 
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         $typeName = $this->handle . '_TableMakerField';
         $columnTypeName = $typeName . '_column';
