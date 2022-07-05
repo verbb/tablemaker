@@ -14,6 +14,14 @@
 - Now requires PHP `8.0.2+`.
 - Now requires Craft `4.0.0+`.
 
+## 3.0.2 - 2022-07-06
+
+### Added
+- Add GraphQL support (thanks @mattstein)
+
+### Fixed
+- Fix an error when running the Craft 2 migration on an already Craft 3 updated install
+
 ## 3.0.1 - 2022-06-20
 
 ### Added

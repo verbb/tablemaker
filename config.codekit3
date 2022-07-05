@@ -88,12 +88,6 @@
       "rFN" : 0,
       "uCM" : 0
     },
-    "\/resources" : {
-      "ft" : 65536,
-      "oA" : 1,
-      "oAP" : "\/resources",
-      "oF" : 0
-    },
     "\/screenshots\/cover.jpg" : {
       "ft" : 16384,
       "iS" : 103636,
