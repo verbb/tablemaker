@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.2 - 2022-07-06
+
+### Changed
+- Merge changes from `3.0.2`.
+
 ## 4.0.1 - 2022-06-21
 
 ### Changed
