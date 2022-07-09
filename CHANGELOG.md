@@ -16,6 +16,8 @@
 
 ## 3.0.0 - 2022-06-04
 
+> {note} The plugin’s package name has changed to `verbb/tablemaker`. Table Maker will need be updated to 3.0 from a terminal, by running `composer require verbb/tablemaker && composer remove supercool/tablemaker`.
+
 ### Changed
 - Migration to `verbb/tablemaker`.
 - Now requires Craft 3.7+.
