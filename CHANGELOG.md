@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.3 - 2022-07-31
+
+### Added
+- Add changelog notice when updating.
+
 ## 3.0.2 - 2022-07-06
 
 ### Added
