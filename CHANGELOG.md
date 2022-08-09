@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.4 - 2022-08-09
+
+### Fixed
+- Fix an incompatibility with Vizy.
+
 ## 3.0.3 - 2022-07-31
 
 ### Added
