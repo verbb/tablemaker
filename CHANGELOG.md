@@ -1,9 +1,14 @@
 # Changelog
 
+## 4.0.3 - 2022-08-09
+
+### Fixed
+- Fix an incompatibility with Vizy.
+
 ## 4.0.2 - 2022-07-06
 
-### Changed
-- Merge changes from `3.0.2`.
+### Added
+- Add GraphQL support (thanks @mattstein).
 
 ## 4.0.1 - 2022-06-21
 
@@ -32,10 +37,10 @@
 ## 3.0.2 - 2022-07-06
 
 ### Added
-- Add GraphQL support (thanks @mattstein)
+- Add GraphQL support (thanks @mattstein).
 
 ### Fixed
-- Fix an error when running the Craft 2 migration on an already Craft 3 updated install
+- Fix an error when running the Craft 2 migration on an already Craft 3 updated install.
 
 ## 3.0.1 - 2022-06-20
 
