@@ -19,6 +19,16 @@
 - Now requires PHP `8.0.2+`.
 - Now requires Craft `4.0.0+`.
 
+## 3.0.4 - 2022-08-09
+
+### Fixed
+- Fix an incompatibility with Vizy.
+
+## 3.0.3 - 2022-07-31
+
+### Added
+- Add changelog notice when updating.
+
 ## 3.0.2 - 2022-07-06
 
 ### Added
@@ -34,6 +44,8 @@
 - New icon.
 
 ## 3.0.0 - 2022-06-04
+
+> {note} The plugin’s package name has changed to `verbb/tablemaker`. Table Maker will need be updated to 3.0 from a terminal, by running `composer require verbb/tablemaker && composer remove supercool/tablemaker`.
 
 ### Changed
 - Migration to `verbb/tablemaker`.

@@ -33,8 +33,8 @@ Craft.TableMaker = Garnish.Base.extend({
         this.columnsTableName = columnsTableName;
         this.rowsTableName = rowsTableName;
 
-        this.columnsTableInputPath = this.columnsTableId.split('-');
-        this.rowsTableInputPath = this.rowsTableId.split('-');
+        this.columnsTableInputPath = this.columnsTableName.replace(/]/g, '').split('[');
+        this.rowsTableInputPath = this.rowsTableName.replace(/]/g, '').split('[');
 
         this.columns = columns;
         this.rows = rows;
