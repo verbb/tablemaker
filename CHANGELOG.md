@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.4 - 2023-02-22
+
+### Fixed
+- Improve typing sluggishness for large Table Maker fields.
+
 ## 4.0.3 - 2022-08-09
 
 ### Fixed
