@@ -269,6 +269,15 @@ class TableMakerField extends Field
             'fields' => [
                 'rows' => [
                     'type' => Type::listOf(Type::listOf(Type::string())),
+                    'resolve' => function ($source) {
+                        // Extra help here for an empty field. 
+                        // TODO: Refactor `normalizeValue()` properly to remove this.
+                        if (!is_array($source['rows'])) {
+                            $source['rows'] = [];
+                        }
+
+                        return $source['rows'];
+                    }
                 ],
                 'columns' => [
                     'type' => Type::listOf($columnType),
