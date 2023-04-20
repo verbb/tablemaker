@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.5 - 2023-04-21
+
+### Fixed
+- Fix an error with GraphQL when querying an empty field.
+
 ## 4.0.4 - 2023-02-22
 
 ### Fixed
