@@ -152,7 +152,7 @@ class TableMakerField extends Field
 
         return $value;
     }
-    
+
     public function serializeValue(mixed $value, ElementInterface $element = null): mixed
     {
         if (!empty($value['rows']) && is_array($value['rows'])) {
@@ -314,16 +314,17 @@ class TableMakerField extends Field
             ],
         ];
 
-        $dropdownSettingsHtml = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField', [
-            [
-                'label' => Craft::t('app', 'Dropdown Options'),
-                'instructions' => Craft::t('app', 'Define the available options.'),
-                'id' => '__ID__',
-                'name' => '__NAME__',
-                'addRowLabel' => Craft::t('app', 'Add an option'),
-                'cols' => $dropdownSettingsCols,
-                'initJs' => false,
-            ]
+        $dropdownSettingsHtml = Cp::editableTableFieldHtml([
+            'label' => Craft::t('app', 'Dropdown Options'),
+            'instructions' => Craft::t('app', 'Define the available options.'),
+            'id' => '__ID__',
+            'name' => '__NAME__',
+            'addRowLabel' => Craft::t('app', 'Add an option'),
+            'allowAdd' => true,
+            'allowReorder' => true,
+            'allowDelete' => true,
+            'cols' => $dropdownSettingsCols,
+            'initJs' => false,
         ]);
 
         $view->registerAssetBundle(TableSettingsAsset::class);
