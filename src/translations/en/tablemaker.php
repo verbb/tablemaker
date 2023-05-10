@@ -1,27 +1,32 @@
 <?php
 
-/**
- * Table Maker plugin for Craft CMS 3.x
- *
- * A user-definable table field type for Craft CMS
- *
- * @link      http://www.supercooldesign.co.uk/
- * @copyright Copyright (c) 2018 Supercool Ltd
- */
-
-/**
- * Table Maker en Translation
- *
- * Returns an array with the string to be translated (as passed to `Craft::t('tablemaker', '...')`) as
- * the key, and the translation as the value.
- *
- * http://www.yiiframework.com/doc-2.0/guide-tutorial-i18n.html
- *
- * @author    Supercool Ltd
- * @package   TableMaker
- * @since     1.0.0
- */
-
 return [
-    'Table Maker plugin loaded' => 'Table Maker plugin loaded',
+	'Columns Table' => 'Columns Table',
+	'Column Label' => 'Column Label',
+	'The column label.' => 'The column label.',
+	'Column Instructions' => 'Column Instructions',
+	'The column instructions.' => 'The column instructions.',
+	'Add Column Label' => 'Add Column Label',
+	'The "Add new column" button label.' => 'The "Add new column" button label.',
+	'Rows Table' => 'Rows Table',
+	'Row Label' => 'Row Label',
+	'The row label.' => 'The row label.',
+	'Row Instructions' => 'Row Instructions',
+	'The row instructions.' => 'The row instructions.',
+	'Add Row Label' => 'Add Row Label',
+	'The "Add new row" button label.' => 'The "Add new row" button label.',
+	'Table Maker' => 'Table Maker',
+	'Heading' => 'Heading',
+	'Width' => 'Width',
+	'Alignment' => 'Alignment',
+	'Left' => 'Left',
+	'Center' => 'Center',
+	'Right' => 'Right',
+	'Table Columns' => 'Table Columns',
+	'Define the columns your table should have.' => 'Define the columns your table should have.',
+	'Add a column' => 'Add a column',
+	'rowsLabel' => 'rowsLabel',
+	'Table Content' => 'Table Content',
+	'Input the content of your table.' => 'Input the content of your table.',
+	'Add a row' => 'Add a row',
 ];

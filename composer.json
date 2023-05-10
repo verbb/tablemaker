@@ -1,43 +1,48 @@
 {
-    "name": "supercool/tablemaker",
-    "description": "A user-definable table field type for Craft CMS",
+    "name": "verbb/tablemaker",
+    "description": "Create customizable and user-defined table fields.",
     "type": "craft-plugin",
-    "version": "2.0.1",
+    "version": "4.0.6",
     "keywords": [
         "craft",
         "cms",
         "craftcms",
-        "craftcms3",
         "craft-plugin",
-        "table maker",
-        "supercool"
+        "table maker"
     ],
     "support": {
-        "docs": "https://github.com/supercool/tablemaker/blob/master/README.md",
-        "issues": "https://github.com/supercool/tablemaker/issues"
+        "email": "support@verbb.io",
+        "issues": "https://github.com/verbb/tablemaker/issues?state=open",
+        "source": "https://github.com/verbb/tablemaker",
+        "docs": "https://github.com/verbb/tablemaker",
+        "rss": "https://github.com/verbb/tablemaker/commits/v2.atom"
     },
     "license": "MIT",
     "authors": [
+        {
+            "name": "Verbb",
+            "homepage": "https://verbb.io"
+        },
         {
             "name": "Supercool Ltd",
             "homepage": "http://www.supercooldesign.co.uk/"
         }
     ],
     "require": {
-        "craftcms/cms": "^3.0.0-RC1"
+        "php": "^8.0.2",
+        "craftcms/cms": "^4.0.0",
+        "verbb/base": "^2.0.0"
     },
     "autoload": {
         "psr-4": {
-          "supercool\\tablemaker\\": "src/"
+          "verbb\\tablemaker\\": "src/"
         }
     },
     "extra": {
         "name": "Table Maker",
         "handle": "tablemaker",
-        "schemaVersion": "1.0.0",
-        "hasCpSettings": false,
-        "hasCpSection": false,
-        "changelogUrl": "https://raw.githubusercontent.com/supercool/tablemaker/master/CHANGELOG.md",
-        "class": "supercool\\tablemaker\\TableMaker"
+        "documentationUrl": "https://github.com/verbb/tablemaker",
+        "changelogUrl": "https://raw.githubusercontent.com/verbb/tablemaker/craft-3/CHANGELOG.md",
+        "class": "verbb\\tablemaker\\TableMaker"
     }
 }
