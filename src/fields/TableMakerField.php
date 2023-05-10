@@ -6,11 +6,14 @@ use verbb\tablemaker\assetbundles\FieldAsset;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\fields\data\ColorData;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\Template;
+use craft\web\assets\tablesettings\TableSettingsAsset;
 
 use yii\db\Schema;
 
@@ -47,6 +50,48 @@ class TableMakerField extends Field
         return Schema::TYPE_TEXT;
     }
 
+    /**
+     * Normalizes a cell’s value.
+     * Taken from craft\fields\Table::_normalizeCellValue()
+     *
+     * @param string $type The cell type
+     * @param mixed $value The cell value
+     * @return mixed
+     * @see normalizeValue()
+     */
+    public function normalizeCellValue(string $type, mixed $value): mixed
+    {
+        switch ($type) {
+            case 'color':
+                if ($value instanceof ColorData) {
+                    return $value;
+                }
+
+                if (!$value || $value === '#') {
+                    return null;
+                }
+
+                $value = strtolower($value);
+
+                if ($value[0] !== '#') {
+                    $value = '#' . $value;
+                }
+
+                if (strlen($value) === 4) {
+                    $value = '#' . $value[1] . $value[1] . $value[2] . $value[2] . $value[3] . $value[3];
+                }
+
+                $color = new ColorData($value);
+                return $color->__toString();
+
+            case 'date':
+            case 'time':
+                return json_encode(DateTimeHelper::toIso8601($value)) ?: null;
+        }
+
+        return $value;
+    }
+
     public function normalizeValue(mixed $value, ElementInterface $element = null): mixed
     {
         if (!is_array($value)) {
@@ -64,8 +109,11 @@ class TableMakerField extends Field
         ';
 
         if (!empty($value['columns'])) {
-            foreach ($value['columns'] as $col) {
-                $html .= '<th align="' . $col['align'] . '" width="' . $col['width'] . '">' . $col['heading'] . '</th>';
+            foreach ($value['columns'] as &$col) {
+                $html .= '<th align="' . ($col['align'] ?? "left") . '" width="' . ($col['width'] ?? "") . '">' . ($col['heading'] ?? "") . '</th>';
+                //json decode options array
+                if(isset($col['options']) && !is_array($col['options'])) $col['options'] = Json::decode($col['options']);
+                unset($col);
             }
         }
 
@@ -81,7 +129,7 @@ class TableMakerField extends Field
 
                 $i = 0;
                 foreach ($row as $key => $cell) {
-                    $type = isset($value['columns'][$key]['type']) ? $value['columns'][$key]['type'] : "singleline";
+                    $type = $value['columns'][$key]['type'] ?? "singleline";
                     $cell = $this->normalizeCellValue($type, $cell);
 
                     $align = $value['columns'][$key]['align'] ?? $value['columns'][$i]['align'];
@@ -155,12 +203,26 @@ class TableMakerField extends Field
         // get columns from db or fall back to default
         if (!empty($value['columns'])) {
             foreach ($value['columns'] as $key => $val) {
+                $val['type'] = $val['type'] ?? "singleline";
                 $columns['col' . $key] = [
                     'heading' => $val['heading'],
                     'align' => $val['align'],
                     'width' => $val['width'],
-                    'type' => 'singleline',
+                    'type' => $val['type'],
                 ];
+
+                if ($val['type'] === 'select') {
+                    if (!isset($val['options'])) {
+                        $columns['col'.$key]['options'] = [];
+                    } else if (is_string($val['options'])) {
+                        $columns['col'.$key]['options'] = Json::decode($val['options']);
+                    }
+                    else {
+                        $columns['col'.$key]['options'] = $val['options'];
+                    }
+                } else {
+                    unset($columns['col'.$key]['options']);
+                }
             }
         } else {
             $columns = [
@@ -178,12 +240,30 @@ class TableMakerField extends Field
             // Walk down the rows and cells appending 'row' to the rows' keys and 'col' to the cells' keys
             foreach ($value['rows'] as $rowKey => $rowVal) {
                 foreach ($rowVal as $colKey => $colVal) {
-                    $rows['row' . $rowKey]['col' . $colKey] = $colVal;
+                    $type = $value['columns'][$colKey]['type'];
+                    $rows['row'.$rowKey]['col'.$colKey] = in_array($type, ['date', 'time'], true) ? DateTimeHelper::toIso8601($colVal) : $colVal;
                 }
             }
         } else {
             $rows = ['row0' => []];
         }
+
+        $typeOptions = [
+            'checkbox' => Craft::t('app', 'Checkbox'),
+            'color' => Craft::t('app', 'Color'),
+            'date' => Craft::t('app', 'Date'),
+            'select' => Craft::t('app', 'Dropdown'),
+            'email' => Craft::t('app', 'Email'),
+            'lightswitch' => Craft::t('app', 'Lightswitch'),
+            'multiline' => Craft::t('app', 'Multi-line text'),
+            'number' => Craft::t('app', 'Number'),
+            'singleline' => Craft::t('app', 'Single-line text'),
+            'time' => Craft::t('app', 'Time'),
+            'url' => Craft::t('app', 'URL'),
+        ];
+
+        // Make sure they are sorted alphabetically (post-translation)
+        asort($typeOptions);
 
         $columnSettings = [
             'heading' => [
@@ -206,8 +286,47 @@ class TableMakerField extends Field
                     'right' => Craft::t('tablemaker', 'Right'),
                 ],
             ],
+            'type' => [
+                'heading' => Craft::t('tablemaker', 'Type'),
+                'class' => 'thin',
+                'type' => 'select',
+                'options' => $typeOptions
+            ]
         ];
 
+        $dropdownSettingsCols = [
+            'label' => [
+                'heading' => Craft::t('app', 'Option Label'),
+                'type' => 'singleline',
+                'autopopulate' => 'value',
+                'class' => 'option-label',
+            ],
+            'value' => [
+                'heading' => Craft::t('app', 'Value'),
+                'type' => 'singleline',
+                'class' => 'option-value code',
+            ],
+            'default' => [
+                'heading' => Craft::t('app', 'Default?'),
+                'type' => 'checkbox',
+                'radioMode' => true,
+                'class' => 'option-default thin',
+            ],
+        ];
+
+        $dropdownSettingsHtml = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField', [
+            [
+                'label' => Craft::t('app', 'Dropdown Options'),
+                'instructions' => Craft::t('app', 'Define the available options.'),
+                'id' => '__ID__',
+                'name' => '__NAME__',
+                'addRowLabel' => Craft::t('app', 'Add an option'),
+                'cols' => $dropdownSettingsCols,
+                'initJs' => false,
+            ]
+        ]);
+
+        $view->registerAssetBundle(TableSettingsAsset::class);
         $view->registerJs('new Craft.TableMaker(' .
             Json::encode($view->namespaceInputId($name), JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($view->namespaceInputId($columnsInputId), JSON_UNESCAPED_UNICODE) . ', ' .
@@ -216,7 +335,9 @@ class TableMakerField extends Field
             Json::encode($view->namespaceInputName($rowsInput), JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($columns, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($rows, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) .
+            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($dropdownSettingsHtml, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($dropdownSettingsCols, JSON_UNESCAPED_UNICODE) .
             ');');
 
         $fieldSettings = $this->getSettings();
