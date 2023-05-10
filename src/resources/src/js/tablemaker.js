@@ -332,38 +332,42 @@ ColumnTable.Row = Craft.EditableTable.Row.extend({
     },
 
     showSettingsModal: function(ev) {
+      var s = this;
       if (!this.settingsModal) {
-        var id = 'dropdownsettingsmodal' + Math.floor(Math.random() * 1000000);
-        var $modal = $('<div/>', {'class': 'modal dropdownsettingsmodal'}).appendTo(Garnish.$bod);
-        var $body = $('<div/>', {'class': 'body'})
+        var id = "dropdownsettingsmodal" + Math.floor(1e6 * Math.random());
+        var $modal = $("<div/>", {class: "modal dropdownsettingsmodal"}).appendTo(Garnish.$bod);
+        var $body = $("<div/>", {class: "body"})
           .appendTo($modal)
           .html(this.table.fieldSettings.dropdownSettingsHtml.replace(/__ID__/g, id));
 
         this.optionsTable = new Craft.EditableTable(id, '__NAME__', this.table.fieldSettings.dropdownSettingsCols, {
-          onAddRow: $.proxy(this, 'handleOptionsRowChange'),
-          onDeleteRow: $.proxy(this, 'handleOptionsRowChange')
+          allowAdd: !0,
+          allowDelete: !0,
+          allowReorder: !0,
+          onAddRow: this.handleOptionsRowChange.bind(this),
+          onDeleteRow: this.handleOptionsRowChange.bind(this)
         });
 
         if (this.options && this.options.length) {
           var row;
           for (var i = 0; i < this.options.length; i++) {
-            row = this.optionsTable.addRow(false);
+            row = this.optionsTable.addRow(!1);
             row.$tr.find('.option-label textarea').val(this.options[i].label);
             row.$tr.find('.option-value textarea').val(this.options[i].value);
             row.$tr.find('.option-default input[type="checkbox"]').prop('checked', !!this.options[i].default);
           }
         } else {
-          this.optionsTable.addRow(false);
+          this.optionsTable.addRow(!1);
         }
 
-        var $closeButton = $('<div/>', {
-          'class': 'btn submit',
-          role: 'button',
+        var $closeButton = $('<button/>', {
+          type: "button",
+          class: 'btn submit',
           text: Craft.t('app', 'Done')
         }).appendTo($body);
 
         this.settingsModal = new Garnish.Modal($modal, {
-          onHide: $.proxy(this, 'handleSettingsModalHide')
+          onHide: this.handleSettingsModalHide.bind(this)
         });
 
         this.addListener($closeButton, 'click', function() {
@@ -373,9 +377,9 @@ ColumnTable.Row = Craft.EditableTable.Row.extend({
         this.settingsModal.show();
       }
 
-      setTimeout($.proxy(function() {
-        this.optionsTable.$tbody.find('textarea').first().trigger('focus')
-      }, this), 100);
+        setTimeout((function () {
+          s.optionsTable.$tbody.find("textarea").first().trigger("focus")
+        }), 100)
     },
 
     handleOptionsRowChange: function() {
