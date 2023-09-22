@@ -129,7 +129,7 @@ class TableMakerField extends Field
 
                 $i = 0;
                 foreach ($row as $key => $cell) {
-                    $type = $value['columns'][$key]['type'] ?? "singleline";
+                    $type = $value['columns'][$key]['type'] ?? 'singleline';
                     $cell = $this->normalizeCellValue($type, $cell);
 
                     $align = $value['columns'][$key]['align'] ?? $value['columns'][$i]['align'];
@@ -203,15 +203,16 @@ class TableMakerField extends Field
         // get columns from db or fall back to default
         if (!empty($value['columns'])) {
             foreach ($value['columns'] as $key => $val) {
-                $val['type'] = $val['type'] ?? "singleline";
+                $type = $val['type'] ?? 'singleline';
+
                 $columns['col' . $key] = [
                     'heading' => $val['heading'],
                     'align' => $val['align'],
                     'width' => $val['width'],
-                    'type' => $val['type'],
+                    'type' => $type,
                 ];
 
-                if ($val['type'] === 'select') {
+                if ($type === 'select') {
                     if (!isset($val['options'])) {
                         $columns['col'.$key]['options'] = [];
                     } else if (is_string($val['options'])) {
@@ -240,8 +241,9 @@ class TableMakerField extends Field
             // Walk down the rows and cells appending 'row' to the rows' keys and 'col' to the cells' keys
             foreach ($value['rows'] as $rowKey => $rowVal) {
                 foreach ($rowVal as $colKey => $colVal) {
-                    $type = $value['columns'][$colKey]['type'];
-                    $rows['row'.$rowKey]['col'.$colKey] = in_array($type, ['date', 'time'], true) ? DateTimeHelper::toIso8601($colVal) : $colVal;
+                    $type = $value['columns'][$colKey]['type'] ?? 'singleline';
+
+                    $rows['row' . $rowKey]['col' . $colKey] = in_array($type, ['date', 'time'], true) ? DateTimeHelper::toIso8601($colVal) : $colVal;
                 }
             }
         } else {
@@ -290,7 +292,7 @@ class TableMakerField extends Field
                 'heading' => Craft::t('tablemaker', 'Type'),
                 'class' => 'thin',
                 'type' => 'select',
-                'options' => $typeOptions
+                'options' => $typeOptions,
             ]
         ];
 
