@@ -34,8 +34,6 @@ class TableMaker extends Plugin
 
         self::$plugin = $this;
 
-        $this->_setPluginComponents();
-        $this->_setLogging();
         $this->_registerFieldTypes();
     }
 

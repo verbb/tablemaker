@@ -3,53 +3,31 @@ namespace verbb\tablemaker\base;
 
 use verbb\tablemaker\TableMaker;
 
-use Craft;
-
-use yii\log\Logger;
-
-use verbb\base\BaseHelper;
+use verbb\base\LogTrait;
+use verbb\base\helpers\Plugin;
 
 trait PluginTrait
 {
-    // Static Properties
+    // Properties
     // =========================================================================
 
-    public static TableMaker $plugin;
+    public static ?TableMaker $plugin = null;
 
 
-    // Public Methods
+    // Traits
     // =========================================================================
 
-    public static function log($message, $attributes = []): void
-    {
-        if ($attributes) {
-            $message = Craft::t('tablemaker', $message, $attributes);
-        }
+    use LogTrait;
+    
 
-        Craft::getLogger()->log($message, Logger::LEVEL_INFO, 'tablemaker');
-    }
-
-    public static function error($message, $attributes = []): void
-    {
-        if ($attributes) {
-            $message = Craft::t('tablemaker', $message, $attributes);
-        }
-
-        Craft::getLogger()->log($message, Logger::LEVEL_ERROR, 'tablemaker');
-    }
-
-
-    // Private Methods
+    // Static Methods
     // =========================================================================
 
-    private function _setPluginComponents()
+    public static function config(): array
     {
-        BaseHelper::registerModule();
-    }
+        Plugin::bootstrapPlugin('tablemaker');
 
-    private function _setLogging()
-    {
-        BaseHelper::setFileLogging('tablemaker');
+        return [];
     }
 
 }

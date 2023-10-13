@@ -30,6 +30,11 @@ class TableMakerField extends Field
         return Craft::t('tablemaker', 'Table Maker');
     }
 
+    public static function dbType(): string
+    {
+        return Schema::TYPE_TEXT;
+    }
+
 
     // Properties
     // =========================================================================
@@ -44,11 +49,6 @@ class TableMakerField extends Field
 
     // Public Methods
     // =========================================================================
-
-    public function getContentColumnType(): string
-    {
-        return Schema::TYPE_TEXT;
-    }
 
     /**
      * Normalizes a cell’s value.
@@ -179,7 +179,7 @@ class TableMakerField extends Field
         ]);
     }
 
-    public function getInputHtml(mixed $value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $view = Craft::$app->getView();
 
