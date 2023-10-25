@@ -2,7 +2,7 @@
     "name": "verbb/tablemaker",
     "description": "Create customizable and user-defined table fields.",
     "type": "craft-plugin",
-    "version": "4.0.6",
+    "version": "4.0.7",
     "keywords": [
         "craft",
         "cms",
@@ -35,14 +35,14 @@
     },
     "autoload": {
         "psr-4": {
-          "verbb\\tablemaker\\": "src/"
+            "verbb\\tablemaker\\": "src/"
         }
     },
     "extra": {
         "name": "Table Maker",
         "handle": "tablemaker",
         "documentationUrl": "https://github.com/verbb/tablemaker",
-        "changelogUrl": "https://raw.githubusercontent.com/verbb/tablemaker/craft-3/CHANGELOG.md",
+        "changelogUrl": "https://raw.githubusercontent.com/verbb/tablemaker/craft-4/CHANGELOG.md",
         "class": "verbb\\tablemaker\\TableMaker"
     }
 }

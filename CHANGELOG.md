@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.7 - 2023-10-25
+
+### Fixed
+- Fix an error with type settings for the field.
+
 ## 4.0.6 - 2023-04-21
 
 ### Fixed
