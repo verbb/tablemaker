@@ -1,5 +1,5 @@
 # Table Maker plugin for Craft CMS
-<img width="500" src="https://verbb.imgix.net/plugins/table-maker/table-maker-social-card.png?v=1">
+<img width="500" src="https://verbb.imgix.net/plugins/table-maker/table-maker-social-card.png?v=2">
 
 Table Maker is a Craft CMS plugin to let users create customizable table fields within entries and other elements.
 
