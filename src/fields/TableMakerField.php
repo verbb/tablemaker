@@ -179,6 +179,60 @@ class TableMakerField extends Field
         ]);
     }
 
+    public function getContentGqlType(): Type|array
+    {
+        $typeName = $this->handle . '_TableMakerField';
+        $columnTypeName = $typeName . '_column';
+
+        $columnType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($columnTypeName, new ObjectType([
+            'name' => $columnTypeName,
+            'fields' => [
+                'heading' => Type::string(),
+                'width' => Type::string(),
+                'align' => Type::string(),
+            ],
+        ]));
+
+        $tableMakerType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new ObjectType([
+            'name' => $typeName,
+            'fields' => [
+                'rows' => [
+                    'type' => Type::listOf(Type::listOf(Type::string())),
+                    'resolve' => function ($source) {
+                        // Extra help here for an empty field. 
+                        // TODO: Refactor `normalizeValue()` properly to remove this.
+                        if (!is_array($source['rows'])) {
+                            $source['rows'] = [];
+                        }
+
+                        return $source['rows'];
+                    }
+                ],
+                'columns' => [
+                    'type' => Type::listOf($columnType),
+                    'resolve' => function ($source) {
+                        // Extra help here for an empty field. 
+                        // TODO: Refactor `normalizeValue()` properly to remove this.
+                        if (!is_array($source['columns'])) {
+                            $source['columns'] = [];
+                        }
+
+                        return $source['columns'];
+                    }
+                ],
+                'table' => [
+                    'type' => Type::string(),
+                ],
+            ],
+        ]));
+
+        return $tableMakerType;
+    }
+
+
+    // Protected Methods
+    // =========================================================================
+
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $view = Craft::$app->getView();
@@ -375,55 +429,5 @@ class TableMakerField extends Field
         ]);
 
         return $input . $columnsField . $rowsField;
-    }
-
-    public function getContentGqlType(): Type|array
-    {
-        $typeName = $this->handle . '_TableMakerField';
-        $columnTypeName = $typeName . '_column';
-
-        $columnType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($columnTypeName, new ObjectType([
-            'name' => $columnTypeName,
-            'fields' => [
-                'heading' => Type::string(),
-                'width' => Type::string(),
-                'align' => Type::string(),
-            ],
-        ]));
-
-        $tableMakerType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new ObjectType([
-            'name' => $typeName,
-            'fields' => [
-                'rows' => [
-                    'type' => Type::listOf(Type::listOf(Type::string())),
-                    'resolve' => function ($source) {
-                        // Extra help here for an empty field. 
-                        // TODO: Refactor `normalizeValue()` properly to remove this.
-                        if (!is_array($source['rows'])) {
-                            $source['rows'] = [];
-                        }
-
-                        return $source['rows'];
-                    }
-                ],
-                'columns' => [
-                    'type' => Type::listOf($columnType),
-                    'resolve' => function ($source) {
-                        // Extra help here for an empty field. 
-                        // TODO: Refactor `normalizeValue()` properly to remove this.
-                        if (!is_array($source['columns'])) {
-                            $source['columns'] = [];
-                        }
-
-                        return $source['columns'];
-                    }
-                ],
-                'table' => [
-                    'type' => Type::string(),
-                ],
-            ],
-        ]));
-
-        return $tableMakerType;
     }
 }
