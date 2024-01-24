@@ -385,6 +385,7 @@ class TableMakerField extends Field
         $columnType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($columnTypeName, new ObjectType([
             'name' => $columnTypeName,
             'fields' => [
+                'type' => Type::string(),
                 'heading' => Type::string(),
                 'width' => Type::string(),
                 'align' => Type::string(),
