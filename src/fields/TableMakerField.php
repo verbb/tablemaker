@@ -344,7 +344,8 @@ class TableMakerField extends Field
             ');');
 
         $fieldSettings = $this->getSettings();
-        $columnsField = Cp::editableTableFieldHtml([
+
+        $columnsField = $view->renderTemplate('tablemaker/_field/columns-input', [
             'label' => $fieldSettings['columnsLabel'] ? Craft::t('tablemaker', $fieldSettings['columnsLabel']) : Craft::t('tablemaker', 'Table Columns'),
             'instructions' => $fieldSettings['columnsInstructions'] ? Craft::t('tablemaker', $fieldSettings['columnsInstructions']) : Craft::t('tablemaker', 'Define the columns your table should have.'),
             'id' => $columnsInputId,
