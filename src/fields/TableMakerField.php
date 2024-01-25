@@ -132,7 +132,7 @@ class TableMakerField extends Field
                     $type = $value['columns'][$key]['type'] ?? 'singleline';
                     $cell = $this->normalizeCellValue($type, $cell);
 
-                    $align = $value['columns'][$key]['align'] ?? $value['columns'][$i]['align'];
+                    $align = $value['columns'][$key]['align'] ?? $value['columns'][$i]['align'] ?? '';
                     $html .= '<td align="' . $align . '">' . $cell . '</td>';
                     $i++;
                 }
