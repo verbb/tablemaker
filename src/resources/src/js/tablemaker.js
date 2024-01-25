@@ -197,7 +197,9 @@ Craft.TableMaker = Garnish.Base.extend({
 
         //add in options for dropdowns
         for (var colKey in this.columnOptions) {
-            columns[colKey].options = this.columnOptions[colKey];
+            if (columns[colKey]) {
+                columns[colKey].options = this.columnOptions[colKey];
+            }
         }
 
         this.columns = columns;
