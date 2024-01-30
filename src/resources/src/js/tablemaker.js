@@ -172,7 +172,8 @@ Craft.TableMaker = Garnish.Base.extend({
                 continue;
             }
 
-            Craft.EditableTable.createRow(rowId, this.columns, this.rowsTableName, this.rows[rowId]).appendTo($tbody);
+            Craft.EditableTable.createRow(rowId, this.columns, this.rowsTableName, this.rows[rowId],
+        true, true).appendTo($tbody);
         }
 
         this.rowsTable.$table.replaceWith($table);
