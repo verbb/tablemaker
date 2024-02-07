@@ -115,6 +115,8 @@ class TableMakerField extends Field
                 if(isset($col['options']) && !is_array($col['options'])) $col['options'] = Json::decode($col['options']);
                 unset($col);
             }
+        } else {
+            $value['columns'] = [];
         }
 
         $html .= '
