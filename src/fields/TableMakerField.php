@@ -30,6 +30,11 @@ class TableMakerField extends Field
         return Craft::t('tablemaker', 'Table Maker');
     }
 
+    public static function icon(): string
+    {
+        return '@verbb/tablemaker/icon-mask.svg';
+    }
+
     public static function dbType(): string
     {
         return Schema::TYPE_TEXT;
