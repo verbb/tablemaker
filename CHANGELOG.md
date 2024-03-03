@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.9 - 2024-03-04
+
+### Fixed
+- Fix an error when trying to access columns for the field on an empty element.
+
 ## 4.0.8 - 2024-01-30
 
 ### Added
