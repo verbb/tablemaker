@@ -172,7 +172,8 @@ Craft.TableMaker = Garnish.Base.extend({
                 continue;
             }
 
-            Craft.EditableTable.createRow(rowId, this.columns, this.rowsTableName, this.rows[rowId]).appendTo($tbody);
+            Craft.EditableTable.createRow(rowId, this.columns, this.rowsTableName, this.rows[rowId],
+        true, true).appendTo($tbody);
         }
 
         this.rowsTable.$table.replaceWith($table);
@@ -197,7 +198,9 @@ Craft.TableMaker = Garnish.Base.extend({
 
         //add in options for dropdowns
         for (var colKey in this.columnOptions) {
-            columns[colKey].options = this.columnOptions[colKey];
+            if (columns[colKey]) {
+                columns[colKey].options = this.columnOptions[colKey];
+            }
         }
 
         this.columns = columns;

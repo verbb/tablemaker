@@ -1,5 +1,20 @@
 # Changelog
 
+## 4.0.9 - 2024-03-04
+
+### Fixed
+- Fix an error when trying to access columns for the field on an empty element.
+
+## 4.0.8 - 2024-01-30
+
+### Added
+- Add `type` to `columns` for GQL queries.
+
+### Fixed
+- Fix Dropdown columns not showing their options settings on-load.
+- Fix an error when removing a Dropdown column.
+- Fix an error when removing columns.
+
 ## 4.0.7 - 2023-10-25
 
 ### Fixed

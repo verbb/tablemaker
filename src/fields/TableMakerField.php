@@ -120,6 +120,8 @@ class TableMakerField extends Field
                 if(isset($col['options']) && !is_array($col['options'])) $col['options'] = Json::decode($col['options']);
                 unset($col);
             }
+        } else {
+            $value['columns'] = [];
         }
 
         $html .= '
@@ -137,7 +139,7 @@ class TableMakerField extends Field
                     $type = $value['columns'][$key]['type'] ?? 'singleline';
                     $cell = $this->normalizeCellValue($type, $cell);
 
-                    $align = $value['columns'][$key]['align'] ?? $value['columns'][$i]['align'];
+                    $align = $value['columns'][$key]['align'] ?? $value['columns'][$i]['align'] ?? '';
                     $html .= '<td align="' . $align . '">' . $cell . '</td>';
                     $i++;
                 }
@@ -403,7 +405,8 @@ class TableMakerField extends Field
             ');');
 
         $fieldSettings = $this->getSettings();
-        $columnsField = Cp::editableTableFieldHtml([
+
+        $columnsField = $view->renderTemplate('tablemaker/_field/columns-input', [
             'label' => $fieldSettings['columnsLabel'] ? Craft::t('tablemaker', $fieldSettings['columnsLabel']) : Craft::t('tablemaker', 'Table Columns'),
             'instructions' => $fieldSettings['columnsInstructions'] ? Craft::t('tablemaker', $fieldSettings['columnsInstructions']) : Craft::t('tablemaker', 'Define the columns your table should have.'),
             'id' => $columnsInputId,
@@ -434,5 +437,56 @@ class TableMakerField extends Field
         ]);
 
         return $input . $columnsField . $rowsField;
+    }
+
+    public function getContentGqlType(): Type|array
+    {
+        $typeName = $this->handle . '_TableMakerField';
+        $columnTypeName = $typeName . '_column';
+
+        $columnType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($columnTypeName, new ObjectType([
+            'name' => $columnTypeName,
+            'fields' => [
+                'type' => Type::string(),
+                'heading' => Type::string(),
+                'width' => Type::string(),
+                'align' => Type::string(),
+            ],
+        ]));
+
+        $tableMakerType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new ObjectType([
+            'name' => $typeName,
+            'fields' => [
+                'rows' => [
+                    'type' => Type::listOf(Type::listOf(Type::string())),
+                    'resolve' => function ($source) {
+                        // Extra help here for an empty field. 
+                        // TODO: Refactor `normalizeValue()` properly to remove this.
+                        if (!is_array($source['rows'])) {
+                            $source['rows'] = [];
+                        }
+
+                        return $source['rows'];
+                    }
+                ],
+                'columns' => [
+                    'type' => Type::listOf($columnType),
+                    'resolve' => function ($source) {
+                        // Extra help here for an empty field. 
+                        // TODO: Refactor `normalizeValue()` properly to remove this.
+                        if (!is_array($source['columns'])) {
+                            $source['columns'] = [];
+                        }
+
+                        return $source['columns'];
+                    }
+                ],
+                'table' => [
+                    'type' => Type::string(),
+                ],
+            ],
+        ]));
+
+        return $tableMakerType;
     }
 }
