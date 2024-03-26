@@ -101,7 +101,6 @@ Craft.TableMaker = Garnish.Base.extend({
     },
 
     bindRowsTableTextChanges: function() {
-        // console.log('bindRowsTableTextChanges')
         var $textareas = this.rowsTable.$tbody.find('textarea');
         this.removeListener($textareas, 'textchange');
 
@@ -172,8 +171,7 @@ Craft.TableMaker = Garnish.Base.extend({
                 continue;
             }
 
-            Craft.EditableTable.createRow(rowId, this.columns, this.rowsTableName, this.rows[rowId],
-        true, true).appendTo($tbody);
+            Craft.EditableTable.createRow(rowId, this.columns, this.rowsTableName, this.rows[rowId], true, true).appendTo($tbody);
         }
 
         this.rowsTable.$table.replaceWith($table);
@@ -238,8 +236,8 @@ Craft.TableMaker = Garnish.Base.extend({
         this.getDataFromTables();
 
         var dataBlob = {
-            'columns' : this.columns,
-            'rows' : this.rows
+            'columns': this.columns,
+            'rows': this.rows
         };
 
         this.$input.val(JSON.stringify(dataBlob));
@@ -250,6 +248,9 @@ var ColumnTable = Craft.EditableTable.extend({
     fieldSettings: null,
 
     init: function(fieldSettings, id, baseName, columns, settings) {
+        // Disable Craft's lazy table behaviour - https://github.com/verbb/tablemaker/issues/44
+        settings.lazyInitRows = false;
+
         this.fieldSettings = fieldSettings;
         this.base(id, baseName, columns, settings);
     },
