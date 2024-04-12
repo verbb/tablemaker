@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.0.0-beta.2 - 2024-04-12
+
+### Fixed
+- Fix an error in Craft 4.6.0 where dropdown column options weren’t saving correctly.
+
 ## 5.0.0-beta.1 - 2024-03-04
 
 ### Changed
