@@ -6,6 +6,11 @@
 - Now requires PHP `8.2.0+`.
 - Now requires Craft `5.0.0-beta.1+`.
 
+## 4.0.10 - 2024-03-26
+
+### Fixed
+- Fix an error in Craft 4.6.0 where dropdown column options weren’t saving correctly.
+
 ## 4.0.9 - 2024-03-04
 
 ### Fixed
