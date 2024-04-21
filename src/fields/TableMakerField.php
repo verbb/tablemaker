@@ -205,6 +205,11 @@ class TableMakerField extends Field
         // get columns from db or fall back to default
         if (!empty($value['columns'])) {
             foreach ($value['columns'] as $key => $val) {
+                // Just in case there's invalid data
+                if (!isset($val['heading'])) {
+                    continue;
+                }
+
                 $type = $val['type'] ?? 'singleline';
 
                 $columns['col' . $key] = [
