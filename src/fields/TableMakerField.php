@@ -13,6 +13,9 @@ use craft\helpers\Db;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\Template;
+use craft\validators\ColorValidator;
+use craft\validators\HandleValidator;
+use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 
 use yii\db\Schema;
@@ -172,6 +175,33 @@ class TableMakerField extends Field
         }
 
         return parent::serializeValue($value, $element);
+    }
+
+    public function getElementValidationRules(): array
+    {
+        return ['validateTableData'];
+    }
+
+    public function validateTableData(ElementInterface $element): void
+    {
+        $value = $element->getFieldValue($this->handle);
+        $rows = $value['rows'] ?? [];
+        $columns = $value['columns'] ?? [];
+
+        if (!empty($rows) && !empty($columns)) {
+            foreach ($rows as &$row) {
+                foreach ($columns as $colId => $col) {
+                    if (is_string($row[$colId])) {
+                        // Trim the value before validating
+                        $row[$colId] = trim($row[$colId]);
+                    }
+
+                    if (!$this->_validateCellValue($col['type'], $row[$colId], $error)) {
+                        $element->addError($this->handle, $error);
+                    }
+                }
+            }
+        }
     }
 
     public function getSettingsHtml(): ?string
@@ -434,5 +464,36 @@ class TableMakerField extends Field
         ]));
 
         return $tableMakerType;
+    }
+
+
+    // Private Methods
+    // =========================================================================
+
+    private function _validateCellValue(string $type, mixed $value, ?string &$error = null): bool
+    {
+        if ($value === null || $value === '') {
+            return true;
+        }
+
+        switch ($type) {
+            case 'color':
+                /** @var ColorData $value */
+                $value = $value->getHex();
+                $validator = new ColorValidator();
+                break;
+            case 'url':
+                $validator = new UrlValidator();
+                break;
+            case 'email':
+                $validator = new EmailValidator();
+                break;
+            default:
+                return true;
+        }
+
+        $validator->message = str_replace('{attribute}', '{value}', $validator->message);
+        
+        return $validator->validate($value, $error);
     }
 }
