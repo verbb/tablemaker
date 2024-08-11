@@ -9,6 +9,14 @@
 ### Fixed
 - Fix an error in Craft 4.6.0 where dropdown column options weren’t saving correctly.
 
+## 4.0.11 - 2024-04-29
+
+### Changed
+- Update English translations.
+
+### Fixed
+- Fix an error when initializing the field in some instances.
+
 ## 4.0.10 - 2024-03-26
 
 ### Fixed

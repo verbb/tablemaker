@@ -13,6 +13,9 @@ use craft\helpers\Db;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\Template;
+use craft\validators\ColorValidator;
+use craft\validators\HandleValidator;
+use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 
 use yii\db\Schema;
@@ -179,6 +182,33 @@ class TableMakerField extends Field
         return parent::serializeValue($value, $element);
     }
 
+    public function getElementValidationRules(): array
+    {
+        return ['validateTableData'];
+    }
+
+    public function validateTableData(ElementInterface $element): void
+    {
+        $value = $element->getFieldValue($this->handle);
+        $rows = $value['rows'] ?? [];
+        $columns = $value['columns'] ?? [];
+
+        if (!empty($rows) && !empty($columns)) {
+            foreach ($rows as &$row) {
+                foreach ($columns as $colId => $col) {
+                    if (is_string($row[$colId])) {
+                        // Trim the value before validating
+                        $row[$colId] = trim($row[$colId]);
+                    }
+
+                    if (!$this->_validateCellValue($col['type'], $row[$colId], $error)) {
+                        $element->addError($this->handle, $error);
+                    }
+                }
+            }
+        }
+    }
+
     public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('tablemaker/_field/settings', [
@@ -194,6 +224,7 @@ class TableMakerField extends Field
         $columnType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($columnTypeName, new ObjectType([
             'name' => $columnTypeName,
             'fields' => [
+                'type' => Type::string(),
                 'heading' => Type::string(),
                 'width' => Type::string(),
                 'align' => Type::string(),
@@ -264,6 +295,11 @@ class TableMakerField extends Field
         // get columns from db or fall back to default
         if (!empty($value['columns'])) {
             foreach ($value['columns'] as $key => $val) {
+                // Just in case there's invalid data
+                if (!isset($val['heading'])) {
+                    continue;
+                }
+
                 $type = $val['type'] ?? 'singleline';
 
                 $columns['col' . $key] = [
@@ -437,5 +473,36 @@ class TableMakerField extends Field
         ]);
 
         return $input . $columnsField . $rowsField;
+    }
+
+
+    // Private Methods
+    // =========================================================================
+
+    private function _validateCellValue(string $type, mixed $value, ?string &$error = null): bool
+    {
+        if ($value === null || $value === '') {
+            return true;
+        }
+
+        switch ($type) {
+            case 'color':
+                /** @var ColorData $value */
+                $value = $value->getHex();
+                $validator = new ColorValidator();
+                break;
+            case 'url':
+                $validator = new UrlValidator();
+                break;
+            case 'email':
+                $validator = new EmailValidator();
+                break;
+            default:
+                return true;
+        }
+
+        $validator->message = str_replace('{attribute}', '{value}', $validator->message);
+        
+        return $validator->validate($value, $error);
     }
 }
