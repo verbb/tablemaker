@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.0.12 - 2024-08-12
+
+### Changed
+- Update English translations.
+
+### Fixed
+- Fix an error when initializing the field in some instances.
+
 ## 4.0.11 - 2024-04-29
 
 ### Changed
