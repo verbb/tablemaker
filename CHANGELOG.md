@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.0.1 - 2024-08-11
+
+### Changed
+- Update English translations.
+
+### Fixed
+- Fix an error when initializing the field in some instances.
+
 ## 5.0.0 - 2024-05-12
 
 ### Changed
