@@ -196,7 +196,9 @@ class TableMakerField extends Field
                         $row[$colId] = trim($row[$colId]);
                     }
 
-                    if (!$this->_validateCellValue($col['type'], $row[$colId], $error)) {
+                    $type = $col['type'] ?? null;
+
+                    if ($type && !$this->_validateCellValue($type, $row[$colId], $error)) {
                         $element->addError($this->handle, $error);
                     }
                 }
