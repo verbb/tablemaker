@@ -128,7 +128,7 @@ Craft.TableMaker = Garnish.Base.extend({
     },
 
     initRowsTable: function(columns) {
-        this.rowsTable = new Craft.EditableTable(this.rowsTableId, this.rowsTableName, this.columns, {
+        this.rowsTable = new RowTable(this, this.rowsTableId, this.rowsTableName, this.columns, {
             rowIdPrefix: 'row',
             allowAdd: true,
             allowDelete: true,
@@ -260,6 +260,11 @@ var ColumnTable = Craft.EditableTable.extend({
             return false;
         }
 
+        return true;
+    },
+
+    isVisible: function() {
+        // Fix an issue with collapsed Matrix fields - https://github.com/verbb/tablemaker/issues/47
         return true;
     },
 
@@ -420,7 +425,31 @@ ColumnTable.Row = Craft.EditableTable.Row.extend({
         this.table.fieldSettings.columnOptions[this.id] = this.options;
         this.optionsInput.val(JSON.stringify(this.options));
     },
+});
 
+var RowTable = Craft.EditableTable.extend({
+    fieldSettings: null,
+
+    init: function(fieldSettings, id, baseName, columns, settings) {
+        // Disable Craft's lazy table behaviour - https://github.com/verbb/tablemaker/issues/44
+        settings.lazyInitRows = false;
+
+        this.fieldSettings = fieldSettings;
+        this.base(id, baseName, columns, settings);
+    },
+
+    initialize: function() {
+        if (!this.base()) {
+            return false;
+        }
+
+        return true;
+    },
+
+    isVisible: function() {
+        // Fix an issue with collapsed Matrix fields - https://github.com/verbb/tablemaker/issues/47
+        return true;
+    },
 });
 
 /*
