@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.0.2 - 2024-09-04
+
+### Fixed
+- Fix an error when trying to validate column values.
+- Fix an issue where Tablemaker JS wasn’t re-initialized when toggling Matrix blocks collapsed state.
+
 ## 5.0.1 - 2024-08-11
 
 ### Changed
