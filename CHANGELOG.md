@@ -17,6 +17,11 @@
 ### Fixed
 - Fix an error in Craft 4.6.0 where dropdown column options weren’t saving correctly.
 
+## 4.0.13 - 2024-09-04
+
+### Fixed
+- Fix an error when trying to validate column values.
+
 ## 4.0.12 - 2024-08-12
 
 ### Changed
