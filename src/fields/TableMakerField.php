@@ -19,6 +19,7 @@ use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 
 use yii\db\Schema;
+use yii\validators\EmailValidator;
 
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
