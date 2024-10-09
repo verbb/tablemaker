@@ -23,6 +23,11 @@
 ### Fixed
 - Fix an error in Craft 4.6.0 where dropdown column options weren’t saving correctly.
 
+## 4.0.14 - 2024-10-09
+
+### Fixed
+- Fix email validation for cell value.
+
 ## 4.0.13 - 2024-09-04
 
 ### Fixed
