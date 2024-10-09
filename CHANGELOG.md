@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.0.3 - 2024-10-09
+
+### Fixed
+- Fix email validation for cell value.
+
 ## 5.0.2 - 2024-09-04
 
 ### Fixed
