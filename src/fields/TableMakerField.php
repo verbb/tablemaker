@@ -445,6 +445,15 @@ class TableMakerField extends Field
                             $source['rows'] = [];
                         }
 
+                        // Normalize any rows.
+                        foreach ($source['rows'] as $rowKey => $row) {
+                            foreach ($row as $colKey => $column) {
+                                if (is_array($column) && (isset($column['date']) || isset($column['time']))) {
+                                    $source['rows'][$rowKey][$colKey] = DateTimeHelper::toIso8601($column);
+                                }
+                            }
+                        }
+
                         return $source['rows'];
                     }
                 ],
