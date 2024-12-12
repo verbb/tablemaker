@@ -28,6 +28,20 @@
     value: settings.columnsAddRowLabel,
 }) }}
 
+{{ forms.lightswitchField({
+    label: 'Enable Width Column' | t('tablemaker'),
+    instructions: 'Whether the "Width" column should be enabled.' | t('tablemaker'),
+    name: 'enableWidthColumn',
+    on: settings.enableWidthColumn,
+}) }}
+
+{{ forms.lightswitchField({
+    label: 'Enable Alignment Column' | t('tablemaker'),
+    instructions: 'Whether the "Alignment" column should be enabled.' | t('tablemaker'),
+    name: 'enableAlignmentColumn',
+    on: settings.enableAlignmentColumn,
+}) }}
+
 <h2>{{ 'Rows Table' | t('tablemaker') }}</h2>
 
 {{ forms.textField({
