@@ -51,6 +51,8 @@ class TableMakerField extends Field
     public ?string $columnsLabel = null;
     public ?string $columnsInstructions = null;
     public ?string $columnsAddRowLabel = null;
+    public bool $enableWidthColumn = true;
+    public bool $enableAlignmentColumn = true;
     public ?string $rowsLabel = null;
     public ?string $rowsInstructions = null;
     public ?string $rowsAddRowLabel = null;
@@ -120,8 +122,11 @@ class TableMakerField extends Field
         if (!empty($value['columns'])) {
             foreach ($value['columns'] as &$col) {
                 $html .= '<th align="' . ($col['align'] ?? "left") . '" width="' . ($col['width'] ?? "") . '">' . ($col['heading'] ?? "") . '</th>';
-                //json decode options array
-                if(isset($col['options']) && !is_array($col['options'])) $col['options'] = Json::decode($col['options']);
+
+                if (isset($col['options']) && !is_array($col['options'])) {
+                    $col['options'] = Json::decode($col['options']);
+                }
+
                 unset($col);
             }
         } else {
@@ -305,12 +310,12 @@ class TableMakerField extends Field
 
                 $type = $val['type'] ?? 'singleline';
 
-                $columns['col' . $key] = [
+                $columns['col' . $key] = array_filter([
                     'heading' => $val['heading'],
-                    'align' => $val['align'],
-                    'width' => $val['width'],
+                    'align' => $val['align'] ?? '',
+                    'width' => $val['width'] ?? '',
                     'type' => $type,
-                ];
+                ]);
 
                 if ($type === 'select') {
                     if (!isset($val['options'])) {
@@ -367,34 +372,35 @@ class TableMakerField extends Field
         // Make sure they are sorted alphabetically (post-translation)
         asort($typeOptions);
 
-        $columnSettings = [
+        $columnSettings = array_filter([
             'heading' => [
                 'heading' => Craft::t('tablemaker', 'Heading'),
                 'type' => 'singleline',
+                'class' => 'col-heading',
             ],
-            'width' => [
+            'width' => $this->enableWidthColumn ? [
                 'heading' => Craft::t('tablemaker', 'Width'),
-                'class' => 'code',
+                'class' => 'code col-width',
                 'type' => 'singleline',
                 'width' => 50,
-            ],
-            'align' => [
+            ] : null,
+            'align' => $this->enableAlignmentColumn ? [
                 'heading' => Craft::t('tablemaker', 'Alignment'),
-                'class' => 'thin',
+                'class' => 'thin col-align',
                 'type' => 'select',
                 'options' => [
                     'left' => Craft::t('tablemaker', 'Left'),
                     'center' => Craft::t('tablemaker', 'Center'),
                     'right' => Craft::t('tablemaker', 'Right'),
                 ],
-            ],
+            ] : null,
             'type' => [
                 'heading' => Craft::t('tablemaker', 'Type'),
-                'class' => 'thin',
+                'class' => 'thin col-type',
                 'type' => 'select',
                 'options' => $typeOptions,
-            ]
-        ];
+            ],
+        ]);
 
         $dropdownSettingsCols = [
             'label' => [

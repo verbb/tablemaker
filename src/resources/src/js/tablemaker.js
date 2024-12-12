@@ -289,7 +289,7 @@ ColumnTable.Row = Craft.EditableTable.Row.extend({
             this.options = this.table.fieldSettings.columns[this.id].options || [];
         }
 
-        var $typeCell = this.$tr.find('td:nth-child(4)');
+        var $typeCell = this.$tr.find('td.col-type');
         var $typeSelectContainer = $typeCell.find('.select');
         this.$settingsBtn = $typeCell.find('.settings');
 
