@@ -316,16 +316,17 @@ class TableMakerField extends Field
             'heading' => [
                 'heading' => Craft::t('tablemaker', 'Heading'),
                 'type' => 'singleline',
+                'class' => 'col-heading',
             ],
             'width' => $this->enableWidthColumn ? [
                 'heading' => Craft::t('tablemaker', 'Width'),
-                'class' => 'code',
+                'class' => 'code col-width',
                 'type' => 'singleline',
                 'width' => 50,
             ] : null,
             'align' => $this->enableAlignmentColumn ? [
                 'heading' => Craft::t('tablemaker', 'Alignment'),
-                'class' => 'thin',
+                'class' => 'thin col-align',
                 'type' => 'select',
                 'options' => [
                     'left' => Craft::t('tablemaker', 'Left'),
@@ -335,7 +336,7 @@ class TableMakerField extends Field
             ] : null,
             'type' => [
                 'heading' => Craft::t('tablemaker', 'Type'),
-                'class' => 'thin',
+                'class' => 'thin col-type',
                 'type' => 'select',
                 'options' => $typeOptions,
             ],
