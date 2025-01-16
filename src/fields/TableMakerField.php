@@ -99,6 +99,10 @@ class TableMakerField extends Field
             case 'date':
             case 'time':
                 return DateTimeHelper::toIso8601($value);
+
+            case 'multiline':
+                return nl2br($value);
+
         }
 
         return $value;
