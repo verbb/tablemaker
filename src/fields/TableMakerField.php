@@ -108,7 +108,17 @@ class TableMakerField extends Field
         return $value;
     }
 
-    public function normalizeValue(mixed $value, ElementInterface $element = null): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
+    {
+        return $this->_normalizeValueInternal($value, $element, false);
+    }
+
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
+    {
+        return $this->_normalizeValueInternal($value, $element, true);
+    }
+
+    private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): ?array
     {
         if (!is_array($value)) {
             $value = Json::decode($value);
@@ -151,7 +161,7 @@ class TableMakerField extends Field
                 $i = 0;
                 foreach ($row as $key => $cell) {
                     $type = $value['columns'][$key]['type'] ?? 'singleline';
-                    $cell = $this->normalizeCellValue($type, $cell);
+                    $cell = $this->normalizeCellValue($type, $cell, $fromRequest);
 
                     $align = $value['columns'][$key]['align'] ?? $value['columns'][$i]['align'] ?? '';
                     $html .= '<td align="' . $align . '">' . $cell . '</td>';
