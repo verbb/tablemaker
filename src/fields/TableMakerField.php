@@ -98,7 +98,7 @@ class TableMakerField extends Field
 
             case 'date':
             case 'time':
-                return json_encode(DateTimeHelper::toIso8601($value)) ?: null;
+                return DateTimeHelper::toIso8601($value);
         }
 
         return $value;
