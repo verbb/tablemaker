@@ -12,6 +12,7 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
@@ -209,7 +210,9 @@ class TableMakerField extends Field
 
                     $type = $col['type'] ?? null;
 
-                    if ($type && !$this->_validateCellValue($type, $row[$colId], $error)) {
+                    $normalizedValue = $this->normalizeCellValue($type, $row[$colId]);
+
+                    if ($type && !$this->_validateCellValue($type, $normalizedValue, $error)) {
                         $element->addError($this->handle, $error);
                     }
                 }
@@ -496,8 +499,10 @@ class TableMakerField extends Field
 
         switch ($type) {
             case 'color':
-                /** @var ColorData $value */
-                $value = $value->getHex();
+                if ($value instanceof ColorData) {
+                    $value = $value->getHex();
+                }
+
                 $validator = new ColorValidator();
                 break;
             case 'url':
