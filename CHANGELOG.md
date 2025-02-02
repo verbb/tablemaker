@@ -1,5 +1,17 @@
 # Changelog
 
+## 5.0.4 - 2025-02-02
+
+### Added
+- Add the ability to enable/disable the Width and Alignment columns for the Column table.
+- Add placeholders in field settings for default values.
+
+### Fixed
+- Fix an error when querying Table Maker fields with Date or Time columns.
+- Fix output of Multi-Line cell type values.
+- Fix output of Date cell type values.
+- Fix validation for some cell types.
+
 ## 5.0.3 - 2024-10-09
 
 ### Fixed
