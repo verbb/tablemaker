@@ -28,6 +28,15 @@
 ### Fixed
 - Fix an error in Craft 4.6.0 where dropdown column options weren’t saving correctly.
 
+## 4.0.15 - 2025-02-02
+
+### Added
+- Add the ability to enable/disable the Width and Alignment columns for the Column table.
+- Add placeholders in field settings for default values.
+
+### Fixed
+- Fix an error when querying Table Maker fields with Date or Time columns.
+
 ## 4.0.14 - 2024-10-09
 
 ### Fixed
