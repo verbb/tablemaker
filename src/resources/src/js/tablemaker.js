@@ -211,20 +211,31 @@ Craft.TableMaker = Garnish.Base.extend({
         }
 
         //convert date cells JS date object
-        var dateColIds = [];
+        for (var rowKey in rows) {
+            for (var colKey in this.columns) {
+                if (this.columns[colKey].type === 'date') {
+                    var dateArray = rows[rowKey][colKey];
 
-        for (var colKey in this.columns) {
-            if (this.columns[colKey].type === 'date' || this.columns[colKey].type === 'time') {
-                dateColIds.push(colKey);
-            }
-        }
-        
-        if (dateColIds.length) {
-            for (var rowKey in rows) {
-                for (var i = 0; i < dateColIds.length; i++) {
-                    var dateArray = rows[rowKey][dateColIds[i]];
-                    var date = new Date(dateArray.date); //add check for time
-                    rows[rowKey][dateColIds[i]] = date;
+                    if (!dateArray.date || dateArray.date === 'NaN/NaN/NaN') {
+                        continue;
+                    }
+
+                    rows[rowKey][colKey] = new Date(dateArray.date);
+                }
+
+                if (this.columns[colKey].type === 'time') {
+                    var timeArray = rows[rowKey][colKey];
+
+                    if (!timeArray.time) {
+                        continue;
+                    }
+
+                    // A little more challenging to create a date object with just time
+                    const now = new Date();
+                    const parsedTime = new Date(`1970-01-01 ${timeArray.time}`);
+                    now.setHours(parsedTime.getHours(), parsedTime.getMinutes(), 0, 0);
+
+                    rows[rowKey][colKey] = now;
                 }
             }
         }
