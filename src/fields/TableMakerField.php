@@ -222,7 +222,7 @@ class TableMakerField extends Field
                         $row[$colId] = trim($row[$colId]);
                     }
 
-                    $type = $col['type'] ?? null;
+                    $type = $col['type'] ?? 'singleLine';
 
                     $normalizedValue = $this->normalizeCellValue($type, $row[$colId]);
 
