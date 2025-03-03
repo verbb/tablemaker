@@ -202,7 +202,7 @@ class TableMakerField extends Field
                         $row[$colId] = trim($row[$colId]);
                     }
 
-                    $type = $col['type'] ?? null;
+                    $type = $col['type'] ?? 'singleLine';
 
                     if ($type && !$this->_validateCellValue($type, $row[$colId], $error)) {
                         $element->addError($this->handle, $error);
