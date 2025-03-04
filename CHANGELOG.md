@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.0.5 - 2025-03-04
+
+### Fixed
+- Fix an error when normalizing columns.
+
 ## 5.0.4 - 2025-02-02
 
 ### Added
