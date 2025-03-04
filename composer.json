@@ -2,7 +2,7 @@
     "name": "verbb/tablemaker",
     "description": "Create customizable and user-defined table fields.",
     "type": "craft-plugin",
-    "version": "4.0.15",
+    "version": "4.0.16",
     "keywords": [
         "craft",
         "cms",

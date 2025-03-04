@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.16 - 2025-03-04
+
+### Fixed
+- Fix an error when normalizing columns.
+
 ## 4.0.15 - 2025-02-02
 
 ### Added
