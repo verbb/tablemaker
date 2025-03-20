@@ -27,7 +27,19 @@ Here is an example of how you might do just that:
         {% for row in entry.myTableField.rows %}
             <tr>
                 {% for cell in row %}
-                    <td align="{{ entry.myTableField.columns[loop.index0].align }}">{{ cell }}</td>
+                    {% set col = entry.myTableField.columns[loop.index0] %}
+
+                    <td align="{{ col.align }}">
+                        {% if col.type == 'url' %}
+                            <a href="{{ cell }}">{{ cell }}</a>
+                        {% elseif col.type == 'date' %}
+                            {{ cell | date('short') }}
+                        {% elseif col.type == 'time' %}
+                            {{ cell | date('short') }}
+                        {% else %}
+                            {{ cell }}
+                        {% endif %}
+                    </td>
                 {% endfor %}
             </tr>
         {% endfor %}
