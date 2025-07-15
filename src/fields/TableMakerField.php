@@ -268,7 +268,22 @@ class TableMakerField extends Field
                             $source['rows'] = [];
                         }
 
-                        return $source['rows'];
+                        if (!is_array($source['columns'])) {
+                            $source['columns'] = [];
+                        }
+
+                        foreach ($source['rows'] as $rowKey => $row) {
+                            foreach ($source['columns'] as $columnKey => $column) {
+                                if ($column['type'] === 'date' || $column['type'] === 'time') {
+                                    $value = $row[$columnKey] ?? null;
+
+                                    $source['rows'][$rowKey][$columnKey] = DateTimeHelper::toIso8601($value);
+                                }
+
+                            }
+                        }
+
+                        return $source['rows'] ?? [];
                     }
                 ],
                 'columns' => [
