@@ -11,6 +11,8 @@ return [
   'Column Label' => 'Column Label',
   'Columns Table' => 'Columns Table',
   'Define the columns your table should have.' => 'Define the columns your table should have.',
+  'Enable Alignment Column' => 'Enable Alignment Column',
+  'Enable Width Column' => 'Enable Width Column',
   'Heading' => 'Heading',
   'Input the content of your table.' => 'Input the content of your table.',
   'Left' => 'Left',
@@ -28,5 +30,7 @@ return [
   'The row instructions.' => 'The row instructions.',
   'The row label.' => 'The row label.',
   'Type' => 'Type',
+  'Whether the "Alignment" column should be enabled.' => 'Whether the "Alignment" column should be enabled.',
+  'Whether the "Width" column should be enabled.' => 'Whether the "Width" column should be enabled.',
   'Width' => 'Width',
 ];
