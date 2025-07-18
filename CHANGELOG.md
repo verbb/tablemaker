@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.0.6 - 2025-07-18
+
+### Changed
+- Update English translations.
+
+### Fixed
+- Fix Date and Time column values in GraphQL.
+
 ## 5.0.5 - 2025-03-04
 
 ### Fixed
