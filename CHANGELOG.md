@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.17 - 2025-07-18
+
+### Changed
+- Update English translations.
+
 ## 4.0.16 - 2025-03-04
 
 ### Fixed
