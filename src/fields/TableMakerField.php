@@ -274,7 +274,9 @@ class TableMakerField extends Field
 
                         foreach ($source['rows'] as $rowKey => $row) {
                             foreach ($source['columns'] as $columnKey => $column) {
-                                if ($column['type'] === 'date' || $column['type'] === 'time') {
+                                $type = $column['type'] ?? 'singleline';
+
+                                if ($type === 'date' || $type === 'time') {
                                     $value = $row[$columnKey] ?? null;
 
                                     $source['rows'][$rowKey][$columnKey] = DateTimeHelper::toIso8601($value);
