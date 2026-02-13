@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.0.7 - 2026-02-13
+
+### Fixed
+- Fix an error when querying Table Maker fields via GraphQL, where `type` did not exist on a column definition.
+
 ## 5.0.6 - 2025-07-18
 
 ### Changed
