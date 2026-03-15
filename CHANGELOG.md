@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.0.8 - 2026-03-15
+
+### Fixed
+- Fix alignment options not working correctly.
+
 ## 5.0.7 - 2026-02-13
 
 ### Fixed
