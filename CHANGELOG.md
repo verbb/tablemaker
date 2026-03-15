@@ -58,6 +58,11 @@
 ### Fixed
 - Fix an error in Craft 4.6.0 where dropdown column options weren’t saving correctly.
 
+## 4.0.18 - 2026-03-15
+
+### Fixed
+- Fix alignment options not working correctly.
+
 ## 4.0.17 - 2025-07-18
 
 ### Changed

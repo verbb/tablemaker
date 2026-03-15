@@ -136,7 +136,8 @@ class TableMakerField extends Field
 
         if (!empty($value['columns'])) {
             foreach ($value['columns'] as &$col) {
-                $html .= '<th align="' . ($col['align'] ?? "left") . '" width="' . ($col['width'] ?? "") . '">' . ($col['heading'] ?? "") . '</th>';
+                $align = $this->_normalizeAlignment($col['align'] ?? 'left') ?: 'left';
+                $html .= '<th align="' . $align . '" style="text-align: ' . $align . ';" width="' . ($col['width'] ?? "") . '">' . ($col['heading'] ?? "") . '</th>';
 
                 if (isset($col['options']) && !is_array($col['options'])) {
                     $col['options'] = Json::decode($col['options']);
@@ -163,8 +164,9 @@ class TableMakerField extends Field
                     $type = $value['columns'][$key]['type'] ?? 'singleline';
                     $cell = $this->normalizeCellValue($type, $cell, $fromRequest);
 
-                    $align = $value['columns'][$key]['align'] ?? $value['columns'][$i]['align'] ?? '';
-                    $html .= '<td align="' . $align . '">' . $cell . '</td>';
+                    $align = $this->_normalizeAlignment($value['columns'][$key]['align'] ?? $value['columns'][$i]['align'] ?? '');
+                    $alignAttr = $align ? (' align="' . $align . '" style="text-align: ' . $align . ';"') : '';
+                    $html .= '<td' . $alignAttr . '>' . $cell . '</td>';
                     $i++;
                 }
 
@@ -549,5 +551,16 @@ class TableMakerField extends Field
         $validator->message = str_replace('{attribute}', '{value}', $validator->message);
         
         return $validator->validate($value, $error);
+    }
+
+    private function _normalizeAlignment(?string $align): string
+    {
+        $align = strtolower((string)$align);
+
+        if (in_array($align, ['left', 'center', 'right'], true)) {
+            return $align;
+        }
+
+        return '';
     }
 }
