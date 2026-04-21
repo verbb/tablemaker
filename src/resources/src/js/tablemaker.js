@@ -124,7 +124,10 @@ Craft.TableMaker = Garnish.Base.extend({
 
         this.bindColumnsTableChanges();
 
-        this.columnsTable.sorter.settings.onSortChange = $.proxy(this, 'reconstructRowsTable');
+        // Craft 5.9+ only creates EditableTable.sorter when Craft.hasMousePointerEvents() is true.
+        if (this.columnsTable.sorter) {
+            this.columnsTable.sorter.settings.onSortChange = $.proxy(this, 'reconstructRowsTable');
+        }
     },
 
     initRowsTable: function(columns) {
@@ -139,7 +142,9 @@ Craft.TableMaker = Garnish.Base.extend({
 
         this.bindRowsTableTextChanges();
 
-        this.rowsTable.sorter.settings.onSortChange = $.proxy(this, 'makeDataBlob');
+        if (this.rowsTable.sorter) {
+            this.rowsTable.sorter.settings.onSortChange = $.proxy(this, 'makeDataBlob');
+        }
     },
 
     reconstructRowsTable: function() {
