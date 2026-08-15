@@ -190,6 +190,7 @@ Craft.TableMaker = Garnish.Base.extend({
         // get data out from the tables
         var columns = Craft.expandPostArray(Garnish.getPostData(this.columnsTable.$tbody));
         var rows = Craft.expandPostArray(Garnish.getPostData(this.rowsTable.$tbody));
+        var liveDateTimes = this.getLiveDateTimeValues();
 
         // travel down the input paths to find where the data we’re interested in actually is
         if (!$.isEmptyObject(columns)) {
@@ -215,37 +216,186 @@ Craft.TableMaker = Garnish.Base.extend({
             }
         }
 
-        //convert date cells JS date object
+        // Convert date/time cells to JS Date objects for Craft.EditableTable.createRow()
         for (var rowKey in rows) {
             for (var colKey in this.columns) {
+                var liveValue = liveDateTimes[rowKey] ? liveDateTimes[rowKey][colKey] : null;
+
                 if (this.columns[colKey].type === 'date') {
-                    var dateArray = rows[rowKey][colKey];
+                    var parsedDate = this.parseTableDate(rows[rowKey][colKey], liveValue);
 
-                    if (!dateArray.date || dateArray.date === 'NaN/NaN/NaN') {
-                        continue;
+                    if (parsedDate) {
+                        rows[rowKey][colKey] = parsedDate;
                     }
-
-                    rows[rowKey][colKey] = new Date(dateArray.date);
                 }
 
                 if (this.columns[colKey].type === 'time') {
-                    var timeArray = rows[rowKey][colKey];
+                    var parsedTime = this.parseTableTime(rows[rowKey][colKey], liveValue);
 
-                    if (!timeArray.time) {
-                        continue;
+                    if (parsedTime) {
+                        rows[rowKey][colKey] = parsedTime;
                     }
-
-                    // A little more challenging to create a date object with just time
-                    const now = new Date();
-                    const parsedTime = new Date(`1970-01-01 ${timeArray.time}`);
-                    now.setHours(parsedTime.getHours(), parsedTime.getMinutes(), 0, 0);
-
-                    rows[rowKey][colKey] = now;
                 }
             }
         }
 
         this.rows = rows;
+    },
+
+    getLiveDateTimeValues: function() {
+        var values = {};
+        var tableMaker = this;
+
+        if (!this.rowsTable || !this.rowsTable.$tbody) {
+            return values;
+        }
+
+        this.rowsTable.$tbody.find('.datewrapper input.hasDatepicker').each(function() {
+            var $input = $(this);
+            var date = $input.datepicker('getDate');
+            var parts;
+
+            if (!date || isNaN(date.getTime())) {
+                return;
+            }
+
+            parts = tableMaker.parseRowColFromInputName($input.attr('name'));
+
+            if (!parts) {
+                return;
+            }
+
+            values[parts.rowKey] = values[parts.rowKey] || {};
+            values[parts.rowKey][parts.colKey] = date;
+        });
+
+        this.rowsTable.$tbody.find('.timewrapper input.ui-timepicker-input').each(function() {
+            var $input = $(this);
+            var seconds;
+            var parts;
+            var timeDate;
+
+            try {
+                seconds = $input.timepicker('getSecondsFromMidnight');
+            } catch (e) {
+                return;
+            }
+
+            if (seconds === null || typeof seconds === 'undefined' || isNaN(seconds)) {
+                return;
+            }
+
+            parts = tableMaker.parseRowColFromInputName($input.attr('name'));
+
+            if (!parts) {
+                return;
+            }
+
+            timeDate = new Date();
+            timeDate.setHours(Math.floor(seconds / 3600), Math.floor((seconds % 3600) / 60), 0, 0);
+
+            values[parts.rowKey] = values[parts.rowKey] || {};
+            values[parts.rowKey][parts.colKey] = timeDate;
+        });
+
+        return values;
+    },
+
+    parseRowColFromInputName: function(name) {
+        var match = (name || '').match(/\[([^\]]+)\]\[([^\]]+)\]\[(?:date|time)\]$/);
+
+        if (!match) {
+            return null;
+        }
+
+        return {
+            rowKey: match[1],
+            colKey: match[2],
+        };
+    },
+
+    parseTableDate: function(value, liveDate) {
+        if (this.isValidDate(liveDate)) {
+            return liveDate;
+        }
+
+        if (!value) {
+            return null;
+        }
+
+        if (this.isValidDate(value)) {
+            return value;
+        }
+
+        var dateString = typeof value === 'object' ? value.date : value;
+        var isoParts;
+        var isoDate;
+        var parsedDate;
+
+        if (!dateString || String(dateString).indexOf('NaN') !== -1) {
+            return null;
+        }
+
+        dateString = String(dateString).trim();
+
+        // Mobile native date inputs use ISO Y-m-d
+        if (/^\d{4}-\d{2}-\d{2}/.test(dateString)) {
+            isoParts = dateString.split('T')[0].split('-');
+            isoDate = new Date(parseInt(isoParts[0], 10), parseInt(isoParts[1], 10) - 1, parseInt(isoParts[2], 10));
+
+            return this.isValidDate(isoDate) ? isoDate : null;
+        }
+
+        if ($.datepicker && Craft.datepickerOptions && Craft.datepickerOptions.dateFormat) {
+            try {
+                parsedDate = $.datepicker.parseDate(Craft.datepickerOptions.dateFormat, dateString);
+            } catch (e) {
+                parsedDate = null;
+            }
+
+            if (this.isValidDate(parsedDate)) {
+                return parsedDate;
+            }
+        }
+
+        return null;
+    },
+
+    parseTableTime: function(value, liveTime) {
+        if (this.isValidDate(liveTime)) {
+            return liveTime;
+        }
+
+        if (!value) {
+            return null;
+        }
+
+        if (this.isValidDate(value)) {
+            return value;
+        }
+
+        var timeString = typeof value === 'object' ? value.time : value;
+        var parsedTime;
+        var now;
+
+        if (!timeString) {
+            return null;
+        }
+
+        parsedTime = new Date('1970-01-01 ' + timeString);
+
+        if (!this.isValidDate(parsedTime)) {
+            return null;
+        }
+
+        now = new Date();
+        now.setHours(parsedTime.getHours(), parsedTime.getMinutes(), 0, 0);
+
+        return now;
+    },
+
+    isValidDate: function(value) {
+        return value && typeof value.getMonth === 'function' && !isNaN(value.getTime());
     },
 
     makeDataBlob: function() {
