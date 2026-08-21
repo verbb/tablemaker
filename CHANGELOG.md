@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.0.10 - 2026-08-20
+
+### Fixed
+- Fix Date column values becoming invalid when changing column width or alignment. #68.
+
 ## 5.0.9 - 2026-04-29
 
 ### Fixed
