@@ -1,2 +1,0 @@
-var e=globalThis.HTMLElement!==void 0&&Object.prototype.hasOwnProperty.call(globalThis.HTMLElement.prototype,`popover`),t=[`pk-icon`,`pk-button`,`pk-editable-table`,`pk-dialog`];export{e as n,t};
-//# sourceMappingURL=tablemakerPkComponents-DiX5y9Zv.js.map

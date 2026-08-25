@@ -31,6 +31,12 @@
     display: block;
 }
 
+/* Per-value caption (#60) — below the content grid when enableCaption is on. */
+.tm-caption-field {
+    display: block;
+    margin-top: var(--pk-spacing-3, 0.75rem);
+}
+
 /* Row-heading columns: editable text with header-like weight (#6). */
 .tm-content-table td.tm-row-heading {
     font-weight: 600;

@@ -51,6 +51,20 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public ?string $rowsAddRowLabel = null;
 
     /**
+     * Whether editors can set a per-value table caption (#60).
+     */
+    public bool $enableCaption = false;
+
+    /** CP label for the caption input when {@see $enableCaption} is on. */
+    public ?string $captionLabel = null;
+
+    /** CP instructions for the caption input when {@see $enableCaption} is on. */
+    public ?string $captionInstructions = null;
+
+    /** Placeholder for the caption input; empty by default (no placeholder shown). */
+    public ?string $captionPlaceholder = null;
+
+    /**
      * Column type handles editors may use. `*` = all built-in types (#53).
      *
      * @var string|string[]|null
@@ -296,7 +310,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             return '';
         }
 
-        return TableValue::searchKeywords($data->columns, $data->rows);
+        return TableValue::searchKeywords($data->columns, $data->rows, $data->caption);
     }
 
     public function getElementValidationRules(): array
@@ -422,6 +436,14 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                             return array_values($data->columns);
                         },
                     ],
+                    'caption' => [
+                        'type' => Type::string(),
+                        'resolve' => static function($source) {
+                            $data = TableValue::normalize($source, false);
+
+                            return $data->caption !== '' ? $data->caption : null;
+                        },
+                    ],
                     'table' => [
                         'type' => Type::string(),
                         'resolve' => static function($source) {
@@ -448,6 +470,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         $data = TableValue::normalize($value, false) ?? new TableMakerData();
         $columns = $data->columns;
         $rows = $data->rows;
+        $caption = $data->caption;
 
         if ($columns === []) {
             $columns = [
@@ -498,6 +521,17 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             'name' => $this->handle,
             'columns' => $columns,
             'rows' => $rows,
+            'caption' => $caption,
+            'enableCaption' => $this->enableCaption,
+            'captionLabel' => $this->captionLabel
+                ? Craft::t('tablemaker', $this->captionLabel)
+                : Craft::t('tablemaker', 'Caption'),
+            'captionInstructions' => $this->captionInstructions
+                ? Craft::t('tablemaker', $this->captionInstructions)
+                : '',
+            'captionPlaceholder' => $this->captionPlaceholder
+                ? Craft::t('tablemaker', $this->captionPlaceholder)
+                : '',
             'typeOptions' => $typeOptions,
             'enableWidthColumn' => $this->enableWidthColumn,
             'enableAlignmentColumn' => $this->enableAlignmentColumn,
@@ -510,10 +544,11 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                 : Craft::t('tablemaker', 'Add a row'),
         ];
 
-        $valueBlob = Json::encode([
+        $valueBlob = Json::encode(array_filter([
             'columns' => $columns,
             'rows' => $rows,
-        ], JSON_UNESCAPED_UNICODE);
+            'caption' => $caption !== '' ? $caption : null,
+        ], static fn($v) => $v !== null), JSON_UNESCAPED_UNICODE);
 
         return $view->renderTemplate('tablemaker/_field/input', [
             'name' => $this->handle,

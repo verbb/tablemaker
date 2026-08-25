@@ -16,6 +16,7 @@
 
 ### Added
 - Add **Row heading** column type (Craft Table parity): editable in the CP, rendered as `<th scope="row">` in `.table` HTML ([#6](https://github.com/verbb/tablemaker/issues/6)).
+- Add optional per-value table **caption** field ([#60](https://github.com/verbb/tablemaker/issues/60)).
 - Paste spreadsheet TSV into the content grid from the focused cell; rows expand within max-row limits ([#7](https://github.com/verbb/tablemaker/issues/7)).
 - Insert row above/below from the row actions menu ([#20](https://github.com/verbb/tablemaker/issues/20)).
 - Add field setting to restrict which column types editors can choose, with an “All” (`*`) default ([#53](https://github.com/verbb/tablemaker/issues/53)).

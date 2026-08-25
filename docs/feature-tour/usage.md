@@ -14,6 +14,8 @@ You can pass attributes for the root `<table>` element (values are encoded):
 {{ entry.myTableField.table({ class: 'specs', id: 'pricing', 'data-table': 'pricing' }) }}
 ```
 
+If the field has **Enable Caption** on and the entry has a caption set, the automatic HTML includes `<caption>…</caption>`. Access it with `{{ entry.myTableField.caption }}`.
+
 For full control over markup, prefer looping `columns` / `rows` below rather than extending the built-in HTML helper.
 ## Code your own
 Should you want more control over the output you can just access the column and row data directly instead using `{{ entry.myTableField.columns }}` and `{{ entry.myTableField.rows }}`.
@@ -58,4 +60,23 @@ Columns and rows use stable `colN` / `rowN` keys (matching the CP editor). Zip c
         {% endfor %}
     </tbody>
 </table>
+```
+
+## GraphQL
+
+Query the field like Twig — `columns`, positional `rows` (`[[String]]`), optional `caption`, and encoded `table` HTML:
+
+```graphql
+{
+  entry(id: 123) {
+    ... on page_Entry {
+      myTableField {
+        caption
+        columns { type heading width align options { label value } }
+        rows
+        table
+      }
+    }
+  }
+}
 ```

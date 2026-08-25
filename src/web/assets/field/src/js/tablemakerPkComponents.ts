@@ -5,4 +5,6 @@ export const TABLEMAKER_PK_COMPONENTS = [
     'pk-button',
     'pk-editable-table',
     'pk-dialog',
+    'pk-field',
+    'pk-input',
 ] as const;

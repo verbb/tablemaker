@@ -14,6 +14,40 @@
     on: settings.enableAlignmentColumn,
 }) }}
 
+{{ forms.lightswitchField({
+    label: 'Enable Caption' | t('tablemaker'),
+    instructions: 'Whether editors can set a caption for each table value.' | t('tablemaker'),
+    id: 'enableCaption',
+    name: 'enableCaption',
+    on: settings.enableCaption,
+    toggle: 'caption-settings',
+}) }}
+
+<div id="caption-settings" class="{{ not settings.enableCaption ? 'hidden' : '' }}">
+    {{ forms.textField({
+        label: 'Caption Label' | t('tablemaker'),
+        instructions: 'The caption field label shown to editors.' | t('tablemaker'),
+        name: 'captionLabel',
+        placeholder: 'Caption' | t('tablemaker'),
+        value: settings.captionLabel,
+    }) }}
+
+    {{ forms.textareaField({
+        label: 'Caption Instructions' | t('tablemaker'),
+        instructions: 'The caption field instructions shown to editors.' | t('tablemaker'),
+        name: 'captionInstructions',
+        value: settings.captionInstructions,
+        rows: 2,
+    }) }}
+
+    {{ forms.textField({
+        label: 'Caption Placeholder' | t('tablemaker'),
+        instructions: 'The caption field placeholder text.' | t('tablemaker'),
+        name: 'captionPlaceholder',
+        value: settings.captionPlaceholder,
+    }) }}
+</div>
+
 {% set allowedValues = field.allowedColumnTypes ?? '*' %}
 {% if allowedValues is same as([]) %}
     {% set allowedValues = '*' %}

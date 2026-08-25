@@ -32,7 +32,9 @@ export class TableMakerInput {
 
     private columns: ColumnDefinition[] = [];
     private contentRows: PkEditableTableRow[] = [];
+    private caption = '';
     private rowsTable: PkEditableTable | null = null;
+    private captionInput: (HTMLElement & { value: string }) | null = null;
 
     constructor(root: HTMLElement) {
         this.root = root;
@@ -48,6 +50,7 @@ export class TableMakerInput {
     init(): void {
         this.columns = seedColumns(this.settings);
         this.contentRows = seedContentRows(this.settings, this.columns);
+        this.caption = String(this.settings.caption ?? '').trim();
         this.render();
         this.syncValueBlob();
     }
@@ -61,7 +64,46 @@ export class TableMakerInput {
 
         mount.replaceChildren();
         mount.appendChild(this.buildContentTable());
+        // Caption is opt-in via field settings; keep stored value in the blob when hidden.
+        if (this.settings.enableCaption) {
+            mount.appendChild(this.buildCaptionField());
+        }
         this.mountEditColumnsAction();
+    }
+
+    /** Per-value caption below the grid (#60) — `pk-field` + `pk-input` → `<caption>` in `.table`. */
+    private buildCaptionField(): HTMLElement {
+        const labelText = (this.settings.captionLabel || '').trim()
+            || Craft.t('tablemaker', 'Caption');
+        const instructions = (this.settings.captionInstructions || '').trim();
+        const placeholder = (this.settings.captionPlaceholder || '').trim();
+
+        const field = document.createElement('pk-field') as HTMLElement & {
+            label: string;
+            instructions: string;
+        };
+        field.className = 'tm-caption-field';
+        field.label = labelText;
+        if (instructions) {
+            field.instructions = instructions;
+        }
+
+        // Nameless on purpose — value lives in the hidden JSON blob, not a parallel POST key.
+        const input = document.createElement('pk-input') as HTMLElement & { value: string };
+        input.setAttribute('width', 'full');
+        if (placeholder) {
+            input.setAttribute('placeholder', placeholder);
+        }
+        input.value = this.caption;
+        input.addEventListener('input', () => {
+            this.caption = input.value;
+            this.syncValueBlob();
+        });
+
+        field.appendChild(input);
+        this.captionInput = input;
+
+        return field;
     }
 
     /**
@@ -175,6 +217,11 @@ export class TableMakerInput {
             return;
         }
 
-        this.hiddenInput.value = serializeValueBlob(this.columns, this.contentRows, this.settings);
+        this.hiddenInput.value = serializeValueBlob(
+            this.columns,
+            this.contentRows,
+            this.settings,
+            this.caption,
+        );
     }
 }

@@ -13,8 +13,8 @@ use Traversable;
 use Twig\Markup;
 
 /**
- * Normalized field value: columns + rows only. `.table` HTML is built lazily and
- * never participates in serialize/DB storage.
+ * Normalized field value: columns + rows (+ optional caption). `.table` HTML is
+ * built lazily and never participates in serialize/DB storage.
  *
  * @implements ArrayAccess<string, mixed>
  * @implements IteratorAggregate<string, mixed>
@@ -27,16 +27,20 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
     /** @var array<string, array<string, mixed>> */
     public array $rows = [];
 
+    /** Optional per-value table caption (#60). */
+    public string $caption = '';
+
     private Markup|false|null $tableHtml = null;
 
     /**
      * @param array<string, array<string, mixed>> $columns
      * @param array<string, array<string, mixed>> $rows
      */
-    public function __construct(array $columns = [], array $rows = [])
+    public function __construct(array $columns = [], array $rows = [], string $caption = '')
     {
         $this->columns = $columns;
         $this->rows = $rows;
+        $this->caption = $caption;
     }
 
     /**
@@ -52,13 +56,13 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
         // Cache only the bare table; attributed renders are one-off.
         if ($attrs === []) {
             if ($this->tableHtml === null) {
-                $this->tableHtml = Template::raw(TableValue::renderHtml($this->columns, $this->rows));
+                $this->tableHtml = Template::raw(TableValue::renderHtml($this->columns, $this->rows, [], $this->caption));
             }
 
             return $this->tableHtml;
         }
 
-        return Template::raw(TableValue::renderHtml($this->columns, $this->rows, $attrs));
+        return Template::raw(TableValue::renderHtml($this->columns, $this->rows, $attrs, $this->caption));
     }
 
     /**
@@ -73,7 +77,7 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
 
     public function __isset(string $name): bool
     {
-        return in_array($name, ['columns', 'rows', 'table'], true);
+        return in_array($name, ['columns', 'rows', 'caption', 'table'], true);
     }
 
     public function __get(string $name): mixed
@@ -81,6 +85,7 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
         return match ($name) {
             'columns' => $this->columns,
             'rows' => $this->rows,
+            'caption' => $this->caption,
             'table' => $this->getTable(),
             default => null,
         };
@@ -104,6 +109,9 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
         } elseif ($offset === 'rows' && is_array($value)) {
             $this->rows = $value;
             $this->tableHtml = null;
+        } elseif ($offset === 'caption') {
+            $this->caption = trim((string)$value);
+            $this->tableHtml = null;
         }
     }
 
@@ -115,6 +123,9 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
         } elseif ($offset === 'rows') {
             $this->rows = [];
             $this->tableHtml = null;
+        } elseif ($offset === 'caption') {
+            $this->caption = '';
+            $this->tableHtml = null;
         }
     }
 
@@ -123,22 +134,23 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
         return new ArrayIterator([
             'columns' => $this->columns,
             'rows' => $this->rows,
+            'caption' => $this->caption,
             'table' => $this->getTable(),
         ]);
     }
 
     public function count(): int
     {
-        return 3;
+        return 4;
     }
 
     /**
      * Persistable payload — never includes derived `table` HTML.
      *
-     * @return array{columns: array<string, array<string, mixed>>, rows: array<string, array<string, mixed>>}
+     * @return array{columns: array<string, array<string, mixed>>, rows: array<string, array<string, mixed>>, caption?: string}
      */
     public function toStorage(): array
     {
-        return TableValue::toStorage($this->columns, $this->rows);
+        return TableValue::toStorage($this->columns, $this->rows, $this->caption);
     }
 }

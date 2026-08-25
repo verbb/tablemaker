@@ -12,6 +12,13 @@ export interface TableMakerSettings {
     name: string;
     columns: Record<string, TableColumn>;
     rows: Record<string, Record<string, unknown>>;
+    /** Optional per-value table caption (#60). */
+    caption?: string;
+    /** When false, the caption CP input is hidden (stored caption still preserved). */
+    enableCaption?: boolean;
+    captionLabel?: string;
+    captionInstructions?: string;
+    captionPlaceholder?: string;
     columnSettings?: Record<string, unknown>;
     typeOptions?: Record<string, string>;
     enableWidthColumn?: boolean;

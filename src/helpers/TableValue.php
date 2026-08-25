@@ -48,16 +48,17 @@ class TableValue
 
         $columns = self::canonicalizeColumns($value['columns'] ?? []);
         $rows = self::canonicalizeRows($value['rows'] ?? [], $columns, $fromRequest);
+        $caption = self::normalizeCaption($value['caption'] ?? '');
 
-        return new TableMakerData($columns, $rows);
+        return new TableMakerData($columns, $rows, $caption);
     }
 
     /**
      * @param array<string, array<string, mixed>> $columns
      * @param array<string, array<string, mixed>> $rows
-     * @return array{columns: array<string, array<string, mixed>>, rows: array<string, array<string, mixed>>}
+     * @return array{columns: array<string, array<string, mixed>>, rows: array<string, array<string, mixed>>, caption?: string}
      */
-    public static function toStorage(array $columns, array $rows): array
+    public static function toStorage(array $columns, array $rows, string $caption = ''): array
     {
         $outColumns = [];
         $outRows = [];
@@ -100,10 +101,23 @@ class TableValue
             $outRows[(string)$rowId] = $cells;
         }
 
-        return [
+        $out = [
             'columns' => $outColumns,
             'rows' => $outRows,
         ];
+
+        // Omit empty caption so legacy `{columns, rows}` shape stays the default on disk.
+        $caption = self::normalizeCaption($caption);
+        if ($caption !== '') {
+            $out['caption'] = $caption;
+        }
+
+        return $out;
+    }
+
+    public static function normalizeCaption(mixed $caption): string
+    {
+        return trim((string)$caption);
     }
 
     /**
@@ -113,8 +127,15 @@ class TableValue
      * @param array<string, array<string, mixed>> $rows
      * @param array<string, mixed> $attributes Attributes for the root `<table>` only (#4).
      */
-    public static function renderHtml(array $columns, array $rows, array $attributes = []): string
+    public static function renderHtml(array $columns, array $rows, array $attributes = [], string $caption = ''): string
     {
+        $caption = self::normalizeCaption($caption);
+        $inner = '';
+
+        if ($caption !== '') {
+            $inner .= '<caption>' . Html::encode($caption) . '</caption>';
+        }
+
         $body = '';
 
         foreach ($columns as $column) {
@@ -126,14 +147,14 @@ class TableValue
                 . '>' . $heading . '</th>';
         }
 
-        $html = '<thead><tr>' . $body . '</tr></thead><tbody>';
+        $inner .= '<thead><tr>' . $body . '</tr></thead><tbody>';
 
         foreach ($rows as $row) {
             if (!is_array($row)) {
                 continue;
             }
 
-            $html .= '<tr>';
+            $inner .= '<tr>';
 
             foreach ($columns as $colId => $column) {
                 $type = self::normalizeType($column['type'] ?? 'singleline');
@@ -145,18 +166,18 @@ class TableValue
 
                 // Craft Table “Row heading” parity — body cell as <th scope="row"> (#6).
                 if ($type === 'heading') {
-                    $html .= '<th scope="row"' . $alignAttr . '>' . $cellHtml . '</th>';
+                    $inner .= '<th scope="row"' . $alignAttr . '>' . $cellHtml . '</th>';
                 } else {
-                    $html .= '<td' . $alignAttr . '>' . $cellHtml . '</td>';
+                    $inner .= '<td' . $alignAttr . '>' . $cellHtml . '</td>';
                 }
             }
 
-            $html .= '</tr>';
+            $inner .= '</tr>';
         }
 
-        $html .= '</tbody>';
+        $inner .= '</tbody>';
 
-        return Html::tag('table', $html, $attributes);
+        return Html::tag('table', $inner, $attributes);
     }
 
     /**
@@ -361,9 +382,14 @@ class TableValue
      * @param array<string, array<string, mixed>> $columns
      * @param array<string, array<string, mixed>> $rows
      */
-    public static function searchKeywords(array $columns, array $rows): string
+    public static function searchKeywords(array $columns, array $rows, string $caption = ''): string
     {
         $parts = [];
+
+        $caption = self::normalizeCaption($caption);
+        if ($caption !== '') {
+            $parts[] = $caption;
+        }
 
         foreach ($columns as $column) {
             $heading = trim((string)($column['heading'] ?? ''));

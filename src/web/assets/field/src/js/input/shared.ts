@@ -289,6 +289,7 @@ export const serializeValueBlob = (
     columns: ColumnDefinition[],
     contentRows: PkEditableTableRow[],
     settings: TableMakerSettings,
+    caption = '',
 ): string => {
     const outColumns: Record<string, TableColumn> = {};
     const usedColKeys = new Set<string>();
@@ -347,7 +348,17 @@ export const serializeValueBlob = (
         outRows[rowKey] = cells;
     }
 
-    return JSON.stringify({ columns: outColumns, rows: outRows });
+    const payload: Record<string, unknown> = {
+        columns: outColumns,
+        rows: outRows,
+    };
+
+    const trimmedCaption = String(caption ?? '').trim();
+    if (trimmedCaption !== '') {
+        payload.caption = trimmedCaption;
+    }
+
+    return JSON.stringify(payload);
 };
 
 export const columnSchemaTableColumns = (settings: TableMakerSettings): PkEditableTableColumn[] => {
