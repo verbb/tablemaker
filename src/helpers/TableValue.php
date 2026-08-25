@@ -217,7 +217,18 @@ class TableValue
                     return null;
                 }
 
-                return DateTimeHelper::toIso8601($value) ?: null;
+                // Canonical CP/storage forms match pk-date-picker (Y-m-d) and
+                // pk-time-picker (H:i). Full ISO8601 from older saves is accepted
+                // on read so column edits no longer wipe or NaN-corrupt cells (#54).
+                $dateTime = DateTimeHelper::toDateTime($value);
+
+                if (!$dateTime) {
+                    return null;
+                }
+
+                return $type === 'date'
+                    ? $dateTime->format('Y-m-d')
+                    : $dateTime->format('H:i');
 
             case 'number':
                 if ($value === null || $value === '') {
@@ -380,7 +391,14 @@ class TableValue
                 $cell = $row[$colId] ?? null;
 
                 if (in_array($type, ['date', 'time'], true)) {
-                    $cell = $cell !== null && $cell !== '' ? (DateTimeHelper::toIso8601($cell) ?: null) : null;
+                    if ($cell instanceof \DateTimeInterface) {
+                        $cell = $type === 'date' ? $cell->format('Y-m-d') : $cell->format('H:i');
+                    } elseif ($cell !== null && $cell !== '') {
+                        // Already canonical Y-m-d / H:i (or legacy ISO) — keep as string.
+                        $cell = (string)$cell;
+                    } else {
+                        $cell = null;
+                    }
                 } elseif (is_bool($cell)) {
                     $cell = $cell ? '1' : '';
                 } elseif (is_array($cell)) {

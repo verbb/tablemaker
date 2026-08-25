@@ -22,6 +22,63 @@ export const isTruthyCell = (value: unknown): boolean => {
     return value === true || value === 1 || value === '1' || value === 'true';
 };
 
+/** pk-date-picker only accepts `YYYY-MM-DD` — strip legacy ISO8601 timestamps. */
+export const normalizeDateForEditor = (value: unknown): string => {
+    if (value == null || value === '') {
+        return '';
+    }
+
+    if (value instanceof Date) {
+        if (Number.isNaN(value.getTime())) {
+            return '';
+        }
+
+        const year = String(value.getFullYear()).padStart(4, '0');
+        const month = String(value.getMonth() + 1).padStart(2, '0');
+        const day = String(value.getDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}`;
+    }
+
+    const raw = String(value).trim();
+    const match = /^(\d{4}-\d{2}-\d{2})/.exec(raw);
+
+    return match ? match[1] : '';
+};
+
+/** pk-time-picker options use `HH:MM` — accept ISO times and Craft time strings. */
+export const normalizeTimeForEditor = (value: unknown): string => {
+    if (value == null || value === '') {
+        return '';
+    }
+
+    if (value instanceof Date) {
+        if (Number.isNaN(value.getTime())) {
+            return '';
+        }
+
+        const hours = String(value.getHours()).padStart(2, '0');
+        const minutes = String(value.getMinutes()).padStart(2, '0');
+
+        return `${hours}:${minutes}`;
+    }
+
+    const raw = String(value).trim();
+    const isoTime = /T(\d{2}):(\d{2})/.exec(raw);
+
+    if (isoTime) {
+        return `${isoTime[1]}:${isoTime[2]}`;
+    }
+
+    const hm = /^(\d{1,2}):(\d{2})/.exec(raw);
+
+    if (!hm) {
+        return '';
+    }
+
+    return `${hm[1].padStart(2, '0')}:${hm[2]}`;
+};
+
 export const ensurePrefixedKey = (id: string | undefined, prefix: string, used: Set<string>): string => {
     if (id && id.startsWith(prefix) && /^\w+\d+$/.test(id) && !used.has(id)) {
         used.add(id);
@@ -80,8 +137,17 @@ export const normalizeCellForEditor = (type: string | undefined, value: unknown)
         return isTruthyCell(value);
     }
 
+    if (type === 'date') {
+        return normalizeDateForEditor(value);
+    }
+
+    if (type === 'time') {
+        return normalizeTimeForEditor(value);
+    }
+
+    // Date/time picker payloads (objects) on the wrong column type → blank, not "[object Object]".
     if (value == null || typeof value === 'object') {
-        return type === 'checkbox' || type === 'lightswitch' ? false : '';
+        return '';
     }
 
     return value;
@@ -245,7 +311,12 @@ export const serializeValueBlob = (
 
             if (column.type === 'checkbox' || column.type === 'lightswitch') {
                 value = isTruthyCell(value);
+            } else if (column.type === 'date') {
+                value = normalizeDateForEditor(value);
+            } else if (column.type === 'time') {
+                value = normalizeTimeForEditor(value);
             } else if (value == null || typeof value === 'object') {
+                // Never JSON-serialize leftover Date/object cells into the hidden blob.
                 value = '';
             }
 
