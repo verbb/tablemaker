@@ -14,6 +14,9 @@
 - Fix cloning / Neo block duplicate saves failing with undefined column keys when dropdown options were missing ([#61](https://github.com/verbb/tablemaker/issues/61)).
 - Fix Date/Time cells wiping or showing invalid empty values when editing columns; store `Y-m-d` / `H:i` for CP round-trip ([#54](https://github.com/verbb/tablemaker/issues/54)).
 
+### Added
+- Add field setting to restrict which column types editors can choose ([#53](https://github.com/verbb/tablemaker/issues/53)).
+
 ### Removed
 - Removed Column Label field setting.
 - Removed Column Instructions field setting.

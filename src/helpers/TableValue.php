@@ -417,6 +417,42 @@ class TableValue
     }
 
     /**
+     * Coerce column types that are not in the field’s allowlist back to singleline
+     * so CP-CSS / crafted payloads cannot smuggle disallowed types (#53).
+     *
+     * @param array<string, array<string, mixed>> $columns
+     * @param list<string> $allowedTypes
+     * @return array<string, array<string, mixed>>
+     */
+    public static function constrainColumnTypes(array $columns, array $allowedTypes): array
+    {
+        if ($allowedTypes === []) {
+            return $columns;
+        }
+
+        $allowed = array_fill_keys($allowedTypes, true);
+        $fallback = $allowedTypes[0] ?? 'singleline';
+
+        foreach ($columns as $colId => $column) {
+            if (!is_array($column)) {
+                continue;
+            }
+
+            $type = self::normalizeType($column['type'] ?? 'singleline');
+
+            if (!isset($allowed[$type])) {
+                $column['type'] = $fallback;
+                if ($fallback !== 'select') {
+                    unset($column['options']);
+                }
+                $columns[$colId] = $column;
+            }
+        }
+
+        return $columns;
+    }
+
+    /**
      * @param mixed $columns
      * @return array<string, array<string, mixed>>
      */

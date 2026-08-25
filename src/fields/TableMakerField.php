@@ -50,6 +50,13 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public bool $enableAlignmentColumn = true;
     public ?string $rowsAddRowLabel = null;
 
+    /**
+     * Column type handles editors may use. Empty / null = all built-in types (#53).
+     *
+     * @var string[]|null
+     */
+    public ?array $allowedColumnTypes = null;
+
 
     // Public Methods
     // =========================================================================
@@ -68,14 +75,106 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         parent::__construct($config);
     }
 
+    public function getSettings(): array
+    {
+        $settings = parent::getSettings();
+        // Empty checkbox submit → allow all types (null), not an empty deny-all list.
+        if ($this->allowedColumnTypes === []) {
+            $settings['allowedColumnTypes'] = null;
+        }
+
+        return $settings;
+    }
+
+    public function beforeSave(bool $isNew): bool
+    {
+        // Store null when unrestricted (all types) so project config stays tidy.
+        if (is_array($this->allowedColumnTypes)) {
+            $all = array_keys(self::allColumnTypeOptions());
+            $this->allowedColumnTypes = array_values(array_intersect($all, $this->allowedColumnTypes));
+
+            if ($this->allowedColumnTypes === [] || count($this->allowedColumnTypes) === count($all)) {
+                $this->allowedColumnTypes = null;
+            }
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * Full Craft-style type map (handle → label), sorted by label.
+     *
+     * @return array<string, string>
+     */
+    public static function allColumnTypeOptions(): array
+    {
+        $typeOptions = [
+            'checkbox' => Craft::t('app', 'Checkbox'),
+            'color' => Craft::t('app', 'Color'),
+            'date' => Craft::t('app', 'Date'),
+            'select' => Craft::t('app', 'Dropdown'),
+            'email' => Craft::t('app', 'Email'),
+            'lightswitch' => Craft::t('app', 'Lightswitch'),
+            'multiline' => Craft::t('app', 'Multi-line text'),
+            'number' => Craft::t('app', 'Number'),
+            'singleline' => Craft::t('app', 'Single-line text'),
+            'time' => Craft::t('app', 'Time'),
+            'url' => Craft::t('app', 'URL'),
+        ];
+        asort($typeOptions);
+
+        return $typeOptions;
+    }
+
+    /**
+     * Type options for the CP schema editor after applying {@see $allowedColumnTypes}.
+     *
+     * @return array<string, string>
+     */
+    public function getAllowedColumnTypeOptions(): array
+    {
+        $all = self::allColumnTypeOptions();
+        $allowed = $this->allowedColumnTypes;
+
+        if ($allowed === null || $allowed === []) {
+            return $all;
+        }
+
+        $allowed = array_values(array_intersect(array_keys($all), $allowed));
+
+        if ($allowed === []) {
+            return $all;
+        }
+
+        $filtered = [];
+
+        foreach ($allowed as $handle) {
+            $filtered[$handle] = $all[$handle];
+        }
+
+        return $filtered;
+    }
+
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        return TableValue::normalize($value, false);
+        $data = TableValue::normalize($value, false);
+
+        if ($data !== null) {
+            $data->columns = TableValue::constrainColumnTypes($data->columns, array_keys($this->getAllowedColumnTypeOptions()));
+        }
+
+        return $data;
     }
 
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
-        return TableValue::normalize($value, true);
+        $data = TableValue::normalize($value, true);
+
+        if ($data !== null) {
+            $data->columns = TableValue::constrainColumnTypes($data->columns, array_keys($this->getAllowedColumnTypeOptions()));
+        }
+
+        return $data;
     }
 
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
@@ -155,7 +254,9 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('tablemaker/_field/settings', [
+            'field' => $this,
             'settings' => $this->getSettings(),
+            'allColumnTypeOptions' => self::allColumnTypeOptions(),
         ]);
     }
 
@@ -250,20 +351,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             $rows = ['row0' => []];
         }
 
-        $typeOptions = [
-            'checkbox' => Craft::t('app', 'Checkbox'),
-            'color' => Craft::t('app', 'Color'),
-            'date' => Craft::t('app', 'Date'),
-            'select' => Craft::t('app', 'Dropdown'),
-            'email' => Craft::t('app', 'Email'),
-            'lightswitch' => Craft::t('app', 'Lightswitch'),
-            'multiline' => Craft::t('app', 'Multi-line text'),
-            'number' => Craft::t('app', 'Number'),
-            'singleline' => Craft::t('app', 'Single-line text'),
-            'time' => Craft::t('app', 'Time'),
-            'url' => Craft::t('app', 'URL'),
-        ];
-        asort($typeOptions);
+        $typeOptions = $this->getAllowedColumnTypeOptions();
 
         // Keys are already colN/rowN from TableValue — do not re-prefix (avoids colcol0).
         $componentSettings = [
