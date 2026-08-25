@@ -80,3 +80,23 @@ Query the field like Twig — `columns`, positional `rows` (`[[String]]`), optio
   }
 }
 ```
+
+Mutations accept the same shape (columns list + rows as string matrix + optional caption). Column/row order is positional; storage keys (`colN` / `rowN`) are assigned on save:
+
+```graphql
+mutation {
+  save_page_Entry(id: 123, myTableField: {
+    caption: "Pricing"
+    columns: [
+      { heading: "Plan", type: "heading" }
+      { heading: "Price", type: "singleline" }
+    ]
+    rows: [
+      ["Basic", "$9"]
+      ["Pro", "$29"]
+    ]
+  }) {
+    myTableField { caption rows }
+  }
+}
+```

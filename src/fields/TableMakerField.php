@@ -14,6 +14,7 @@ use craft\helpers\Json;
 
 use yii\db\Schema;
 
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 
@@ -454,6 +455,48 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                     ],
                 ],
             ]));
+    }
+
+    /**
+     * Mutation input mirrors the query shape: columns list + rows as [[String]] + optional caption.
+     * `TableValue::normalize()` already upgrades positional lists to colN/rowN storage (#33).
+     */
+    public function getContentGqlMutationArgumentType(): Type|array
+    {
+        $typeName = $this->handle . '_TableMakerInput';
+        $columnTypeName = $typeName . '_column';
+        $optionTypeName = $columnTypeName . '_option';
+
+        $optionInput = GqlEntityRegistry::getOrCreate($optionTypeName, fn() => new InputObjectType([
+            'name' => $optionTypeName,
+            'fields' => [
+                'label' => Type::string(),
+                'value' => Type::string(),
+                'default' => Type::boolean(),
+            ],
+        ]));
+
+        $columnInput = GqlEntityRegistry::getOrCreate($columnTypeName, fn() => new InputObjectType([
+            'name' => $columnTypeName,
+            'fields' => [
+                'type' => Type::string(),
+                'heading' => Type::string(),
+                'width' => Type::string(),
+                'align' => Type::string(),
+                'options' => Type::listOf($optionInput),
+            ],
+        ]));
+
+        return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
+            'name' => $typeName,
+            'description' => sprintf('Defines the “%s” Table Maker field value.', $this->name),
+            'fields' => [
+                'columns' => Type::listOf($columnInput),
+                // Same [[String]] contract as the query resolver — order matches columns.
+                'rows' => Type::listOf(Type::listOf(Type::string())),
+                'caption' => Type::string(),
+            ],
+        ]));
     }
 
 
