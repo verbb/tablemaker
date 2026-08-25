@@ -85,6 +85,17 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         return $data?->toStorage() ?? ['columns' => [], 'rows' => []];
     }
 
+    /**
+     * Deep-copy via normalize → toStorage so cloned Neo/Matrix blocks get their own
+     * column defs (including select `options`) instead of sharing array references.
+     * Missing cell keys / empty options must not fatal on the subsequent save (#61).
+     */
+    public function copyValue(ElementInterface $from, ElementInterface $to): void
+    {
+        $data = TableValue::normalize($from->getFieldValue($this->handle), false) ?? new TableMakerData();
+        $to->setFieldValue($this->handle, TableValue::normalize($data->toStorage(), false));
+    }
+
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         $data = TableValue::normalize($value, false);

@@ -11,6 +11,7 @@
 - Fix `.table` output HTML-encoding headings/cells.
 - Fix GraphQL column type registry lookup; expose column `options`; resolve `table` lazily.
 - Fix CP input re-prefixing already-canonical `colN` keys (`colcol0`).
+- Fix cloning / Neo block duplicate saves failing with undefined column keys when dropdown options were missing ([#61](https://github.com/verbb/tablemaker/issues/61)).
 
 ### Removed
 - Removed Column Label field setting.
