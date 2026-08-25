@@ -14,13 +14,17 @@
     on: settings.enableAlignmentColumn,
 }) }}
 
-{% set allowedValues = settings.allowedColumnTypes ?? allColumnTypeOptions|keys %}
+{% set allowedValues = field.allowedColumnTypes ?? '*' %}
+{% if allowedValues is same as([]) %}
+    {% set allowedValues = '*' %}
+{% endif %}
 {{ forms.checkboxSelectField({
     label: 'Allowed Column Types' | t('tablemaker'),
-    instructions: 'Choose which column types editors can pick when editing columns. Leave all checked to allow every type.' | t('tablemaker'),
+    instructions: 'Select which column types editors can pick when editing columns.' | t('tablemaker'),
     name: 'allowedColumnTypes',
     options: allColumnTypeOptions,
     values: allowedValues,
+    showAllOption: true,
 }) }}
 
 {{ forms.textField({

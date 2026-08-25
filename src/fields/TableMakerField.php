@@ -51,11 +51,11 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public ?string $rowsAddRowLabel = null;
 
     /**
-     * Column type handles editors may use. Empty / null = all built-in types (#53).
+     * Column type handles editors may use. `*` = all built-in types (#53).
      *
-     * @var string[]|null
+     * @var string|string[]|null
      */
-    public ?array $allowedColumnTypes = null;
+    public mixed $allowedColumnTypes = '*';
 
     public ?int $minRows = null;
     public ?int $maxRows = null;
@@ -83,9 +83,9 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public function getSettings(): array
     {
         $settings = parent::getSettings();
-        // Empty checkbox submit → allow all types (null), not an empty deny-all list.
-        if ($this->allowedColumnTypes === []) {
-            $settings['allowedColumnTypes'] = null;
+        // Checkbox select with “All” stores `*`; legacy null/empty means the same.
+        if ($this->allowedColumnTypes === null || $this->allowedColumnTypes === '' || $this->allowedColumnTypes === []) {
+            $settings['allowedColumnTypes'] = '*';
         }
 
         return $settings;
@@ -93,17 +93,54 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 
     public function beforeSave(bool $isNew): bool
     {
-        // Store null when unrestricted (all types) so project config stays tidy.
-        if (is_array($this->allowedColumnTypes)) {
-            $all = array_keys(self::allColumnTypeOptions());
-            $this->allowedColumnTypes = array_values(array_intersect($all, $this->allowedColumnTypes));
-
-            if ($this->allowedColumnTypes === [] || count($this->allowedColumnTypes) === count($all)) {
-                $this->allowedColumnTypes = null;
-            }
-        }
+        $this->allowedColumnTypes = self::normalizeAllowedColumnTypesSetting($this->allowedColumnTypes);
 
         return parent::beforeSave($isNew);
+    }
+
+    /**
+     * Canonical storage for the allowed-types setting: `*` or a list of type handles.
+     *
+     * @return '*'|list<string>
+     */
+    public static function normalizeAllowedColumnTypesSetting(mixed $value): string|array
+    {
+        $all = array_keys(self::allColumnTypeOptions());
+
+        if ($value === null || $value === '' || $value === '*' || $value === []) {
+            return '*';
+        }
+
+        if (is_string($value)) {
+            return in_array($value, $all, true) ? [$value] : '*';
+        }
+
+        if (!is_array($value)) {
+            return '*';
+        }
+
+        if (in_array('*', $value, true)) {
+            return '*';
+        }
+
+        $filtered = array_values(array_intersect($all, $value));
+
+        if ($filtered === [] || count($filtered) === count($all)) {
+            return '*';
+        }
+
+        return $filtered;
+    }
+
+    public function allowsAllColumnTypes(): bool
+    {
+        $allowed = $this->allowedColumnTypes;
+
+        return $allowed === null
+            || $allowed === ''
+            || $allowed === '*'
+            || $allowed === []
+            || (is_array($allowed) && in_array('*', $allowed, true));
     }
 
     protected function defineRules(): array
@@ -179,11 +216,14 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public function getAllowedColumnTypeOptions(): array
     {
         $all = self::allColumnTypeOptions();
-        $allowed = $this->allowedColumnTypes;
 
-        if ($allowed === null || $allowed === []) {
+        if ($this->allowsAllColumnTypes()) {
             return $all;
         }
+
+        $allowed = is_array($this->allowedColumnTypes)
+            ? $this->allowedColumnTypes
+            : [$this->allowedColumnTypes];
 
         $allowed = array_values(array_intersect(array_keys($all), $allowed));
 

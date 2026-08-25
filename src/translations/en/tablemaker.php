@@ -9,7 +9,7 @@ return [
   'Alignment' => 'Alignment',
   'Allowed Column Types' => 'Allowed Column Types',
   'Center' => 'Center',
-  'Choose which column types editors can pick when editing columns. Leave all checked to allow every type.' => 'Choose which column types editors can pick when editing columns. Leave all checked to allow every type.',
+  'Select which column types editors can pick when editing columns.' => 'Select which column types editors can pick when editing columns.',
   'Click a column header to configure it. Native table headers below still label the grid.' => 'Click a column header to configure it. Native table headers below still label the grid.',
   'Column Instructions' => 'Column Instructions',
   'Column Label' => 'Column Label',
