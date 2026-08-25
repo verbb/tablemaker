@@ -57,6 +57,11 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
      */
     public ?array $allowedColumnTypes = null;
 
+    public ?int $minRows = null;
+    public ?int $maxRows = null;
+    public ?int $minColumns = null;
+    public ?int $maxColumns = null;
+
 
     // Public Methods
     // =========================================================================
@@ -99,6 +104,46 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         }
 
         return parent::beforeSave($isNew);
+    }
+
+    protected function defineRules(): array
+    {
+        $rules = parent::defineRules();
+        $rules[] = [['minRows', 'maxRows', 'minColumns', 'maxColumns'], 'integer', 'min' => 0];
+        $rules[] = [
+            ['minRows'],
+            'compare',
+            'compareAttribute' => 'maxRows',
+            'operator' => '<=',
+            'type' => 'number',
+            'when' => fn() => $this->maxRows !== null,
+        ];
+        $rules[] = [
+            ['maxRows'],
+            'compare',
+            'compareAttribute' => 'minRows',
+            'operator' => '>=',
+            'type' => 'number',
+            'when' => fn() => $this->minRows !== null,
+        ];
+        $rules[] = [
+            ['minColumns'],
+            'compare',
+            'compareAttribute' => 'maxColumns',
+            'operator' => '<=',
+            'type' => 'number',
+            'when' => fn() => $this->maxColumns !== null,
+        ];
+        $rules[] = [
+            ['maxColumns'],
+            'compare',
+            'compareAttribute' => 'minColumns',
+            'operator' => '>=',
+            'type' => 'number',
+            'when' => fn() => $this->minColumns !== null,
+        ];
+
+        return $rules;
     }
 
     /**
@@ -221,9 +266,36 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public function validateTableData(ElementInterface $element): void
     {
         $value = $element->getFieldValue($this->handle);
-        $data = TableValue::normalize($value, true);
+        $data = TableValue::normalize($value, true) ?? new TableMakerData();
 
-        if ($data === null || $data->columns === [] || $data->rows === []) {
+        $columnCount = count($data->columns);
+        $rowCount = count($data->rows);
+
+        if ($this->minColumns !== null && $columnCount < $this->minColumns) {
+            $element->addError($this->handle, Craft::t('tablemaker', 'Table must have at least {count} columns.', [
+                'count' => $this->minColumns,
+            ]));
+        }
+
+        if ($this->maxColumns !== null && $columnCount > $this->maxColumns) {
+            $element->addError($this->handle, Craft::t('tablemaker', 'Table must have at most {count} columns.', [
+                'count' => $this->maxColumns,
+            ]));
+        }
+
+        if ($this->minRows !== null && $rowCount < $this->minRows) {
+            $element->addError($this->handle, Craft::t('tablemaker', 'Table must have at least {count} rows.', [
+                'count' => $this->minRows,
+            ]));
+        }
+
+        if ($this->maxRows !== null && $rowCount > $this->maxRows) {
+            $element->addError($this->handle, Craft::t('tablemaker', 'Table must have at most {count} rows.', [
+                'count' => $this->maxRows,
+            ]));
+        }
+
+        if ($data->columns === [] || $data->rows === []) {
             return;
         }
 
@@ -351,6 +423,34 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             $rows = ['row0' => []];
         }
 
+        // Pad to minRows so the CP editor matches field settings before the first save.
+        if ($this->minRows !== null && $this->minRows > count($rows)) {
+            $nextIndex = 0;
+            while (count($rows) < $this->minRows) {
+                while (array_key_exists('row' . $nextIndex, $rows)) {
+                    $nextIndex++;
+                }
+                $rows['row' . $nextIndex] = [];
+                $nextIndex++;
+            }
+        }
+
+        if ($this->minColumns !== null && $this->minColumns > count($columns)) {
+            $nextIndex = 0;
+            while (count($columns) < $this->minColumns) {
+                while (array_key_exists('col' . $nextIndex, $columns)) {
+                    $nextIndex++;
+                }
+                $columns['col' . $nextIndex] = [
+                    'heading' => '',
+                    'align' => 'left',
+                    'width' => '',
+                    'type' => 'singleline',
+                ];
+                $nextIndex++;
+            }
+        }
+
         $typeOptions = $this->getAllowedColumnTypeOptions();
 
         // Keys are already colN/rowN from TableValue — do not re-prefix (avoids colcol0).
@@ -361,6 +461,10 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             'typeOptions' => $typeOptions,
             'enableWidthColumn' => $this->enableWidthColumn,
             'enableAlignmentColumn' => $this->enableAlignmentColumn,
+            'minRows' => $this->minRows,
+            'maxRows' => $this->maxRows,
+            'minColumns' => $this->minColumns,
+            'maxColumns' => $this->maxColumns,
             'addRowLabel' => $this->rowsAddRowLabel
                 ? Craft::t('tablemaker', $this->rowsAddRowLabel)
                 : Craft::t('tablemaker', 'Add a row'),

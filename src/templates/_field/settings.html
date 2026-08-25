@@ -24,6 +24,46 @@
 }) }}
 
 {{ forms.textField({
+    label: 'Min Rows' | t('app'),
+    instructions: 'The minimum number of rows the field is allowed to have.' | t('app'),
+    id: 'minRows',
+    name: 'minRows',
+    value: field.minRows,
+    size: 3,
+    errors: field.getErrors('minRows'),
+}) }}
+
+{{ forms.textField({
+    label: 'Max Rows' | t('app'),
+    instructions: 'The maximum number of rows the field is allowed to have.' | t('app'),
+    id: 'maxRows',
+    name: 'maxRows',
+    value: field.maxRows,
+    size: 3,
+    errors: field.getErrors('maxRows'),
+}) }}
+
+{{ forms.textField({
+    label: 'Min Columns' | t('tablemaker'),
+    instructions: 'The minimum number of columns the field is allowed to have.' | t('tablemaker'),
+    id: 'minColumns',
+    name: 'minColumns',
+    value: field.minColumns,
+    size: 3,
+    errors: field.getErrors('minColumns'),
+}) }}
+
+{{ forms.textField({
+    label: 'Max Columns' | t('tablemaker'),
+    instructions: 'The maximum number of columns the field is allowed to have.' | t('tablemaker'),
+    id: 'maxColumns',
+    name: 'maxColumns',
+    value: field.maxColumns,
+    size: 3,
+    errors: field.getErrors('maxColumns'),
+}) }}
+
+{{ forms.textField({
     label: 'Add Row Label' | t('tablemaker'),
     instructions: 'The "Add new row" button label.' | t('tablemaker'),
     name: 'rowsAddRowLabel',

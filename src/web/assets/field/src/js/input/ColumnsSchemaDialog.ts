@@ -70,8 +70,6 @@ export class ColumnsSchemaDialog {
         const table = document.createElement('pk-editable-table') as PkEditableTable;
         table.columns = columnSchemaTableColumns(this.settings);
         table.rows = this.draftRows;
-        table.allowAdd = true;
-        table.allowDelete = true;
         table.allowReorder = true;
         table.addRowLabel = Craft.t('tablemaker', 'Add a column');
         table.newRowDefaults = {
@@ -81,9 +79,11 @@ export class ColumnsSchemaDialog {
             type: 'singleline',
             options: [],
         };
+        this.applyColumnBounds(table);
         table.getRowMenuItems = (row) => this.rowMenuItems(row);
         table.addEventListener('pk-change', ((event: CustomEvent<{ rows: PkEditableTableRow[] }>) => {
             this.draftRows = this.normalizeDraft(event.detail?.rows ?? []);
+            this.applyColumnBounds(table);
             table.rows = this.draftRows;
         }) as EventListener);
         table.addEventListener('pk-row-menu-select', ((event: CustomEvent<{
@@ -112,6 +112,14 @@ export class ColumnsSchemaDialog {
         done.setAttribute('variant', 'primary');
         done.textContent = Craft.t('app', 'Done');
         done.addEventListener('click', () => {
+            const minColumns = this.settings.minColumns ?? 0;
+            if (this.draftRows.length < minColumns) {
+                window.alert(Craft.t('tablemaker', 'Table must have at least {count} columns.', {
+                    count: String(minColumns),
+                }));
+                return;
+            }
+
             this.close({ columns: this.toDefinitions(this.draftRows) });
         });
         dialog.appendChild(done);
@@ -128,6 +136,17 @@ export class ColumnsSchemaDialog {
 
         document.body.appendChild(dialog);
         this.dialog = dialog;
+    }
+
+    /** Toggle add/delete from field min/max column settings (#38). */
+    private applyColumnBounds(table: PkEditableTable): void {
+        const count = this.draftRows.length;
+        const minColumns = this.settings.minColumns ?? 0;
+        const maxColumns = this.settings.maxColumns;
+        const floor = Math.max(minColumns, 1);
+
+        table.allowAdd = maxColumns == null || count < maxColumns;
+        table.allowDelete = count > floor;
     }
 
     private rowMenuItems(row: PkEditableTableRow): PkEditableTableRowMenuItem[] | null {

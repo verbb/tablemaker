@@ -18,6 +18,10 @@ export interface TableMakerSettings {
     enableAlignmentColumn?: boolean;
     /** Custom label for the content table “Add a row” button. */
     addRowLabel?: string;
+    minRows?: number | null;
+    maxRows?: number | null;
+    minColumns?: number | null;
+    maxColumns?: number | null;
 }
 
 export interface ColumnDefinition {

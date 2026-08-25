@@ -111,20 +111,32 @@ export class TableMakerInput {
         table.className = 'tm-content-table';
         table.columns = contentSchemaColumns(this.columns);
         table.rows = this.contentRows;
-        table.allowAdd = true;
-        table.allowDelete = true;
         table.allowReorder = true;
         table.addRowLabel = this.settings.addRowLabel || Craft.t('tablemaker', 'Add a row');
         table.newRowDefaults = contentNewRowDefaults(this.columns);
+        this.applyRowBounds(table);
         table.addEventListener('pk-change', ((event: CustomEvent<{ rows: PkEditableTableRow[] }>) => {
             // Content edits only — schema is applied in batches from the modal Done path.
             this.contentRows = event.detail?.rows ?? [];
+            this.applyRowBounds(table);
             this.syncValueBlob();
         }) as EventListener);
 
         this.rowsTable = table;
 
         return table;
+    }
+
+    /** Toggle add/delete from field min/max row settings (#38). */
+    private applyRowBounds(table: PkEditableTable): void {
+        const count = this.contentRows.length;
+        const minRows = this.settings.minRows ?? 0;
+        const maxRows = this.settings.maxRows;
+        // Keep at least one editor row when no min is set (empty grid is awkward to re-seed).
+        const floor = Math.max(minRows, 1);
+
+        table.allowAdd = maxRows == null || count < maxRows;
+        table.allowDelete = count > floor;
     }
 
     /**
@@ -152,6 +164,7 @@ export class TableMakerInput {
         this.rowsTable.columns = contentSchemaColumns(this.columns);
         this.rowsTable.newRowDefaults = contentNewRowDefaults(this.columns);
         this.rowsTable.rows = this.contentRows;
+        this.applyRowBounds(this.rowsTable);
     }
 
     private syncValueBlob(): void {

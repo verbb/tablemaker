@@ -174,27 +174,46 @@ export const seedContentRows = (
     const rows = settings.rows || {};
     const keys = Object.keys(rows);
     const colKeys = columns.map((column) => column._id);
+    const minRows = settings.minRows ?? 0;
 
-    if (keys.length === 0) {
+    const buildBlank = (id: string): PkEditableTableRow => {
         const cells: Record<string, unknown> = {};
         for (const colKey of colKeys) {
             cells[colKey] = defaultCellValue(columns.find((item) => item._id === colKey));
         }
 
-        return [{ _id: 'row0', ...cells }];
+        return { _id: id, ...cells };
+    };
+
+    let seeded: PkEditableTableRow[];
+
+    if (keys.length === 0) {
+        seeded = [buildBlank('row0')];
+    } else {
+        seeded = keys.map((key) => {
+            const source = rows[key] || {};
+            const next: PkEditableTableRow = { _id: key };
+
+            for (const colKey of colKeys) {
+                const column = columns.find((item) => item._id === colKey);
+                next[colKey] = normalizeCellForEditor(column?.type, source[colKey]);
+            }
+
+            return next;
+        });
     }
 
-    return keys.map((key) => {
-        const source = rows[key] || {};
-        const next: PkEditableTableRow = { _id: key };
-
-        for (const colKey of colKeys) {
-            const column = columns.find((item) => item._id === colKey);
-            next[colKey] = normalizeCellForEditor(column?.type, source[colKey]);
+    // Pad to minRows so new/empty values match field settings (#38).
+    let padIndex = 0;
+    while (seeded.length < minRows) {
+        while (seeded.some((row) => String(row._id) === `row${padIndex}`)) {
+            padIndex += 1;
         }
+        seeded.push(buildBlank(`row${padIndex}`));
+        padIndex += 1;
+    }
 
-        return next;
-    });
+    return seeded;
 };
 
 export const contentSchemaColumns = (columns: ColumnDefinition[]): PkEditableTableColumn[] => {
