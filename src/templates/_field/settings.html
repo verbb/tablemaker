@@ -1,33 +1,5 @@
 {% import '_includes/forms' as forms %}
 
-{% do view.registerAssetBundle('verbb\\tablemaker\\assetbundles\\FieldAsset') %}
-
-<h2>{{ 'Columns Table' | t('tablemaker') }}</h2>
-
-{{ forms.textField({
-    label: 'Column Label' | t('tablemaker'),
-    instructions: 'The column label.' | t('tablemaker'),
-    name: 'columnsLabel',
-    placeholder: 'Table Columns' | t('tablemaker'),
-    value: settings.columnsLabel,
-}) }}
-
-{{ forms.textareaField({
-    label: 'Column Instructions' | t('tablemaker'),
-    instructions: 'The column instructions.' | t('tablemaker'),
-    name: 'columnsInstructions',
-    placeholder: 'Define the columns your table should have.' | t('tablemaker'),
-    value: settings.columnsInstructions,
-}) }}
-
-{{ forms.textField({
-    label: 'Add Column Label' | t('tablemaker'),
-    instructions: 'The "Add new column" button label.' | t('tablemaker'),
-    name: 'columnsAddRowLabel',
-    placeholder: 'Add a column' | t('tablemaker'),
-    value: settings.columnsAddRowLabel,
-}) }}
-
 {{ forms.lightswitchField({
     label: 'Enable Width Column' | t('tablemaker'),
     instructions: 'Whether the "Width" column should be enabled.' | t('tablemaker'),
@@ -40,24 +12,6 @@
     instructions: 'Whether the "Alignment" column should be enabled.' | t('tablemaker'),
     name: 'enableAlignmentColumn',
     on: settings.enableAlignmentColumn,
-}) }}
-
-<h2>{{ 'Rows Table' | t('tablemaker') }}</h2>
-
-{{ forms.textField({
-    label: 'Row Label' | t('tablemaker'),
-    instructions: 'The row label.' | t('tablemaker'),
-    name: 'rowsLabel',
-    placeholder: 'Table Content' | t('tablemaker'),
-    value: settings.rowsLabel,
-}) }}
-
-{{ forms.textareaField({
-    label: 'Row Instructions' | t('tablemaker'),
-    instructions: 'The row instructions.' | t('tablemaker'),
-    name: 'rowsInstructions',
-    placeholder: 'Input the content of your table.' | t('tablemaker'),
-    value: settings.rowsInstructions,
 }) }}
 
 {{ forms.textField({

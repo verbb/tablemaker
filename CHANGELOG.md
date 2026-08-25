@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- Rebuild the field input UI on [Plugin Kit](https://docs.verbb.io/plugin-kit/web/) (web components).
+- The field input now moves the Column table in a modal for a leaner UI.
+
+### Removed
+- Removed Column Label field setting.
+- Removed Column Instructions field setting.
+- Removed Add Column Label field setting.
+- Removed Row Label field setting (use field label instead).
+- Removed Row Instructions field setting (use field label instructions).
+
 ## 5.0.9 - 2026-04-29
 
 ### Fixed

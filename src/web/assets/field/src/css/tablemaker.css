@@ -1,0 +1,51 @@
+/* Table Maker field styles. Component internals are styled by Plugin Kit; keep this
+   file for field-level layout only, using --pk-* tokens rather than bespoke values. */
+
+.tablemaker-field {
+    display: block;
+}
+
+/* Craft field label row — keep “Edit columns” on the same line as the field name. */
+.field > .heading.tm-field-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--pk-spacing-3, 0.75rem);
+}
+
+.field > .heading.tm-field-heading .tm-edit-columns {
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+/* Fallback only when no Craft `.heading` exists. */
+.tm-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--pk-spacing-3, 0.75rem);
+    margin-bottom: var(--pk-spacing-2, 0.5rem);
+}
+
+.tm-content-table {
+    display: block;
+}
+
+/* Schema editor needs room for heading + width + align + type + actions. */
+.tm-columns-schema-dialog {
+    --pk-dialog-max-width: calc(32rem + 200px);
+}
+
+.tm-columns-schema-dialog-body,
+.tm-options-dialog-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--pk-spacing-4, 1rem);
+    min-width: min(calc(32rem + 200px - 3rem), 100%);
+}
+
+.tm-options-dialog-instructions {
+    margin: 0;
+    color: var(--pk-color-gray-550, #6b7785);
+    font-size: var(--pk-font-size-sm, 13px);
+}

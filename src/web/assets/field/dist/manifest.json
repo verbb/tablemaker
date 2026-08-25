@@ -1,0 +1,30 @@
+{
+  "_tablemakerPkComponents-DiX5y9Zv.js": {
+    "file": "assets/tablemakerPkComponents-DiX5y9Zv.js",
+    "name": "tablemakerPkComponents"
+  },
+  "field/src/js/plugin-kit-register.ts": {
+    "file": "assets/pluginKit-rx2ZijON.js",
+    "name": "pluginKit",
+    "src": "field/src/js/plugin-kit-register.ts",
+    "isEntry": true,
+    "imports": [
+      "_tablemakerPkComponents-DiX5y9Zv.js"
+    ],
+    "css": [
+      "assets/pluginKit-Dum0oPe8.css"
+    ]
+  },
+  "field/src/js/tablemaker.ts": {
+    "file": "assets/tablemaker-B6h_VSzO.js",
+    "name": "tablemaker",
+    "src": "field/src/js/tablemaker.ts",
+    "isEntry": true,
+    "imports": [
+      "_tablemakerPkComponents-DiX5y9Zv.js"
+    ],
+    "css": [
+      "assets/tablemaker-D6-rgqCl.css"
+    ]
+  }
+}

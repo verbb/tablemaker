@@ -1,0 +1,28 @@
+{
+    "name": "tablemaker",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "workspaces": [
+        "docs"
+    ],
+    "scripts": {
+        "dev": "vite --port 4045",
+        "build": "vite build",
+        "watch": "vite build --watch",
+        "dev:plugin-docs": "npm run docs:dev --prefix docs",
+        "docs:screenshots": "npm --prefix docs run docs:screenshots --"
+    },
+    "devDependencies": {
+        "rollup-plugin-analyzer": "^4.0.0",
+        "typescript": "^5.7.3",
+        "vite": "^8.0.10",
+        "vite-plugin-compression": "^0.5.1"
+    },
+    "dependencies": {
+        "@verbb/plugin-kit-core": "^2.0.9",
+        "@verbb/plugin-kit-icons": "^2.0.9",
+        "@verbb/plugin-kit-web": "^2.0.9",
+        "lodash-es": "^4.17.21"
+    }
+}

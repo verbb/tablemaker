@@ -1,14 +1,13 @@
 <?php
 namespace verbb\tablemaker\fields;
 
-use verbb\tablemaker\assetbundles\FieldAsset;
+use verbb\tablemaker\helpers\Plugin;
 
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
 use craft\gql\GqlEntityRegistry;
-use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
@@ -17,7 +16,6 @@ use craft\helpers\Template;
 use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;
-use craft\web\assets\tablesettings\TableSettingsAsset;
 
 use yii\db\Schema;
 use yii\validators\EmailValidator;
@@ -49,18 +47,27 @@ class TableMakerField extends Field
     // Properties
     // =========================================================================
 
-    public ?string $columnsLabel = null;
-    public ?string $columnsInstructions = null;
-    public ?string $columnsAddRowLabel = null;
     public bool $enableWidthColumn = true;
     public bool $enableAlignmentColumn = true;
-    public ?string $rowsLabel = null;
-    public ?string $rowsInstructions = null;
     public ?string $rowsAddRowLabel = null;
 
 
     // Public Methods
     // =========================================================================
+
+    public function __construct(array $config = [])
+    {
+        // Dropped when columns moved into a modal; Craft field label/instructions cover the rest.
+        unset(
+            $config['columnsLabel'],
+            $config['columnsInstructions'],
+            $config['columnsAddRowLabel'],
+            $config['rowsLabel'],
+            $config['rowsInstructions'],
+        );
+
+        parent::__construct($config);
+    }
 
     /**
      * Normalizes a cell’s value.
@@ -164,6 +171,17 @@ class TableMakerField extends Field
                     $type = $value['columns'][$key]['type'] ?? 'singleline';
                     $cell = $this->normalizeCellValue($type, $cell, $fromRequest);
 
+                    // normalizeCellValue() only coerces color/date/time/multiline; every other
+                    // type is returned as-is. If a cell still holds an array here (e.g. a
+                    // date/time picker payload like ['date' => '', 'timezone' => '...'] that
+                    // landed on a non-date/time column after the row/column counts drifted out
+                    // of sync), concatenating it below throws a fatal "Array to string
+                    // conversion" and takes down the whole element index. Treat any leftover
+                    // array cell as empty so the preview renders instead of erroring.
+                    if (is_array($cell)) {
+                        $cell = '';
+                    }
+
                     $align = $this->_normalizeAlignment($value['columns'][$key]['align'] ?? $value['columns'][$i]['align'] ?? '');
                     $alignAttr = $align ? (' align="' . $align . '" style="text-align: ' . $align . ';"') : '';
                     $html .= '<td' . $alignAttr . '>' . $cell . '</td>';
@@ -219,14 +237,22 @@ class TableMakerField extends Field
         if (!empty($rows) && !empty($columns)) {
             foreach ($rows as &$row) {
                 foreach ($columns as $colId => $col) {
-                    if (is_string($row[$colId])) {
+                    // A row can have fewer cells than there are columns (e.g. a column added
+                    // after the rows were saved, or drifted row/column counts), so the cell
+                    // for this column may not exist. Treat a missing cell as empty instead of
+                    // dereferencing an undefined key.
+                    $cell = $row[$colId] ?? '';
+
+                    if (is_string($cell)) {
                         // Trim the value before validating
-                        $row[$colId] = trim($row[$colId]);
+                        $cell = trim($cell);
                     }
+
+                    $row[$colId] = $cell;
 
                     $type = $col['type'] ?? 'singleLine';
 
-                    $normalizedValue = $this->normalizeCellValue($type, $row[$colId]);
+                    $normalizedValue = $this->normalizeCellValue($type, $cell);
 
                     if ($type && !$this->_validateCellValue($type, $normalizedValue, $error)) {
                         $element->addError($this->handle, $error);
@@ -319,22 +345,14 @@ class TableMakerField extends Field
     {
         $view = Craft::$app->getView();
 
-        // Register our asset bundle
-        $view->registerAssetBundle(FieldAsset::class);
+        // Register Plugin Kit web components + the Table Maker field app; the app
+        // auto-mounts `[data-tablemaker-auto-mount]` and keeps the hidden JSON blob in sync.
+        Plugin::registerFieldAssets();
 
         $name = $this->handle;
 
         $columns = [];
         $rows = [];
-
-        $columnsInput = $name . '[columns]';
-        $rowsInput = $name . '[rows]';
-
-        $columnsInputId = $name . '-columns';
-        $rowsInputId = $name . '-rows';
-
-        // make input
-        $input = '<input class="table-maker-field" type="hidden" name="' . $name . '" value="">';
 
         // get columns from db or fall back to default
         if (!empty($value['columns'])) {
@@ -384,7 +402,19 @@ class TableMakerField extends Field
                 foreach ($rowVal as $colKey => $colVal) {
                     $type = $value['columns'][$colKey]['type'] ?? 'singleline';
 
-                    $rows['row' . $rowKey]['col' . $colKey] = in_array($type, ['date', 'time'], true) ? DateTimeHelper::toIso8601($colVal) : $colVal;
+                    $cellValue = in_array($type, ['date', 'time'], true) ? DateTimeHelper::toIso8601($colVal) : $colVal;
+
+                    // The editable-table input can only render scalar cell values. A cell can
+                    // still hold an array here (e.g. a date/time picker payload like
+                    // ['time' => '', 'timezone' => '...'] that drifted onto a non-date/time
+                    // column after row/column counts fell out of sync) — Twig then throws a
+                    // fatal "Array to string conversion" while rendering the input. Blank any
+                    // leftover array cell so the edit form still loads.
+                    if (is_array($cellValue)) {
+                        $cellValue = '';
+                    }
+
+                    $rows['row' . $rowKey]['col' . $colKey] = $cellValue;
                 }
             }
         } else {
@@ -438,86 +468,36 @@ class TableMakerField extends Field
             ],
         ]);
 
-        $dropdownSettingsCols = [
-            'label' => [
-                'heading' => Craft::t('app', 'Option Label'),
-                'type' => 'singleline',
-                'autopopulate' => 'value',
-                'class' => 'option-label',
-            ],
-            'value' => [
-                'heading' => Craft::t('app', 'Value'),
-                'type' => 'singleline',
-                'class' => 'option-value code',
-            ],
-            'default' => [
-                'heading' => Craft::t('app', 'Default?'),
-                'type' => 'checkbox',
-                'radioMode' => true,
-                'class' => 'option-default thin',
-            ],
-        ];
-
-        $dropdownSettingsHtml = Cp::editableTableFieldHtml([
-            'label' => Craft::t('app', 'Dropdown Options'),
-            'instructions' => Craft::t('app', 'Define the available options.'),
-            'id' => '__ID__',
-            'name' => '__NAME__',
-            'addRowLabel' => Craft::t('app', 'Add an option'),
-            'allowAdd' => true,
-            'allowReorder' => true,
-            'allowDelete' => true,
-            'cols' => $dropdownSettingsCols,
-            'initJs' => false,
-        ]);
-
-        $view->registerAssetBundle(TableSettingsAsset::class);
-        $view->registerJs('new Craft.TableMaker(' .
-            Json::encode($view->namespaceInputId($name), JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->namespaceInputId($columnsInputId), JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->namespaceInputId($rowsInputId), JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->namespaceInputName($columnsInput), JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->namespaceInputName($rowsInput), JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($columns, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($rows, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($dropdownSettingsHtml, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($dropdownSettingsCols, JSON_UNESCAPED_UNICODE) .
-            ');');
-
         $fieldSettings = $this->getSettings();
 
-        $columnsField = $view->renderTemplate('tablemaker/_field/columns-input', [
-            'label' => $fieldSettings['columnsLabel'] ? Craft::t('tablemaker', $fieldSettings['columnsLabel']) : Craft::t('tablemaker', 'Table Columns'),
-            'instructions' => $fieldSettings['columnsInstructions'] ? Craft::t('tablemaker', $fieldSettings['columnsInstructions']) : Craft::t('tablemaker', 'Define the columns your table should have.'),
-            'id' => $columnsInputId,
-            'name' => $columnsInput,
-            'cols' => $columnSettings,
-            'rows' => $columns,
-            'static' => false,
-            'allowAdd' => true,
-            'allowDelete' => true,
-            'allowReorder' => true,
-            'addRowLabel' => $fieldSettings['columnsAddRowLabel'] ? Craft::t('tablemaker', $fieldSettings['columnsAddRowLabel']) : Craft::t('tablemaker', 'Add a column'),
-            'initJs' => false,
-        ]);
-
-        $rowsField = Cp::editableTableFieldHtml([
-            'label' => $fieldSettings['rowsLabel'] ? Craft::t('tablemaker', $fieldSettings['rowsLabel']) : Craft::t('tablemaker', 'Table Content'),
-            'instructions' => $fieldSettings['rowsInstructions'] ? Craft::t('tablemaker', $fieldSettings['rowsInstructions']) : Craft::t('tablemaker', 'Input the content of your table.'),
-            'id' => $rowsInputId,
-            'name' => $rowsInput,
-            'cols' => $columns,
+        // Everything the web-component editor needs to render, seeded from PHP. The field
+        // value round-trips through a single hidden input (`name={handle}`) holding a JSON
+        // `{columns, rows}` blob, decoded by normalizeValue() — no Craft EditableTable HTML.
+        // Field name/instructions come from Craft's field chrome; only the add-row label is customisable.
+        $componentSettings = [
+            'name' => $name,
+            'columns' => $columns,
             'rows' => $rows,
-            'static' => false,
-            'allowAdd' => true,
-            'allowDelete' => true,
-            'allowReorder' => true,
-            'addRowLabel' => $fieldSettings['rowsAddRowLabel'] ? Craft::t('tablemaker', $fieldSettings['rowsAddRowLabel']) : Craft::t('tablemaker', 'Add a row'),
-            'initJs' => false,
-        ]);
+            'columnSettings' => $columnSettings,
+            'typeOptions' => $typeOptions,
+            'enableWidthColumn' => $this->enableWidthColumn,
+            'enableAlignmentColumn' => $this->enableAlignmentColumn,
+            'addRowLabel' => $fieldSettings['rowsAddRowLabel']
+                ? Craft::t('tablemaker', $fieldSettings['rowsAddRowLabel'])
+                : Craft::t('tablemaker', 'Add a row'),
+        ];
 
-        return $input . $columnsField . $rowsField;
+        // Current value blob for the hidden input, so existing tables round-trip on save.
+        $valueBlob = Json::encode([
+            'columns' => $columns,
+            'rows' => $rows,
+        ], JSON_UNESCAPED_UNICODE);
+
+        return $view->renderTemplate('tablemaker/_field/input', [
+            'name' => $name,
+            'valueBlob' => $valueBlob,
+            'componentSettings' => Json::encode($componentSettings, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+        ]);
     }
 
 

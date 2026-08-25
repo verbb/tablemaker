@@ -1,0 +1,5 @@
+<div class="tablemaker-field" data-tablemaker-auto-mount data-name="{{ name }}" data-settings="{{ componentSettings }}">
+    {# Field value round-trips through this single hidden input as a JSON {columns, rows} blob. #}
+    <input class="table-maker-field" type="hidden" name="{{ name }}" value="{{ valueBlob }}">
+    <div data-tablemaker-editor></div>
+</div>
