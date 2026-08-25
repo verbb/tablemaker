@@ -155,27 +155,14 @@ class TableValue
     }
 
     /**
-     * Normalize Twig `.table` args: attribute bag, or a string treated as `class` (#4).
+     * Normalize Twig `.table({ … })` args to an attribute bag for the root `<table>` (#4).
      *
      * @return array<string, mixed>
      */
     public static function normalizeTableAttributes(mixed $attributes): array
     {
-        if ($attributes === null || $attributes === '' || $attributes === []) {
+        if ($attributes === null || $attributes === [] || !is_array($attributes)) {
             return [];
-        }
-
-        if (is_string($attributes)) {
-            return ['class' => $attributes];
-        }
-
-        if (!is_array($attributes)) {
-            return [];
-        }
-
-        // Twig may pass a single-item list when using `{% set attrs = ['specs'] %}` — ignore.
-        if (array_is_list($attributes) && count($attributes) === 1 && is_string($attributes[0])) {
-            return ['class' => $attributes[0]];
         }
 
         return $attributes;

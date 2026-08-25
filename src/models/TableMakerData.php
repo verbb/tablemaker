@@ -41,11 +41,11 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
 
     /**
      * Encoded HTML preview — same Twig API as before (`entry.field.table`).
-     * Pass an attributes array (or a class string) for the root `<table>` (#4).
+     * Optional attribute bag for the root `<table>` (#4).
      *
-     * @param array<string, mixed>|string|null $attributes
+     * @param array<string, mixed>|null $attributes
      */
-    public function getTable(mixed $attributes = null): Markup
+    public function getTable(?array $attributes = null): Markup
     {
         $attrs = TableValue::normalizeTableAttributes($attributes);
 
@@ -64,9 +64,9 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Twig `{{ entry.field.table({ class: 'specs' }) }}` resolves as a method call.
      *
-     * @param array<string, mixed>|string|null $attributes
+     * @param array<string, mixed>|null $attributes
      */
-    public function table(mixed $attributes = null): Markup
+    public function table(?array $attributes = null): Markup
     {
         return $this->getTable($attributes);
     }
