@@ -237,6 +237,11 @@ export const contentSchemaColumns = (columns: ColumnDefinition[]): PkEditableTab
             next.thin = true;
         }
 
+        // Visual weight for row-heading columns (still editable text, not kit static heading).
+        if (column.type === 'heading') {
+            next.class = 'tm-row-heading';
+        }
+
         return next;
     });
 };

@@ -141,9 +141,14 @@ class TableValue
                 $alignAttr = $align !== ''
                     ? ' align="' . $align . '" style="text-align: ' . $align . ';"'
                     : '';
-                $html .= '<td' . $alignAttr . '>'
-                    . self::renderCellHtml($type, $row[$colId] ?? null)
-                    . '</td>';
+                $cellHtml = self::renderCellHtml($type, $row[$colId] ?? null);
+
+                // Craft Table “Row heading” parity — body cell as <th scope="row"> (#6).
+                if ($type === 'heading') {
+                    $html .= '<th scope="row"' . $alignAttr . '>' . $cellHtml . '</th>';
+                } else {
+                    $html .= '<td' . $alignAttr . '>' . $cellHtml . '</td>';
+                }
             }
 
             $html .= '</tr>';
@@ -252,6 +257,7 @@ class TableValue
 
                 return is_numeric($value) ? $value + 0 : $value;
 
+            case 'heading':
             case 'singleline':
             case 'multiline':
             case 'email':

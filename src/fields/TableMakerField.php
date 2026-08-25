@@ -196,6 +196,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             'date' => Craft::t('app', 'Date'),
             'select' => Craft::t('app', 'Dropdown'),
             'email' => Craft::t('app', 'Email'),
+            'heading' => Craft::t('app', 'Row heading'),
             'lightswitch' => Craft::t('app', 'Lightswitch'),
             'multiline' => Craft::t('app', 'Multi-line text'),
             'number' => Craft::t('app', 'Number'),

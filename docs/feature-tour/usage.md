@@ -36,19 +36,23 @@ Columns and rows use stable `colN` / `rowN` keys (matching the CP editor). Zip c
                 {% for colId, col in entry.myTableField.columns %}
                     {% set cell = row[colId] ?? null %}
 
-                    <td align="{{ col.align }}">
-                        {% if col.type == 'url' and cell %}
-                            <a href="{{ cell }}">{{ cell }}</a>
-                        {% elseif col.type == 'date' and cell %}
-                            {{ cell | date('short') }}
-                        {% elseif col.type == 'time' and cell %}
-                            {{ cell | date('short') }}
-                        {% elseif col.type == 'multiline' and cell %}
-                            {{ cell | nl2br }}
-                        {% else %}
-                            {{ cell }}
-                        {% endif %}
-                    </td>
+                    {% if col.type == 'heading' %}
+                        <th scope="row" align="{{ col.align }}">{{ cell }}</th>
+                    {% else %}
+                        <td align="{{ col.align }}">
+                            {% if col.type == 'url' and cell %}
+                                <a href="{{ cell }}">{{ cell }}</a>
+                            {% elseif col.type == 'date' and cell %}
+                                {{ cell | date('short') }}
+                            {% elseif col.type == 'time' and cell %}
+                                {{ cell | date('short') }}
+                            {% elseif col.type == 'multiline' and cell %}
+                                {{ cell | nl2br }}
+                            {% else %}
+                                {{ cell }}
+                            {% endif %}
+                        </td>
+                    {% endif %}
                 {% endfor %}
             </tr>
         {% endfor %}

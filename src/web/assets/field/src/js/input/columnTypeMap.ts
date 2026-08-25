@@ -7,6 +7,8 @@ const CRAFT_TO_PK: Record<string, PkEditableTableColumnType> = {
     date: 'date',
     select: 'select',
     email: 'email',
+    // Row heading stays editable text in the CP; HTML output uses <th scope="row">.
+    heading: 'text',
     lightswitch: 'lightswitch',
     multiline: 'textarea',
     number: 'number',

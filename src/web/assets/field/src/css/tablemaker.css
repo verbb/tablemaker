@@ -31,6 +31,12 @@
     display: block;
 }
 
+/* Row-heading columns: editable text with header-like weight (#6). */
+.tm-content-table td.tm-row-heading {
+    font-weight: 600;
+    background: var(--pk-color-slate-50, rgba(96, 125, 159, 0.05));
+}
+
 /* Schema editor needs room for heading + width + align + type + actions. */
 .tm-columns-schema-dialog {
     --pk-dialog-max-width: calc(32rem + 200px);

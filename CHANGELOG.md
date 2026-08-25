@@ -15,6 +15,7 @@
 - Fix Date/Time cells wiping or showing invalid empty values when editing columns; store `Y-m-d` / `H:i` for CP round-trip ([#54](https://github.com/verbb/tablemaker/issues/54)).
 
 ### Added
+- Add **Row heading** column type (Craft Table parity): editable in the CP, rendered as `<th scope="row">` in `.table` HTML ([#6](https://github.com/verbb/tablemaker/issues/6)).
 - Paste spreadsheet TSV into the content grid from the focused cell; rows expand within max-row limits ([#7](https://github.com/verbb/tablemaker/issues/7)).
 - Insert row above/below from the row actions menu ([#20](https://github.com/verbb/tablemaker/issues/20)).
 - Add field setting to restrict which column types editors can choose, with an “All” (`*`) default ([#53](https://github.com/verbb/tablemaker/issues/53)).
