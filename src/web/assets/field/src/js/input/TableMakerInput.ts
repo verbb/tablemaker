@@ -112,6 +112,8 @@ export class TableMakerInput {
         table.columns = contentSchemaColumns(this.columns);
         table.rows = this.contentRows;
         table.allowReorder = true;
+        // Kit defaults allowInsert=true; keep explicit for content editing (#20).
+        table.allowInsert = true;
         table.addRowLabel = this.settings.addRowLabel || Craft.t('tablemaker', 'Add a row');
         table.newRowDefaults = contentNewRowDefaults(this.columns);
         this.applyRowBounds(table);
@@ -130,11 +132,12 @@ export class TableMakerInput {
     /** Toggle add/delete from field min/max row settings (#38). */
     private applyRowBounds(table: PkEditableTable): void {
         const count = this.contentRows.length;
-        const minRows = this.settings.minRows ?? 0;
+        // Craft Table parity: minRows unset/0 ⇒ true empty grid is allowed.
+        const floor = this.settings.minRows ?? 0;
         const maxRows = this.settings.maxRows;
-        // Keep at least one editor row when no min is set (empty grid is awkward to re-seed).
-        const floor = Math.max(minRows, 1);
 
+        // Kit enforces the cap mid-paste; allowAdd still gates the Add button / insert menu.
+        table.maxRows = maxRows ?? null;
         table.allowAdd = maxRows == null || count < maxRows;
         table.allowDelete = count > floor;
     }

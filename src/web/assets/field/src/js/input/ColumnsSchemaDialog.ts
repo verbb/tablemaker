@@ -167,6 +167,8 @@ export class ColumnsSchemaDialog {
         const maxColumns = this.settings.maxColumns;
         const floor = Math.max(minColumns, 1);
 
+        // Kit enforces the cap mid-paste; allowAdd still gates the Add button / insert menu.
+        table.maxRows = maxColumns ?? null;
         table.allowAdd = maxColumns == null || count < maxColumns;
         table.allowDelete = count > floor;
     }

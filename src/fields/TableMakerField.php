@@ -459,9 +459,8 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             ];
         }
 
-        if ($rows === []) {
-            $rows = ['row0' => []];
-        }
+        // Leave rows empty when unset — Craft Table parity (minRows unset/0 ⇒ zero rows).
+        // Pad only when minRows is explicitly set above the current count.
 
         // Pad to minRows so the CP editor matches field settings before the first save.
         if ($this->minRows !== null && $this->minRows > count($rows)) {

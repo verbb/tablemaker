@@ -15,6 +15,8 @@
 - Fix Date/Time cells wiping or showing invalid empty values when editing columns; store `Y-m-d` / `H:i` for CP round-trip ([#54](https://github.com/verbb/tablemaker/issues/54)).
 
 ### Added
+- Paste spreadsheet TSV into the content grid from the focused cell; rows expand within max-row limits ([#7](https://github.com/verbb/tablemaker/issues/7)).
+- Insert row above/below from the row actions menu ([#20](https://github.com/verbb/tablemaker/issues/20)).
 - Add field setting to restrict which column types editors can choose, with an “All” (`*`) default ([#53](https://github.com/verbb/tablemaker/issues/53)).
 - Add field settings for min/max rows and min/max columns ([#38](https://github.com/verbb/tablemaker/issues/38)).
 - Confirm before deleting a column in the Edit columns dialog ([#58](https://github.com/verbb/tablemaker/issues/58)).

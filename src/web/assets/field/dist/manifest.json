@@ -4,7 +4,7 @@
     "name": "tablemakerPkComponents"
   },
   "field/src/js/plugin-kit-register.ts": {
-    "file": "assets/pluginKit-CfHBsUVs.js",
+    "file": "assets/pluginKit-DSRDcZA0.js",
     "name": "pluginKit",
     "src": "field/src/js/plugin-kit-register.ts",
     "isEntry": true,
@@ -16,7 +16,7 @@
     ]
   },
   "field/src/js/tablemaker.ts": {
-    "file": "assets/tablemaker-B4GcSL38.js",
+    "file": "assets/tablemaker-0zNJbotL.js",
     "name": "tablemaker",
     "src": "field/src/js/tablemaker.ts",
     "isEntry": true,

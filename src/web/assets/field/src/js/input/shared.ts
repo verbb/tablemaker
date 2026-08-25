@@ -188,7 +188,8 @@ export const seedContentRows = (
     let seeded: PkEditableTableRow[];
 
     if (keys.length === 0) {
-        seeded = [buildBlank('row0')];
+        // No stored rows ⇒ start empty; pad below only when minRows > 0.
+        seeded = [];
     } else {
         seeded = keys.map((key) => {
             const source = rows[key] || {};
@@ -275,12 +276,8 @@ export const reconstructContentRows = (
         return remapped;
     }
 
-    const cells: Record<string, unknown> = {};
-    for (const colKey of colKeys) {
-        cells[colKey] = defaultCellValue(columns.find((item) => item._id === colKey));
-    }
-
-    return [{ _id: 'row0', ...cells }];
+    // Schema Done with no content rows — stay empty (don't force a phantom row).
+    return [];
 };
 
 export const serializeValueBlob = (
