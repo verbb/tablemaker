@@ -8,6 +8,14 @@ This will simply output a valid html table (cells and headings are HTML-encoded)
 {{ entry.myTableField.table }}
 ```
 
+You can pass attributes for the root `<table>` element (values are encoded). A string is treated as `class`:
+
+```twig
+{{ entry.myTableField.table({ class: 'specs', id: 'pricing', 'data-table': 'pricing' }) }}
+{{ entry.myTableField.table('specs') }}
+```
+
+For full control over markup, prefer looping `columns` / `rows` below rather than extending the built-in HTML helper.
 ## Code your own
 Should you want more control over the output you can just access the column and row data directly instead using `{{ entry.myTableField.columns }}` and `{{ entry.myTableField.rows }}`.
 

@@ -107,25 +107,26 @@ class TableValue
     }
 
     /**
-     * Safe HTML preview for Twig `{{ field.table }}`.
+     * Safe HTML preview for Twig `{{ field.table }}` / `{{ field.table({ class: 'x' }) }}`.
      *
      * @param array<string, array<string, mixed>> $columns
      * @param array<string, array<string, mixed>> $rows
+     * @param array<string, mixed> $attributes Attributes for the root `<table>` only (#4).
      */
-    public static function renderHtml(array $columns, array $rows): string
+    public static function renderHtml(array $columns, array $rows, array $attributes = []): string
     {
-        $html = '<table><thead><tr>';
+        $body = '';
 
         foreach ($columns as $column) {
             $align = self::normalizeAlignment($column['align'] ?? 'left') ?: 'left';
             $heading = Html::encode((string)($column['heading'] ?? ''));
             $width = Html::encode((string)($column['width'] ?? ''));
-            $html .= '<th align="' . $align . '" style="text-align: ' . $align . ';"'
+            $body .= '<th align="' . $align . '" style="text-align: ' . $align . ';"'
                 . ($width !== '' ? ' width="' . $width . '"' : '')
                 . '>' . $heading . '</th>';
         }
 
-        $html .= '</tr></thead><tbody>';
+        $html = '<thead><tr>' . $body . '</tr></thead><tbody>';
 
         foreach ($rows as $row) {
             if (!is_array($row)) {
@@ -148,9 +149,36 @@ class TableValue
             $html .= '</tr>';
         }
 
-        $html .= '</tbody></table>';
+        $html .= '</tbody>';
 
-        return $html;
+        return Html::tag('table', $html, $attributes);
+    }
+
+    /**
+     * Normalize Twig `.table` args: attribute bag, or a string treated as `class` (#4).
+     *
+     * @return array<string, mixed>
+     */
+    public static function normalizeTableAttributes(mixed $attributes): array
+    {
+        if ($attributes === null || $attributes === '' || $attributes === []) {
+            return [];
+        }
+
+        if (is_string($attributes)) {
+            return ['class' => $attributes];
+        }
+
+        if (!is_array($attributes)) {
+            return [];
+        }
+
+        // Twig may pass a single-item list when using `{% set attrs = ['specs'] %}` — ignore.
+        if (array_is_list($attributes) && count($attributes) === 1 && is_string($attributes[0])) {
+            return ['class' => $attributes[0]];
+        }
+
+        return $attributes;
     }
 
     public static function normalizeType(mixed $type): string
