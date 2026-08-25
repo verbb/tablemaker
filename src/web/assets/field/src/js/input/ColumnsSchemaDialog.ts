@@ -82,7 +82,29 @@ export class ColumnsSchemaDialog {
         this.applyColumnBounds(table);
         table.getRowMenuItems = (row) => this.rowMenuItems(row);
         table.addEventListener('pk-change', ((event: CustomEvent<{ rows: PkEditableTableRow[] }>) => {
-            this.draftRows = this.normalizeDraft(event.detail?.rows ?? []);
+            const next = this.normalizeDraft(event.detail?.rows ?? []);
+
+            // Confirm before dropping a column — cell data for that col is removed on Done (#58).
+            if (next.length < this.draftRows.length) {
+                const removed = this.draftRows.find(
+                    (row) => !next.some((item) => String(item._id) === String(row._id)),
+                );
+                const heading = String(removed?.heading || '').trim()
+                    || Craft.t('tablemaker', 'Untitled column');
+                const message = Craft.t(
+                    'tablemaker',
+                    'Delete column “{heading}”? Cell values in this column will be removed.',
+                    { heading },
+                );
+
+                if (!window.confirm(message)) {
+                    table.rows = this.draftRows;
+                    this.applyColumnBounds(table);
+                    return;
+                }
+            }
+
+            this.draftRows = next;
             this.applyColumnBounds(table);
             table.rows = this.draftRows;
         }) as EventListener);

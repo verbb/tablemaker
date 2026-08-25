@@ -17,6 +17,7 @@
 ### Added
 - Add field setting to restrict which column types editors can choose ([#53](https://github.com/verbb/tablemaker/issues/53)).
 - Add field settings for min/max rows and min/max columns ([#38](https://github.com/verbb/tablemaker/issues/38)).
+- Confirm before deleting a column in the Edit columns dialog ([#58](https://github.com/verbb/tablemaker/issues/58)).
 
 ### Removed
 - Removed Column Label field setting.

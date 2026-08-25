@@ -16,6 +16,7 @@ return [
   'Columns Table' => 'Columns Table',
   'Define the available options for “{heading}”.' => 'Define the available options for “{heading}”.',
   'Define the columns your table should have.' => 'Define the columns your table should have.',
+  'Delete column “{heading}”? Cell values in this column will be removed.' => 'Delete column “{heading}”? Cell values in this column will be removed.',
   'Edit column' => 'Edit column',
   'Edit columns' => 'Edit columns',
   'Edit options' => 'Edit options',
