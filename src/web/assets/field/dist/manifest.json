@@ -4,7 +4,7 @@
     "name": "tablemakerPkComponents"
   },
   "field/src/js/plugin-kit-register.ts": {
-    "file": "assets/pluginKit-rx2ZijON.js",
+    "file": "assets/pluginKit-BFLBZAq1.js",
     "name": "pluginKit",
     "src": "field/src/js/plugin-kit-register.ts",
     "isEntry": true,
@@ -12,11 +12,11 @@
       "_tablemakerPkComponents-DiX5y9Zv.js"
     ],
     "css": [
-      "assets/pluginKit-Dum0oPe8.css"
+      "assets/pluginKit-CMhC2VHa.css"
     ]
   },
   "field/src/js/tablemaker.ts": {
-    "file": "assets/tablemaker-B6h_VSzO.js",
+    "file": "assets/tablemaker-DdLTorCP.js",
     "name": "tablemaker",
     "src": "field/src/js/tablemaker.ts",
     "isEntry": true,

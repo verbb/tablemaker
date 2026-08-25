@@ -2,7 +2,7 @@
 There are two ways you can go about templating a table: use the built-in html output or access the column and row data directly to code your own.
 
 ## Automatic table output
-This will simply output a valid html table:
+This will simply output a valid html table (cells and headings are HTML-encoded):
 
 ```twig
 {{ entry.myTableField.table }}
@@ -11,7 +11,7 @@ This will simply output a valid html table:
 ## Code your own
 Should you want more control over the output you can just access the column and row data directly instead using `{{ entry.myTableField.columns }}` and `{{ entry.myTableField.rows }}`.
 
-Here is an example of how you might do just that:
+Columns and rows use stable `colN` / `rowN` keys (matching the CP editor). Zip cells to columns by key — do not assume numeric `loop.index0` indexes.
 
 ```twig
 <table>
@@ -26,16 +26,18 @@ Here is an example of how you might do just that:
     <tbody>
         {% for row in entry.myTableField.rows %}
             <tr>
-                {% for cell in row %}
-                    {% set col = entry.myTableField.columns[loop.index0] %}
+                {% for colId, col in entry.myTableField.columns %}
+                    {% set cell = row[colId] ?? null %}
 
                     <td align="{{ col.align }}">
-                        {% if col.type == 'url' %}
+                        {% if col.type == 'url' and cell %}
                             <a href="{{ cell }}">{{ cell }}</a>
-                        {% elseif col.type == 'date' %}
+                        {% elseif col.type == 'date' and cell %}
                             {{ cell | date('short') }}
-                        {% elseif col.type == 'time' %}
+                        {% elseif col.type == 'time' and cell %}
                             {{ cell | date('short') }}
+                        {% elseif col.type == 'multiline' and cell %}
+                            {{ cell | nl2br }}
                         {% else %}
                             {{ cell }}
                         {% endif %}
@@ -46,5 +48,3 @@ Here is an example of how you might do just that:
     </tbody>
 </table>
 ```
-
-Note that when looping rows you can use the current loop index to find the appropriate alignment value for that column.

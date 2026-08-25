@@ -55,9 +55,8 @@ export class ColumnsSchemaDialog {
         const dialog = document.createElement('pk-dialog');
         dialog.className = 'tm-columns-schema-dialog';
         dialog.setAttribute('label', Craft.t('tablemaker', 'Edit columns'));
-        // Nested menus/selects dismiss via outside clicks; keep schema edits until
-        // Cancel / Done / X (also avoids backdrop races while a menu is open).
-        dialog.setAttribute('disable-pointer-dismissal', '');
+        // Backdrop dismiss is intentional (Cancel). Kit light-dismiss already skips
+        // closing this dialog when a nested select/menu is top of the dismiss stack.
         dialog.setAttribute('open', '');
 
         const body = document.createElement('div');

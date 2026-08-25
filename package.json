@@ -20,9 +20,9 @@
         "vite-plugin-compression": "^0.5.1"
     },
     "dependencies": {
-        "@verbb/plugin-kit-core": "^2.0.9",
-        "@verbb/plugin-kit-icons": "^2.0.9",
-        "@verbb/plugin-kit-web": "^2.0.9",
+        "@verbb/plugin-kit-core": "^2.0.12",
+        "@verbb/plugin-kit-icons": "^2.0.12",
+        "@verbb/plugin-kit-web": "^2.0.12",
         "lodash-es": "^4.17.21"
     }
 }

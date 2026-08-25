@@ -38,7 +38,7 @@ export class DropdownOptionsDialog {
     private mount(columnHeading: string): void {
         const dialog = document.createElement('pk-dialog');
         dialog.setAttribute('label', Craft.t('app', 'Dropdown Options'));
-        dialog.setAttribute('disable-pointer-dismissal', '');
+        // Backdrop dismiss = Cancel. Nested overlays are handled by kit dismiss stack.
         dialog.setAttribute('open', '');
 
         const body = document.createElement('div');

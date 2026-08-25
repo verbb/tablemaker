@@ -2,28 +2,22 @@
 namespace verbb\tablemaker\fields;
 
 use verbb\tablemaker\helpers\Plugin;
+use verbb\tablemaker\helpers\TableValue;
+use verbb\tablemaker\models\TableMakerData;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\fields\data\ColorData;
 use craft\gql\GqlEntityRegistry;
-use craft\helpers\Db;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
-use craft\helpers\Template;
-use craft\validators\ColorValidator;
-use craft\validators\HandleValidator;
-use craft\validators\UrlValidator;
 
 use yii\db\Schema;
-use yii\validators\EmailValidator;
 
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 
-class TableMakerField extends Field
+class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 {
     // Static Methods
     // =========================================================================
@@ -41,6 +35,11 @@ class TableMakerField extends Field
     public static function dbType(): string
     {
         return Schema::TYPE_TEXT;
+    }
+
+    public static function phpType(): string
+    {
+        return TableMakerData::class . '|null';
     }
 
 
@@ -69,158 +68,39 @@ class TableMakerField extends Field
         parent::__construct($config);
     }
 
-    /**
-     * Normalizes a cell’s value.
-     * Taken from craft\fields\Table::_normalizeCellValue()
-     *
-     * @param string $type The cell type
-     * @param mixed $value The cell value
-     * @return mixed
-     * @see normalizeValue()
-     */
-    public function normalizeCellValue(string $type, mixed $value): mixed
-    {
-        switch ($type) {
-            case 'color':
-                if ($value instanceof ColorData) {
-                    return $value;
-                }
-
-                if (!$value || $value === '#') {
-                    return null;
-                }
-
-                $value = strtolower($value);
-
-                if ($value[0] !== '#') {
-                    $value = '#' . $value;
-                }
-
-                if (strlen($value) === 4) {
-                    $value = '#' . $value[1] . $value[1] . $value[2] . $value[2] . $value[3] . $value[3];
-                }
-
-                $color = new ColorData($value);
-                return $color->__toString();
-
-            case 'date':
-            case 'time':
-                return DateTimeHelper::toIso8601($value);
-
-            case 'multiline':
-                return nl2br($value);
-
-        }
-
-        return $value;
-    }
-
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        return $this->_normalizeValueInternal($value, $element, false);
+        return TableValue::normalize($value, false);
     }
 
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
-        return $this->_normalizeValueInternal($value, $element, true);
+        return TableValue::normalize($value, true);
     }
 
-    private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): ?array
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        if (!is_array($value)) {
-            $value = Json::decode($value);
-        }
+        $data = TableValue::normalize($value, true);
 
-        if (!isset($value['rows'])) {
-            $value['rows'] = [];
-        }
-
-        $html = '
-            <table>
-                <thead>
-                    <tr>
-        ';
-
-        if (!empty($value['columns'])) {
-            foreach ($value['columns'] as &$col) {
-                $align = $this->_normalizeAlignment($col['align'] ?? 'left') ?: 'left';
-                $html .= '<th align="' . $align . '" style="text-align: ' . $align . ';" width="' . ($col['width'] ?? "") . '">' . ($col['heading'] ?? "") . '</th>';
-
-                if (isset($col['options']) && !is_array($col['options'])) {
-                    $col['options'] = Json::decode($col['options']);
-                }
-
-                unset($col);
-            }
-        } else {
-            $value['columns'] = [];
-        }
-
-        $html .= '
-                    </tr>
-                </thead>
-
-                <tbody>';
-
-        if (!empty($value['rows'])) {
-            foreach ($value['rows'] as $row) {
-                $html .= '<tr>';
-
-                $i = 0;
-                foreach ($row as $key => $cell) {
-                    $type = $value['columns'][$key]['type'] ?? 'singleline';
-                    $cell = $this->normalizeCellValue($type, $cell, $fromRequest);
-
-                    // normalizeCellValue() only coerces color/date/time/multiline; every other
-                    // type is returned as-is. If a cell still holds an array here (e.g. a
-                    // date/time picker payload like ['date' => '', 'timezone' => '...'] that
-                    // landed on a non-date/time column after the row/column counts drifted out
-                    // of sync), concatenating it below throws a fatal "Array to string
-                    // conversion" and takes down the whole element index. Treat any leftover
-                    // array cell as empty so the preview renders instead of erroring.
-                    if (is_array($cell)) {
-                        $cell = '';
-                    }
-
-                    $align = $this->_normalizeAlignment($value['columns'][$key]['align'] ?? $value['columns'][$i]['align'] ?? '');
-                    $alignAttr = $align ? (' align="' . $align . '" style="text-align: ' . $align . ';"') : '';
-                    $html .= '<td' . $alignAttr . '>' . $cell . '</td>';
-                    $i++;
-                }
-
-                $html .= '</tr>';
-            }
-        }
-
-        $html .= '
-
-                </tbody>
-
-            </table>
-        ';
-
-        $value['table'] = Template::raw($html);
-
-        return $value;
+        return $data?->toStorage() ?? ['columns' => [], 'rows' => []];
     }
 
-    public function serializeValue(mixed $value, ElementInterface $element = null): mixed
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        if (!empty($value['rows']) && is_array($value['rows'])) {
-            $value['rows'] = array_values($value['rows']);
+        $data = TableValue::normalize($value, false);
 
-            foreach ($value['rows'] as &$row) {
-                if (is_array($row)) {
-                    $row = array_values($row);
-                }
-            }
+        return $data === null || TableValue::isEmpty($data->columns, $data->rows);
+    }
+
+    public function getSearchKeywords(mixed $value, ElementInterface $element): string
+    {
+        $data = TableValue::normalize($value, false);
+
+        if ($data === null) {
+            return '';
         }
 
-        if (!empty($value['columns']) && is_array($value['columns'])) {
-            $value['columns'] = array_values($value['columns']);
-        }
-
-        return parent::serializeValue($value, $element);
+        return TableValue::searchKeywords($data->columns, $data->rows);
     }
 
     public function getElementValidationRules(): array
@@ -231,35 +111,34 @@ class TableMakerField extends Field
     public function validateTableData(ElementInterface $element): void
     {
         $value = $element->getFieldValue($this->handle);
-        $rows = $value['rows'] ?? [];
-        $columns = $value['columns'] ?? [];
+        $data = TableValue::normalize($value, true);
 
-        if (!empty($rows) && !empty($columns)) {
-            foreach ($rows as &$row) {
-                foreach ($columns as $colId => $col) {
-                    // A row can have fewer cells than there are columns (e.g. a column added
-                    // after the rows were saved, or drifted row/column counts), so the cell
-                    // for this column may not exist. Treat a missing cell as empty instead of
-                    // dereferencing an undefined key.
-                    $cell = $row[$colId] ?? '';
+        if ($data === null || $data->columns === [] || $data->rows === []) {
+            return;
+        }
 
-                    if (is_string($cell)) {
-                        // Trim the value before validating
-                        $cell = trim($cell);
-                    }
+        $rows = $data->rows;
 
-                    $row[$colId] = $cell;
+        foreach ($rows as $rowId => $row) {
+            foreach ($data->columns as $colId => $column) {
+                $cell = $row[$colId] ?? '';
 
-                    $type = $col['type'] ?? 'singleLine';
+                if (is_string($cell)) {
+                    $cell = trim($cell);
+                }
 
-                    $normalizedValue = $this->normalizeCellValue($type, $cell);
+                $rows[$rowId][$colId] = $cell;
+                $type = TableValue::normalizeType($column['type'] ?? 'singleline');
 
-                    if ($type && !$this->_validateCellValue($type, $normalizedValue, $error)) {
-                        $element->addError($this->handle, $error);
-                    }
+                if (!TableValue::validateCell($type, $cell, $error)) {
+                    $element->addError($this->handle, (string)$error);
                 }
             }
         }
+
+        // Persist trimmed cells so validation cleanup survives into serialize.
+        $data->rows = $rows;
+        $element->setFieldValue($this->handle, $data);
     }
 
     public function getSettingsHtml(): ?string
@@ -273,68 +152,61 @@ class TableMakerField extends Field
     {
         $typeName = $this->handle . '_TableMakerField';
         $columnTypeName = $typeName . '_column';
+        $optionTypeName = $columnTypeName . '_option';
 
-        $columnType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($columnTypeName, new ObjectType([
-            'name' => $columnTypeName,
-            'fields' => [
-                'type' => Type::string(),
-                'heading' => Type::string(),
-                'width' => Type::string(),
-                'align' => Type::string(),
-            ],
-        ]));
-
-        $tableMakerType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new ObjectType([
-            'name' => $typeName,
-            'fields' => [
-                'rows' => [
-                    'type' => Type::listOf(Type::listOf(Type::string())),
-                    'resolve' => function ($source) {
-                        // Extra help here for an empty field. 
-                        // TODO: Refactor `normalizeValue()` properly to remove this.
-                        if (!is_array($source['rows'])) {
-                            $source['rows'] = [];
-                        }
-
-                        if (!is_array($source['columns'])) {
-                            $source['columns'] = [];
-                        }
-
-                        foreach ($source['rows'] as $rowKey => $row) {
-                            foreach ($source['columns'] as $columnKey => $column) {
-                                $type = $column['type'] ?? 'singleline';
-
-                                if ($type === 'date' || $type === 'time') {
-                                    $value = $row[$columnKey] ?? null;
-
-                                    $source['rows'][$rowKey][$columnKey] = DateTimeHelper::toIso8601($value);
-                                }
-
-                            }
-                        }
-
-                        return $source['rows'] ?? [];
-                    }
+        $optionType = GqlEntityRegistry::getEntity($optionTypeName)
+            ?: GqlEntityRegistry::createEntity($optionTypeName, new ObjectType([
+                'name' => $optionTypeName,
+                'fields' => [
+                    'label' => Type::string(),
+                    'value' => Type::string(),
+                    'default' => Type::boolean(),
                 ],
-                'columns' => [
-                    'type' => Type::listOf($columnType),
-                    'resolve' => function ($source) {
-                        // Extra help here for an empty field. 
-                        // TODO: Refactor `normalizeValue()` properly to remove this.
-                        if (!is_array($source['columns'])) {
-                            $source['columns'] = [];
-                        }
+            ]));
 
-                        return $source['columns'];
-                    }
-                ],
-                'table' => [
+        $columnType = GqlEntityRegistry::getEntity($columnTypeName)
+            ?: GqlEntityRegistry::createEntity($columnTypeName, new ObjectType([
+                'name' => $columnTypeName,
+                'fields' => [
                     'type' => Type::string(),
+                    'heading' => Type::string(),
+                    'width' => Type::string(),
+                    'align' => Type::string(),
+                    'options' => Type::listOf($optionType),
                 ],
-            ],
-        ]));
+            ]));
 
-        return $tableMakerType;
+        return GqlEntityRegistry::getEntity($typeName)
+            ?: GqlEntityRegistry::createEntity($typeName, new ObjectType([
+                'name' => $typeName,
+                'fields' => [
+                    'rows' => [
+                        'type' => Type::listOf(Type::listOf(Type::string())),
+                        'resolve' => static function($source) {
+                            $data = TableValue::normalize($source, false);
+
+                            return TableValue::rowsForGql($data->columns, $data->rows);
+                        },
+                    ],
+                    'columns' => [
+                        'type' => Type::listOf($columnType),
+                        'resolve' => static function($source) {
+                            $data = TableValue::normalize($source, false);
+
+                            // Positional list keeps GraphQL list semantics + Twig loop.index0 docs.
+                            return array_values($data->columns);
+                        },
+                    ],
+                    'table' => [
+                        'type' => Type::string(),
+                        'resolve' => static function($source) {
+                            $data = TableValue::normalize($source, false);
+
+                            return (string)$data->getTable();
+                        },
+                    ],
+                ],
+            ]));
     }
 
 
@@ -345,79 +217,25 @@ class TableMakerField extends Field
     {
         $view = Craft::$app->getView();
 
-        // Register Plugin Kit web components + the Table Maker field app; the app
-        // auto-mounts `[data-tablemaker-auto-mount]` and keeps the hidden JSON blob in sync.
+        // Register Plugin Kit web components + the field app (hidden JSON blob round-trip).
         Plugin::registerFieldAssets();
 
-        $name = $this->handle;
+        $data = TableValue::normalize($value, false) ?? new TableMakerData();
+        $columns = $data->columns;
+        $rows = $data->rows;
 
-        $columns = [];
-        $rows = [];
-
-        // get columns from db or fall back to default
-        if (!empty($value['columns'])) {
-            foreach ($value['columns'] as $key => $val) {
-                // Just in case there's invalid data
-                if (!isset($val['heading'])) {
-                    continue;
-                }
-
-                $type = $val['type'] ?? 'singleline';
-
-                $columns['col' . $key] = array_filter([
-                    'heading' => $val['heading'],
-                    'align' => $val['align'] ?? '',
-                    'width' => $val['width'] ?? '',
-                    'type' => $type,
-                ]);
-
-                if ($type === 'select') {
-                    if (!isset($val['options'])) {
-                        $columns['col'.$key]['options'] = [];
-                    } else if (is_string($val['options'])) {
-                        $columns['col'.$key]['options'] = Json::decode($val['options']);
-                    }
-                    else {
-                        $columns['col'.$key]['options'] = $val['options'];
-                    }
-                } else {
-                    unset($columns['col'.$key]['options']);
-                }
-            }
-        } else {
+        if ($columns === []) {
             $columns = [
                 'col0' => [
                     'heading' => '',
-                    'align' => '',
+                    'align' => 'left',
                     'width' => '',
                     'type' => 'singleline',
                 ],
             ];
         }
 
-        // Get rows from db or fall back to default
-        if (!empty($value['rows'])) {
-            // Walk down the rows and cells appending 'row' to the rows' keys and 'col' to the cells' keys
-            foreach ($value['rows'] as $rowKey => $rowVal) {
-                foreach ($rowVal as $colKey => $colVal) {
-                    $type = $value['columns'][$colKey]['type'] ?? 'singleline';
-
-                    $cellValue = in_array($type, ['date', 'time'], true) ? DateTimeHelper::toIso8601($colVal) : $colVal;
-
-                    // The editable-table input can only render scalar cell values. A cell can
-                    // still hold an array here (e.g. a date/time picker payload like
-                    // ['time' => '', 'timezone' => '...'] that drifted onto a non-date/time
-                    // column after row/column counts fell out of sync) — Twig then throws a
-                    // fatal "Array to string conversion" while rendering the input. Blank any
-                    // leftover array cell so the edit form still loads.
-                    if (is_array($cellValue)) {
-                        $cellValue = '';
-                    }
-
-                    $rows['row' . $rowKey]['col' . $colKey] = $cellValue;
-                }
-            }
-        } else {
+        if ($rows === []) {
             $rows = ['row0' => []];
         }
 
@@ -434,113 +252,30 @@ class TableMakerField extends Field
             'time' => Craft::t('app', 'Time'),
             'url' => Craft::t('app', 'URL'),
         ];
-
-        // Make sure they are sorted alphabetically (post-translation)
         asort($typeOptions);
 
-        $columnSettings = array_filter([
-            'heading' => [
-                'heading' => Craft::t('tablemaker', 'Heading'),
-                'type' => 'singleline',
-                'class' => 'col-heading',
-            ],
-            'width' => $this->enableWidthColumn ? [
-                'heading' => Craft::t('tablemaker', 'Width'),
-                'class' => 'code col-width',
-                'type' => 'singleline',
-                'width' => 50,
-            ] : null,
-            'align' => $this->enableAlignmentColumn ? [
-                'heading' => Craft::t('tablemaker', 'Alignment'),
-                'class' => 'thin col-align',
-                'type' => 'select',
-                'options' => [
-                    'left' => Craft::t('tablemaker', 'Left'),
-                    'center' => Craft::t('tablemaker', 'Center'),
-                    'right' => Craft::t('tablemaker', 'Right'),
-                ],
-            ] : null,
-            'type' => [
-                'heading' => Craft::t('tablemaker', 'Type'),
-                'class' => 'thin col-type',
-                'type' => 'select',
-                'options' => $typeOptions,
-            ],
-        ]);
-
-        $fieldSettings = $this->getSettings();
-
-        // Everything the web-component editor needs to render, seeded from PHP. The field
-        // value round-trips through a single hidden input (`name={handle}`) holding a JSON
-        // `{columns, rows}` blob, decoded by normalizeValue() — no Craft EditableTable HTML.
-        // Field name/instructions come from Craft's field chrome; only the add-row label is customisable.
+        // Keys are already colN/rowN from TableValue — do not re-prefix (avoids colcol0).
         $componentSettings = [
-            'name' => $name,
+            'name' => $this->handle,
             'columns' => $columns,
             'rows' => $rows,
-            'columnSettings' => $columnSettings,
             'typeOptions' => $typeOptions,
             'enableWidthColumn' => $this->enableWidthColumn,
             'enableAlignmentColumn' => $this->enableAlignmentColumn,
-            'addRowLabel' => $fieldSettings['rowsAddRowLabel']
-                ? Craft::t('tablemaker', $fieldSettings['rowsAddRowLabel'])
+            'addRowLabel' => $this->rowsAddRowLabel
+                ? Craft::t('tablemaker', $this->rowsAddRowLabel)
                 : Craft::t('tablemaker', 'Add a row'),
         ];
 
-        // Current value blob for the hidden input, so existing tables round-trip on save.
         $valueBlob = Json::encode([
             'columns' => $columns,
             'rows' => $rows,
         ], JSON_UNESCAPED_UNICODE);
 
         return $view->renderTemplate('tablemaker/_field/input', [
-            'name' => $name,
+            'name' => $this->handle,
             'valueBlob' => $valueBlob,
             'componentSettings' => Json::encode($componentSettings, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
         ]);
-    }
-
-
-    // Private Methods
-    // =========================================================================
-
-    private function _validateCellValue(string $type, mixed $value, ?string &$error = null): bool
-    {
-        if ($value === null || $value === '') {
-            return true;
-        }
-
-        switch ($type) {
-            case 'color':
-                if ($value instanceof ColorData) {
-                    $value = $value->getHex();
-                }
-
-                $validator = new ColorValidator();
-                break;
-            case 'url':
-                $validator = new UrlValidator();
-                break;
-            case 'email':
-                $validator = new EmailValidator();
-                break;
-            default:
-                return true;
-        }
-
-        $validator->message = str_replace('{attribute}', '{value}', $validator->message);
-        
-        return $validator->validate($value, $error);
-    }
-
-    private function _normalizeAlignment(?string $align): string
-    {
-        $align = strtolower((string)$align);
-
-        if (in_array($align, ['left', 'center', 'right'], true)) {
-            return $align;
-        }
-
-        return '';
     }
 }
