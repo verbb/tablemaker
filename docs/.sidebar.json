@@ -11,6 +11,7 @@
         "title": "Feature Tour",
         "collapsable": false,
         "children": [
+            "feature-tour/field",
             "feature-tour/usage"
         ]
     }

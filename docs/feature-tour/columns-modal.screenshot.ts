@@ -1,15 +1,15 @@
 import { defineScreenshotScenario } from '@verbb/docs-screenshots/api';
 import { seedTableMakerDocsFixture } from '../.screenshots/tablemaker/fixtures';
 import {
+    createOpenTableMakerColumnsModalSteps,
     createTableMakerCleanupStep,
-    createTableMakerFieldPromoCropStep,
 } from '../.screenshots/tablemaker/presets';
 
 let entryEditRoute = '/admin/entries';
 
 export default defineScreenshotScenario({
-    id: 'feature-tour-usage',
-    output: '_screenshots/feature-tour/usage.png',
+    id: 'feature-tour-columns-modal',
+    output: '_screenshots/feature-tour/columns-modal.png',
     route: () => entryEditRoute,
     viewport: {
         width: 1100,
@@ -21,13 +21,13 @@ export default defineScreenshotScenario({
         entryEditRoute = fixture.entryEditRoute;
     },
     waitFor: [
-        { type: 'selector', selector: '#tablemaker-docs-screenshot-stage', state: 'visible', timeout: 30000 },
+        { type: 'selector', selector: '.tm-edit-columns', state: 'visible', timeout: 30000 },
+        { type: 'selector', selector: '#tablemaker-docs-screenshot-stage', state: 'visible', timeout: 60000 },
     ],
     preSteps: [
         createTableMakerCleanupStep(),
-        // White stage + 20px inset for marketing-friendly crops.
-        createTableMakerFieldPromoCropStep({ padding: 20, width: 560, background: '#ffffff' }),
-        { type: 'wait', waitFor: { type: 'timeout', ms: 300 } },
+        { type: 'wait', waitFor: { type: 'timeout', ms: 600 } },
+        ...createOpenTableMakerColumnsModalSteps(),
     ],
     steps: [],
     target: {
@@ -35,6 +35,6 @@ export default defineScreenshotScenario({
         selector: '#tablemaker-docs-screenshot-stage',
         padding: 0,
     },
-    caption: 'Table Maker field with Plan/Price rows and caption.',
-    intent: 'Show a simple editable content table with caption on white.',
+    caption: 'Edit columns modal with heading, width, and alignment.',
+    intent: 'Show the Columns schema dialog for configuring table structure.',
 });

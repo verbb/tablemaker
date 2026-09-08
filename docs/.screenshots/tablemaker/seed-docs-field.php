@@ -90,6 +90,7 @@ function docsScreenshotTableMakerField(): TableMakerField
 
     $field->name = 'Specifications';
     $field->instructions = 'Build a table of specifications.';
+    $field->enableCaption = true;
 
     if (!$fields->saveField($field)) {
         throw new RuntimeException('Unable to save Table Maker field: ' . Json::encode($field->getErrors()));
@@ -172,17 +173,18 @@ $section = docsScreenshotSection(DOCS_SECTION_HANDLE, 'Table Maker Demo');
 $field = docsScreenshotTableMakerField();
 docsScreenshotAttachField($section, $field);
 
-// Demo table matching Table Maker's {columns, rows} value contract.
+// Demo table matching Table Maker's {columns, rows, caption?} value contract.
 $tableValue = [
     'columns' => [
-        ['heading' => 'Feature', 'align' => 'left', 'width' => ''],
-        ['heading' => 'Value', 'align' => 'left', 'width' => ''],
+        ['type' => 'heading', 'heading' => 'Plan', 'align' => 'left', 'width' => ''],
+        ['type' => 'singleline', 'heading' => 'Price', 'align' => 'left', 'width' => ''],
     ],
     'rows' => [
-        ['Weight', '1.2kg'],
-        ['Dimensions', '30 × 20 × 5 cm'],
-        ['Material', 'Anodized aluminium'],
+        ['Basic', '$9'],
+        ['Pro', '$29'],
+        ['Team', '$79'],
     ],
+    'caption' => 'Monthly pricing',
 ];
 
 $entry = docsScreenshotUpsertEntry($section, DOCS_ENTRY_HANDLE, 'Demo', $field->handle, $tableValue);

@@ -1,7 +1,11 @@
 # Usage
+
 There are two ways you can go about templating a table: use the built-in html output or access the column and row data directly to code your own.
 
+Set up the field and editor UI first — see [Field](docs:feature-tour/field).
+
 ## Automatic table output
+
 This will simply output a valid html table (cells and headings are HTML-encoded):
 
 ```twig
@@ -14,10 +18,12 @@ You can pass attributes for the root `<table>` element (values are encoded):
 {{ entry.myTableField.table({ class: 'specs', id: 'pricing', 'data-table': 'pricing' }) }}
 ```
 
-If the field has **Enable Caption** on and the entry has a caption set, the automatic HTML includes `<caption>…</caption>`. Access it with `{{ entry.myTableField.caption }}`.
+If the value has a caption set, the automatic HTML includes `<caption>…</caption>`. Access it with `{{ entry.myTableField.caption }}`. (**Enable Caption** on the field settings controls whether editors can edit it in the CP.)
 
 For full control over markup, prefer looping `columns` / `rows` below rather than extending the built-in HTML helper.
+
 ## Code your own
+
 Should you want more control over the output you can just access the column and row data directly instead using `{{ entry.myTableField.columns }}` and `{{ entry.myTableField.rows }}`.
 
 Columns and rows use stable `colN` / `rowN` keys (matching the CP editor). Zip cells to columns by key — do not assume numeric `loop.index0` indexes.
@@ -40,16 +46,24 @@ Columns and rows use stable `colN` / `rowN` keys (matching the CP editor). Zip c
 
                     {% if col.type == 'heading' %}
                         <th scope="row" align="{{ col.align }}">{{ cell }}</th>
+                    {% elseif col.type == 'select' %}
+                        {# Stored value — look up the label from column options if you need it #}
+                        {% set option = col.options|filter(o => o.value == cell)|first %}
+                        <td align="{{ col.align }}">{{ option.label ?? cell }}</td>
                     {% else %}
                         <td align="{{ col.align }}">
                             {% if col.type == 'url' and cell %}
                                 <a href="{{ cell }}">{{ cell }}</a>
+                            {% elseif col.type == 'email' and cell %}
+                                <a href="mailto:{{ cell }}">{{ cell }}</a>
                             {% elseif col.type == 'date' and cell %}
                                 {{ cell | date('short') }}
                             {% elseif col.type == 'time' and cell %}
                                 {{ cell | date('short') }}
                             {% elseif col.type == 'multiline' and cell %}
                                 {{ cell | nl2br }}
+                            {% elseif col.type in ['checkbox', 'lightswitch'] %}
+                                {{ cell ? 'Yes' : 'No' }}
                             {% else %}
                                 {{ cell }}
                             {% endif %}
@@ -61,6 +75,8 @@ Columns and rows use stable `colN` / `rowN` keys (matching the CP editor). Zip c
     </tbody>
 </table>
 ```
+
+See [Field](docs:feature-tour/field) for the full list of column type handles.
 
 ## GraphQL
 
@@ -81,7 +97,7 @@ Query the field like Twig — `columns`, positional `rows` (`[[String]]`), optio
 }
 ```
 
-Mutations accept the same shape (columns list + rows as string matrix + optional caption). Column/row order is positional; storage keys (`colN` / `rowN`) are assigned on save:
+Mutations accept the same shape (columns list + rows as a string matrix + optional caption). Column/row order is positional; storage keys (`colN` / `rowN`) are assigned on save:
 
 ```graphql
 mutation {
