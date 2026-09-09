@@ -30,7 +30,7 @@
     ],
     "require": {
         "php": "^8.2",
-        "craftcms/cms": "^5.0.0",
+        "craftcms/cms": "^5.6.0",
         "nystudio107/craft-plugin-vite": "^5.0.0",
         "verbb/base": "^3.0.0"
     },
@@ -45,5 +45,29 @@
         "documentationUrl": "https://github.com/verbb/tablemaker",
         "changelogUrl": "https://raw.githubusercontent.com/verbb/tablemaker/craft-5/CHANGELOG.md",
         "class": "verbb\\tablemaker\\TableMaker"
+    },
+    "require-dev": {
+        "craftcms/cms": "^5.6",
+        "pestphp/pest": "^3.8",
+        "pestphp/pest-plugin": "^3.0",
+        "vlucas/phpdotenv": "^5.6",
+        "yiisoft/yii2-shell": "^2.0.3"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "craftcms/plugin-installer": true,
+            "pestphp/pest-plugin": true,
+            "yiisoft/yii2-composer": true
+        }
+    },
+    "scripts": {
+        "test": "./vendor/bin/pest --bootstrap tests/bootstrap-craft.php -c phpunit.craft.xml tests",
+        "test:setup": "@php tests/bin/test-setup.php",
+        "test:all": "./vendor/bin/pest --bootstrap tests/bootstrap-craft.php -c phpunit.craft.xml tests"
     }
 }

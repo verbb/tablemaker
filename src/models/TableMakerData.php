@@ -16,30 +16,29 @@ use Twig\Markup;
  * Normalized field value: columns + rows (+ optional caption). `.table` HTML is
  * built lazily and never participates in serialize/DB storage.
  *
+ * Public `$columns` / `$rows` are DualAccessMap so Twig can use either named
+ * `colN`/`rowN` keys or legacy positional indexes (`columns[loop.index0]`).
+ *
  * @implements ArrayAccess<string, mixed>
  * @implements IteratorAggregate<string, mixed>
  */
 class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
 {
-    /** @var array<string, array<string, mixed>> */
-    public array $columns = [];
+    public DualAccessMap $columns;
 
-    /** @var array<string, array<string, mixed>> */
-    public array $rows = [];
+    public DualAccessMap $rows;
 
     /** Optional per-value table caption (#60). */
     public string $caption = '';
 
-    private Markup|false|null $tableHtml = null;
-
     /**
-     * @param array<string, array<string, mixed>> $columns
-     * @param array<string, array<string, mixed>> $rows
+     * @param array<string, array<string, mixed>>|DualAccessMap $columns
+     * @param array<string, array<string, mixed>>|DualAccessMap $rows
      */
-    public function __construct(array $columns = [], array $rows = [], string $caption = '')
+    public function __construct(array|DualAccessMap $columns = [], array|DualAccessMap $rows = [], string $caption = '')
     {
-        $this->columns = $columns;
-        $this->rows = $rows;
+        $this->columns = $this->wrapColumns($columns);
+        $this->rows = $this->wrapRows($rows);
         $this->caption = $caption;
     }
 
@@ -51,18 +50,16 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
      */
     public function getTable(?array $attributes = null): Markup
     {
+        // Always render from current data — a bare HTML cache diverged when callers
+        // mutated public columns/rows/caption directly (DATA-06).
         $attrs = TableValue::normalizeTableAttributes($attributes);
 
-        // Cache only the bare table; attributed renders are one-off.
-        if ($attrs === []) {
-            if ($this->tableHtml === null) {
-                $this->tableHtml = Template::raw(TableValue::renderHtml($this->columns, $this->rows, [], $this->caption));
-            }
-
-            return $this->tableHtml;
-        }
-
-        return Template::raw(TableValue::renderHtml($this->columns, $this->rows, $attrs, $this->caption));
+        return Template::raw(TableValue::renderHtml(
+            $this->columns->all(),
+            $this->rowsAsStorage(),
+            $attrs,
+            $this->caption,
+        ));
     }
 
     /**
@@ -103,29 +100,23 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
 
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        if ($offset === 'columns' && is_array($value)) {
-            $this->columns = $value;
-            $this->tableHtml = null;
-        } elseif ($offset === 'rows' && is_array($value)) {
-            $this->rows = $value;
-            $this->tableHtml = null;
+        if ($offset === 'columns' && (is_array($value) || $value instanceof DualAccessMap)) {
+            $this->columns = $this->wrapColumns($value);
+        } elseif ($offset === 'rows' && (is_array($value) || $value instanceof DualAccessMap)) {
+            $this->rows = $this->wrapRows($value);
         } elseif ($offset === 'caption') {
             $this->caption = trim((string)$value);
-            $this->tableHtml = null;
         }
     }
 
     public function offsetUnset(mixed $offset): void
     {
         if ($offset === 'columns') {
-            $this->columns = [];
-            $this->tableHtml = null;
+            $this->columns = new DualAccessMap();
         } elseif ($offset === 'rows') {
-            $this->rows = [];
-            $this->tableHtml = null;
+            $this->rows = new DualAccessMap();
         } elseif ($offset === 'caption') {
             $this->caption = '';
-            $this->tableHtml = null;
         }
     }
 
@@ -151,6 +142,77 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
      */
     public function toStorage(): array
     {
-        return TableValue::toStorage($this->columns, $this->rows, $this->caption);
+        return TableValue::toStorage($this->columns->all(), $this->rowsAsStorage(), $this->caption);
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public function columnsArray(): array
+    {
+        return $this->columns->all();
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public function rowsArray(): array
+    {
+        return $this->rowsAsStorage();
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    private function rowsAsStorage(): array
+    {
+        $out = [];
+
+        foreach ($this->rows->all() as $rowId => $row) {
+            if ($row instanceof DualAccessMap) {
+                $out[(string)$rowId] = $row->all();
+            } elseif (is_array($row)) {
+                $out[(string)$rowId] = $row;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>>|DualAccessMap $columns
+     */
+    private function wrapColumns(array|DualAccessMap $columns): DualAccessMap
+    {
+        if ($columns instanceof DualAccessMap) {
+            return $columns;
+        }
+
+        return new DualAccessMap($columns);
+    }
+
+    /**
+     * @param array<string, array<string, mixed>>|DualAccessMap $rows
+     */
+    private function wrapRows(array|DualAccessMap $rows): DualAccessMap
+    {
+        if ($rows instanceof DualAccessMap) {
+            // Ensure nested cells are also dual-access.
+            $wrapped = new DualAccessMap();
+
+            foreach ($rows->all() as $rowId => $row) {
+                $wrapped[(string)$rowId] = $row instanceof DualAccessMap ? $row : new DualAccessMap(is_array($row) ? $row : []);
+            }
+
+            return $wrapped;
+        }
+
+        $wrapped = new DualAccessMap();
+
+        foreach ($rows as $rowId => $row) {
+            $wrapped[(string)$rowId] = new DualAccessMap(is_array($row) ? $row : []);
+        }
+
+        return $wrapped;
     }
 }

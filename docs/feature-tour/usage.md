@@ -26,7 +26,7 @@ For full control over markup, prefer looping `columns` / `rows` below rather tha
 
 Should you want more control over the output you can just access the column and row data directly instead using `{{ entry.myTableField.columns }}` and `{{ entry.myTableField.rows }}`.
 
-Columns and rows use stable `colN` / `rowN` keys (matching the CP editor). Zip cells to columns by key — do not assume numeric `loop.index0` indexes.
+Columns and rows use stable `colN` / `rowN` keys (matching the CP editor). Zip cells to columns by key, or use positional indexes (`columns[loop.index0]`) when looping cells in order — both work.
 
 ```twig
 <table>

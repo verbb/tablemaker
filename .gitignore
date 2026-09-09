@@ -3,6 +3,15 @@
 .env.sh
 .env
 
+
+# TESTING ENVIRONMENT
+.env.testing
+.env.testing.local
+/tests/_craft/config/license.key
+/tests/_craft/config/project
+/tests/_craft/storage
+/tests/_craft/web
+
 # COMPOSER
 /vendor
 

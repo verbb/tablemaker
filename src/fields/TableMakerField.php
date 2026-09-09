@@ -3,6 +3,7 @@ namespace verbb\tablemaker\fields;
 
 use verbb\tablemaker\helpers\Plugin;
 use verbb\tablemaker\helpers\TableValue;
+use verbb\tablemaker\models\DualAccessMap;
 use verbb\tablemaker\models\TableMakerData;
 
 use Craft;
@@ -261,7 +262,10 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         $data = TableValue::normalize($value, false);
 
         if ($data !== null) {
-            $data->columns = TableValue::constrainColumnTypes($data->columns, array_keys($this->getAllowedColumnTypeOptions()));
+            $data->columns = new DualAccessMap(TableValue::constrainColumnTypes(
+                $data->columnsArray(),
+                array_keys($this->getAllowedColumnTypeOptions()),
+            ));
         }
 
         return $data;
@@ -272,7 +276,10 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         $data = TableValue::normalize($value, true);
 
         if ($data !== null) {
-            $data->columns = TableValue::constrainColumnTypes($data->columns, array_keys($this->getAllowedColumnTypeOptions()));
+            $data->columns = new DualAccessMap(TableValue::constrainColumnTypes(
+                $data->columnsArray(),
+                array_keys($this->getAllowedColumnTypeOptions()),
+            ));
         }
 
         return $data;
@@ -300,7 +307,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     {
         $data = TableValue::normalize($value, false);
 
-        return $data === null || TableValue::isEmpty($data->columns, $data->rows);
+        return $data === null || TableValue::isEmpty($data->columnsArray(), $data->rowsArray());
     }
 
     public function getSearchKeywords(mixed $value, ElementInterface $element): string
@@ -311,7 +318,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             return '';
         }
 
-        return TableValue::searchKeywords($data->columns, $data->rows, $data->caption);
+        return TableValue::searchKeywords($data->columnsArray(), $data->rowsArray(), $data->caption);
     }
 
     public function getElementValidationRules(): array
@@ -351,14 +358,14 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             ]));
         }
 
-        if ($data->columns === [] || $data->rows === []) {
+        if ($data->columns->count() === 0 || $data->rows->count() === 0) {
             return;
         }
 
-        $rows = $data->rows;
+        $rows = $data->rowsArray();
 
         foreach ($rows as $rowId => $row) {
-            foreach ($data->columns as $colId => $column) {
+            foreach ($data->columnsArray() as $colId => $column) {
                 $cell = $row[$colId] ?? '';
 
                 if (is_string($cell)) {
@@ -375,7 +382,10 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         }
 
         // Persist trimmed cells so validation cleanup survives into serialize.
-        $data->rows = $rows;
+        $data->rows = new DualAccessMap(array_map(
+            static fn(array $row) => new DualAccessMap($row),
+            $rows,
+        ));
         $element->setFieldValue($this->handle, $data);
     }
 
@@ -425,7 +435,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                         'resolve' => static function($source) {
                             $data = TableValue::normalize($source, false);
 
-                            return TableValue::rowsForGql($data->columns, $data->rows);
+                            return TableValue::rowsForGql($data->columnsArray(), $data->rowsArray());
                         },
                     ],
                     'columns' => [
@@ -434,7 +444,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                             $data = TableValue::normalize($source, false);
 
                             // Positional list keeps GraphQL list semantics + Twig loop.index0 docs.
-                            return array_values($data->columns);
+                            return array_values($data->columnsArray());
                         },
                     ],
                     'caption' => [
@@ -511,8 +521,8 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         Plugin::registerFieldAssets();
 
         $data = TableValue::normalize($value, false) ?? new TableMakerData();
-        $columns = $data->columns;
-        $rows = $data->rows;
+        $columns = $data->columnsArray();
+        $rows = $data->rowsArray();
         $caption = $data->caption;
 
         if ($columns === []) {

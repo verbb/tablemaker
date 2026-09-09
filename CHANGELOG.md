@@ -3,11 +3,14 @@
 ## Unreleased
 
 ### Changed
+- Now requires Craft CMS 5.6+.
+- Public Twig access to `columns` / `rows` supports both `colN`/`rowN` keys and legacy positional indexes (`columns[loop.index0]`).
 - Rebuild the field input UI on [Plugin Kit](https://docs.verbb.io/plugin-kit/web/) (web components).
 - The field input now moves the Column table in a modal for a leaner UI.
 - Rewrite the PHP value layer: normalize/serialize store pure `{columns, rows}` with stable `colN`/`rowN` keys; `.table` HTML is lazy, encoded, and never persisted.
 
 ### Fixed
+- Fix `.table` HTML staying stale after in-request mutation of columns/rows/caption.
 - Fix `.table` output HTML-encoding headings/cells.
 - Fix GraphQL column type registry lookup; expose column `options`; resolve `table` lazily.
 - Fix CP input re-prefixing already-canonical `colN` keys (`colcol0`).
