@@ -174,23 +174,14 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
 
     private function _wrapRows(array|DualAccessMap $rows): DualAccessMap
     {
-        if ($rows instanceof DualAccessMap) {
-            // Ensure nested cells are also dual-access.
-            $wrapped = new DualAccessMap();
-
-            foreach ($rows->all() as $rowId => $row) {
-                $wrapped[(string)$rowId] = $row instanceof DualAccessMap ? $row : new DualAccessMap(is_array($row) ? $row : []);
-            }
-
-            return $wrapped;
-        }
-
-        $wrapped = new DualAccessMap();
+        $wrapped = [];
 
         foreach ($rows as $rowId => $row) {
-            $wrapped[(string)$rowId] = new DualAccessMap(is_array($row) ? $row : []);
+            $wrapped[(string)$rowId] = $row instanceof DualAccessMap
+                ? $row
+                : new DualAccessMap(is_array($row) ? $row : []);
         }
 
-        return $wrapped;
+        return new DualAccessMap($wrapped);
     }
 }

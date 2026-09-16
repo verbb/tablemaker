@@ -28,9 +28,10 @@ class DualAccessMap implements ArrayAccess, IteratorAggregate, Countable, JsonSe
 
     public function __construct(array $items = [])
     {
-        foreach ($items as $key => $value) {
-            $this->offsetSet((string)$key, $value);
-        }
+        // Constructor keys are identities; positional assignment only applies
+        // when callers update the initialized collection through ArrayAccess.
+        $this->items = $items;
+        $this->order = array_map('strval', array_keys($items));
     }
 
     public function all(): array
@@ -73,7 +74,11 @@ class DualAccessMap implements ArrayAccess, IteratorAggregate, Countable, JsonSe
     public function offsetSet(mixed $offset, mixed $value): void
     {
         if ($offset === null) {
-            $offset = 'item' . count($this->order);
+            $index = count($this->order);
+            while (array_key_exists('item' . $index, $this->items)) {
+                $index++;
+            }
+            $offset = 'item' . $index;
         }
 
         $key = (string)$offset;

@@ -12,8 +12,41 @@ use craft\helpers\StringHelper;
 use verbb\tablemaker\fields\TableMakerField;
 use verbb\tablemaker\helpers\TableValue;
 use verbb\tablemaker\models\DualAccessMap;
+use verbb\tablemaker\models\TableMakerData;
 
 describe('DualAccessMap', function() {
+    it('appends after deletion without replacing an existing row', function() {
+        $value = TableValue::normalize([
+            'columns' => [['heading' => 'Plan', 'type' => 'singleline']],
+            'rows' => [['First']],
+        ], true);
+        $value->rows[] = ['col0' => 'Second'];
+        $value->rows[] = ['col0' => 'Third'];
+        unset($value->rows[0]);
+        $value->rows[] = ['col0' => 'Fourth'];
+        expect(array_column($value->rowsArray(), 'col0'))->toBe(['Second', 'Third', 'Fourth']);
+        expect(array_column(TableValue::normalize($value->toStorage())->rowsArray(), 'col0'))->toBe(['Second', 'Third', 'Fourth']);
+    });
+
+    it('preserves constructor identities before enabling positional updates', function() {
+        $items = [2 => 'A', 0 => 'B', 1 => 'C'];
+        $map = new DualAccessMap($items);
+        expect($map->all())->toBe($items);
+        $map[0] = 'Updated A';
+        expect($map->all())->toBe([2 => 'Updated A', 0 => 'B', 1 => 'C']);
+        expect((new DualAccessMap(['col0' => 'A', 0 => 'B']))->all())->toBe(['col0' => 'A', 0 => 'B']);
+    });
+
+    it('wraps reordered numeric table arrays without overwriting rows or cells', function() {
+        $columns = [2 => ['heading' => 'A'], 0 => ['heading' => 'B']];
+        $rows = [4 => [2 => 'First A', 0 => 'First B'], 0 => [2 => 'Second A', 0 => 'Second B']];
+        $value = new TableMakerData($columns, $rows);
+        expect($value->columnsArray())->toBe($columns);
+        expect($value->rowsArray())->toBe($rows);
+        $copied = new TableMakerData($value->columns, $value->rows);
+        expect($copied->rowsArray())->toBe($rows);
+    });
+
     it('exposes named and positional access to the same entry', function() {
         $map = new DualAccessMap([
             'col0' => ['heading' => 'Plan', 'align' => 'right'],

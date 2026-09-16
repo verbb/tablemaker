@@ -24,6 +24,7 @@
 - Align documentation filenames with page titles and update internal links.
 
 ### Fixed
+- Keep existing rows when PHP integrations append after deletion or construct reordered numeric collections.
 - Preserve large numbers and precise decimals through saves and reject invalid number cells.
 - Preserve existing row and column keys when inserting new items before them.
 - Save automatically added rows and columns when minimum limits increase on existing tables.
