@@ -307,6 +307,26 @@ describe('TableValue normalize + storage', function() {
 });
 
 describe('Table Maker Craft lifecycle', function() {
+    it('submits required padding through Craft delta updates', function(string $setting) {
+        Tests\Support\CpRequestContext::activate('settings/fields');
+        $view = Craft::$app->getView();
+        $namespace = $view->getNamespace();
+        $active = $view->getIsDeltaRegistrationActive();
+        $field = new TableMakerField(['name' => 'Required padding', 'handle' => 'padding' . bin2hex(random_bytes(4)), $setting => 2]);
+        try {
+            $view->setNamespace('fields[nested]');
+            $view->setIsDeltaRegistrationActive(true);
+            $field->getInputHtml(TableValue::normalize([
+                'columns' => [['heading' => 'Value', 'type' => 'singleline']],
+                'rows' => [['Stored']],
+            ]), null);
+            expect($view->getModifiedDeltaNames())->toContain('fields[nested][' . $field->handle . ']');
+        } finally {
+            $view->setNamespace($namespace);
+            $view->setIsDeltaRegistrationActive($active);
+        }
+    })->with(['minRows', 'minColumns']);
+
     it('applies dropdown defaults only to rows added for the minimum', function() {
         Tests\Support\CpRequestContext::activate('settings/fields');
         $field = new TableMakerField(['name' => 'Minimum rows', 'handle' => 'minimumRows', 'minRows' => 2]);

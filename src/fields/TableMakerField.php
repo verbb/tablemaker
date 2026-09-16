@@ -517,6 +517,12 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         $typeOptions = $this->getAllowedColumnTypeOptions();
         $defaultType = isset($typeOptions['singleline']) ? 'singleline' : array_key_first($typeOptions);
 
+        // Required padding changes stored content even when editors only touch
+        // another field. Include it in Craft's otherwise unchanged delta group.
+        if (($this->minRows ?? 0) > count($rows) || ($this->minColumns ?? 0) > count($columns)) {
+            $view->registerDeltaName($this->handle, true);
+        }
+
         if ($columns === []) {
             $columns = [
                 'col0' => [

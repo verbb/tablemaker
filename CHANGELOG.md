@@ -24,6 +24,7 @@
 - Align documentation filenames with page titles and update internal links.
 
 ### Fixed
+- Save automatically added rows and columns when minimum limits increase on existing tables.
 - Keep cells aligned with their columns when empty column definitions are omitted.
 - Preserve dates pasted in the Control Panel's date format and show normalized pasted values immediately.
 - Apply dropdown defaults to rows added automatically by the minimum row setting.
