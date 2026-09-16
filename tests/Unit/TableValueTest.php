@@ -299,6 +299,27 @@ describe('TableValue normalize + storage', function() {
 });
 
 describe('Table Maker Craft lifecycle', function() {
+    it('applies dropdown defaults only to rows added for the minimum', function() {
+        Tests\Support\CpRequestContext::activate('settings/fields');
+        $field = new TableMakerField(['name' => 'Minimum rows', 'handle' => 'minimumRows', 'minRows' => 2]);
+        $value = TableValue::normalize([
+            'columns' => [
+                ['heading' => 'Preferred', 'type' => 'select', 'options' => [
+                    ['label' => 'First', 'value' => 'first'], ['label' => 'Preferred', 'value' => 'pro', 'default' => true],
+                ]],
+                ['heading' => 'First', 'type' => 'select', 'options' => [['label' => 'First', 'value' => 'first']]],
+                ['heading' => 'Enabled', 'type' => 'checkbox'],
+            ],
+            'rows' => [['', '', false]],
+        ], true);
+        $html = $field->getInputHtml($value, null);
+        preg_match('/data-settings="([^"]+)"/', $html, $matches);
+        $settings = json_decode(html_entity_decode($matches[1], ENT_QUOTES), true);
+        expect($settings['rows']['row0'])->toBe(['col0' => '', 'col1' => '', 'col2' => false]);
+        expect($settings['rows']['row1'])->toBe(['col0' => 'pro', 'col1' => 'first', 'col2' => false]);
+        expect(count($value->rowsArray()))->toBe(1);
+    });
+
     it('rejects a maximum column count that the editor cannot satisfy', function() {
         $field = new TableMakerField(['name' => 'Bounded table', 'handle' => 'boundedTable', 'maxColumns' => 0]);
         expect($field->validate())->toBeFalse();

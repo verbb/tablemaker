@@ -533,12 +533,30 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 
         // Pad to minRows so the CP editor matches field settings before the first save.
         if ($this->minRows !== null && $this->minRows > count($rows)) {
+            // Match the defaults used by Add a row, without replacing deliberately
+            // empty cells in existing rows.
+            $defaults = [];
+            foreach ($columns as $columnId => $column) {
+                $type = $column['type'] ?? 'singleline';
+                $defaults[$columnId] = in_array($type, ['checkbox', 'lightswitch'], true) ? false : '';
+                if ($type === 'select') {
+                    $options = $column['options'] ?? [];
+                    $defaults[$columnId] = $options[0]['value'] ?? '';
+                    foreach ($options as $option) {
+                        if (!empty($option['default'])) {
+                            $defaults[$columnId] = $option['value'];
+                            break;
+                        }
+                    }
+                }
+            }
+
             $nextIndex = 0;
             while (count($rows) < $this->minRows) {
                 while (array_key_exists('row' . $nextIndex, $rows)) {
                     $nextIndex++;
                 }
-                $rows['row' . $nextIndex] = [];
+                $rows['row' . $nextIndex] = $defaults;
                 $nextIndex++;
             }
         }
