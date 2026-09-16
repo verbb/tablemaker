@@ -90,6 +90,26 @@ it('persists every column type and cleared values through Craft', function() {
     expect($cleared->rowsArray())->toBe([])->and($cleared->caption)->toBe('');
 });
 
+it('preserves table structure and captions on the first save without populated cells', function() {
+    $entry = new Entry([
+        'sectionId' => $this->section->id,
+        'typeId' => $this->entryType->id,
+        'siteId' => $this->entry->siteId,
+        'slug' => 'empty-structure',
+    ]);
+    $handle = $this->tableField->handle;
+    $entry->setFieldValue($handle, [
+        'columns' => [['heading' => 'Available', 'type' => 'checkbox']],
+        'rows' => [[false]],
+        'caption' => 'Availability',
+    ]);
+    expect(Craft::$app->getElements()->saveElement($entry))->toBeTrue();
+    $saved = Entry::find()->id($entry->id)->status(null)->one()->getFieldValue($handle);
+    expect($saved->columns['col0']['heading'])->toBe('Available');
+    expect($saved->rowsArray())->toBe(['row0' => ['col0' => false]]);
+    expect($saved->caption)->toBe('Availability');
+});
+
 it('keeps drafts and duplicates independent of canonical table data', function() {
     $handle = $this->tableField->handle;
     $draft = Craft::$app->getDrafts()->createDraft($this->entry, AdminUser::findAdmin()->id);

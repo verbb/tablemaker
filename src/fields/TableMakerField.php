@@ -255,7 +255,13 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     {
         $data = TableValue::normalize($value, false);
 
-        return $data === null || TableValue::isEmpty($data->columnsArray(), $data->rowsArray());
+        // Craft omits empty fields on an element's first save. Column definitions,
+        // blank rows and captions are authored data even without populated cells.
+        return $data === null || (
+            count($data->columns) === 0
+            && count($data->rows) === 0
+            && $data->caption === ''
+        );
     }
 
     public function getSearchKeywords(mixed $value, ElementInterface $element): string
