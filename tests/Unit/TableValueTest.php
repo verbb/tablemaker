@@ -490,6 +490,25 @@ describe('Table Maker Craft lifecycle', function() {
         expect(array_column($settings['columns'], 'type'))->toBe(['number', 'number']);
     });
 
+    it('keeps legacy float spelling identical in the editor settings and hidden baseline', function() {
+        Tests\Support\CpRequestContext::activate('content/entries');
+        $field = new TableMakerField(['name' => 'Numbers', 'handle' => 'numbers']);
+        $value = TableValue::normalize([
+            'columns' => [['heading' => 'Number', 'type' => 'number']],
+            'rows' => [[0.00001], [1.0e20], [1.0e-7], [-0.0], [1.2345678901234567]],
+        ]);
+        $html = $field->getInputHtml($value, null);
+        $document = new DOMDocument();
+        @$document->loadHTML($html);
+        $xpath = new DOMXPath($document);
+        $settings = json_decode($xpath->query('//*[@data-settings]')->item(0)->getAttribute('data-settings'), true);
+        $baseline = json_decode($xpath->query('//input[contains(@class, "table-maker-field")]')->item(0)->getAttribute('value'), true);
+        $expected = ['1.0e-5', '1.0e+20', '1.0e-7', '-0', '1.2345678901234567'];
+        expect(array_column($settings['rows'], 'col0'))->toBe($expected);
+        expect(array_column($baseline['rows'], 'col0'))->toBe($expected);
+        expect($value->rows[0]['col0'])->toBe(0.00001);
+    });
+
     it('keeps empty editor maps stable for browser change tracking', function() {
         $field = new TableMakerField(['name' => 'Empty fixture', 'handle' => 'emptyFixture']);
         $method = new ReflectionMethod($field, 'serializeEditorValue');

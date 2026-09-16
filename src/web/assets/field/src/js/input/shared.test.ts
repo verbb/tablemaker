@@ -4,6 +4,7 @@ import { defaultSelectValue, normalizeDropdownOptions } from './options.js';
 import {
     ensurePrefixedKey,
     seedColumns,
+    seedContentRows,
     normalizeDateForEditor,
     normalizeTimeForEditor,
     serializeValueBlob,
@@ -113,6 +114,18 @@ describe('table editor normalization', () => {
             enableWidthColumn: true,
             enableAlignmentColumn: true,
         })).toBe('{"columns":{"col0":{"heading":"Plan","type":"singleline","width":"","align":"left"}},"rows":{"row0":{"col0":"Basic"}}}');
+    });
+
+    it('retains exact numeric strings from the initial server form snapshot', () => {
+        const numbers = ['1.0e-5', '1.0e+20', '1.0e-7', '-0', '1.2345678901234567'];
+        const settings = {
+            name: 'numbers',
+            columns: { col0: { heading: 'Number', type: 'number' } },
+            rows: Object.fromEntries(numbers.map((value, index) => [`row${index}`, { col0: value }])),
+        };
+        const columns = seedColumns(settings);
+        const payload = JSON.parse(serializeValueBlob(columns, seedContentRows(settings, columns), settings));
+        expect(Object.values(payload.rows).map((row: any) => row.col0)).toEqual(numbers);
     });
 
     it('serializes explicit false defaults for select options', () => {

@@ -583,6 +583,16 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             }
         }
 
+        // PHP and JavaScript spell some floats differently in JSON. Use the same
+        // exact string for the initial form snapshot and the mounted editor.
+        foreach ($rows as $rowId => $row) {
+            foreach ($columns as $columnId => $column) {
+                if (($column['type'] ?? '') === 'number' && is_float($row[$columnId] ?? null)) {
+                    $rows[$rowId][$columnId] = Json::encode($row[$columnId]);
+                }
+            }
+        }
+
         // Keys are already colN/rowN from TableValue — do not re-prefix (avoids colcol0).
         $componentSettings = [
             'name' => $this->handle,
