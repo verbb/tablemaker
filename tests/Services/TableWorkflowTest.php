@@ -215,3 +215,21 @@ it('executes GraphQL mutations and queries with actual schema permissions', func
     expect($denied)->toHaveKey('errors');
     expect(Entry::find()->id($this->entry->id)->status(null)->one()->getFieldValue($handle)->caption)->toBe('API pricing');
 });
+
+it('keeps GraphQL cells aligned when empty columns are omitted', function() {
+    $handle = $this->tableField->handle;
+    $schema = new GqlSchema([
+        'name' => 'Nullable columns', 'uid' => craft\helpers\StringHelper::UUID(),
+        'scope' => ["sections.{$this->section->uid}:read", "sections.{$this->section->uid}:save", "sites.{$this->entry->getSite()->uid}:read"],
+    ]);
+    $mutation = "save_{$this->section->handle}_{$this->entryType->handle}_Entry";
+    $query = 'mutation Save($id: ID!, $table: ' . $handle . '_TableMakerInput) {' . $mutation . '(id: $id, ' . $handle . ': $table) { ' . $handle . ' { rows } }}';
+    $result = Craft::$app->getGql()->executeQuery($schema, $query, ['id' => (string)$this->entry->id, 'table' => [
+        'columns' => [[], ['heading' => 'Price', 'type' => 'singleline'], [], ['heading' => 'Note', 'type' => 'singleline']],
+        'rows' => [['Omitted first', 'Correct price', 'Omitted third', 'Correct note']],
+    ]], null, true);
+    expect($result)->not->toHaveKey('errors');
+    expect($result['data'][$mutation][$handle]['rows'])->toBe([['Correct price', 'Correct note']]);
+    $saved = Entry::find()->id($this->entry->id)->status(null)->one()->getFieldValue($handle);
+    expect(array_values($saved->rowsArray()['row0']))->toBe(['Correct price', 'Correct note']);
+});

@@ -63,6 +63,14 @@ describe('DualAccessMap', function() {
 });
 
 describe('TableValue normalize + storage', function() {
+    it('preserves original cell positions when invalid column definitions are skipped', function(mixed $omitted) {
+        $data = TableValue::normalize([
+            'columns' => [$omitted, ['heading' => 'Price', 'type' => 'singleline']],
+            'rows' => [['Omitted cell', 'Correct price']],
+        ], true);
+        expect($data->rowsArray())->toBe(['row0' => ['col1' => 'Correct price']]);
+    })->with(['null column' => [null], 'empty column' => [[]]]);
+
     it('preserves literal shortcodes in legacy cells and subsequent saves', function() {
         $cells = [':smile:', '\\:smile\\:', ':smile:smile:', '😄', '\\folder\\file', '__MB4_DL__text__MB4_DR__'];
         $data = TableValue::normalize([

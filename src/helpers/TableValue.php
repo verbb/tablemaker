@@ -605,7 +605,10 @@ class TableValue
                 $mapped = [];
 
                 foreach ($colIds as $i => $colId) {
-                    $mapped[$colId] = $row[$i] ?? null;
+                    // Skipped definitions still occupied a position in the input
+                    // list; keep the surviving column paired with its own cell.
+                    $sourceKey = $columnKeys[$colId] ?? $i;
+                    $mapped[$colId] = $row[is_int($sourceKey) ? $sourceKey : $i] ?? null;
                 }
 
                 $row = $mapped;
