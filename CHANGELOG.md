@@ -24,6 +24,7 @@
 - Align documentation filenames with page titles and update internal links.
 
 ### Fixed
+- Preserve existing columns and cell values when allowed column types change.
 - Prevent unchanged decimal cells from creating a draft when an entry opens.
 - Preserve date and time cells across skipped local dates and daylight-saving transitions.
 - Apply nested PHP edits to column settings and newly appended rows.

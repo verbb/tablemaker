@@ -5,6 +5,7 @@ import {
     ensurePrefixedKey,
     seedColumns,
     seedContentRows,
+    columnTypeChoices,
     normalizeDateForEditor,
     normalizeTimeForEditor,
     serializeValueBlob,
@@ -114,6 +115,20 @@ describe('table editor normalization', () => {
             enableWidthColumn: true,
             enableAlignmentColumn: true,
         })).toBe('{"columns":{"col0":{"heading":"Plan","type":"singleline","width":"","align":"left"}},"rows":{"row0":{"col0":"Basic"}}}');
+    });
+
+    it('keeps a stored type only among its own column choices', () => {
+        const settings = {
+            name: 'restricted', columns: {}, rows: {},
+            typeOptions: { checkbox: 'Checkbox' },
+            typeLabels: { checkbox: 'Checkbox', singleline: 'Single-line text', select: 'Dropdown' },
+        };
+        expect(columnTypeChoices(settings)).toEqual([{ value: 'checkbox', label: 'Checkbox' }]);
+        expect(columnTypeChoices(settings, 'singleline')).toEqual([
+            { value: 'checkbox', label: 'Checkbox' }, { value: 'singleline', label: 'Single-line text' },
+        ]);
+        expect(columnTypeChoices(settings, 'select').map((option) => option.value)).toEqual(['checkbox', 'select']);
+        expect(columnTypeChoices(settings, 'checkbox')).toEqual([{ value: 'checkbox', label: 'Checkbox' }]);
     });
 
     it('retains exact numeric strings from the initial server form snapshot', () => {

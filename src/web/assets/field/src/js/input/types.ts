@@ -21,6 +21,7 @@ export interface TableMakerSettings {
     captionPlaceholder?: string;
     columnSettings?: Record<string, unknown>;
     typeOptions?: Record<string, string>;
+    typeLabels?: Record<string, string>;
     enableWidthColumn?: boolean;
     enableAlignmentColumn?: boolean;
     /** Custom label for the content table “Add a row” button. */

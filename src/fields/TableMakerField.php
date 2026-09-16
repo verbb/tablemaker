@@ -207,30 +207,12 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        $data = TableValue::normalize($value, false);
-
-        if ($data !== null) {
-            $data->columns = new DualAccessMap(TableValue::constrainColumnTypes(
-                $data->columnsArray(),
-                array_keys($this->getAllowedColumnTypeOptions()),
-            ));
-        }
-
-        return $data;
+        return TableValue::normalize($value, false);
     }
 
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
-        $data = TableValue::normalize($value, true);
-
-        if ($data !== null) {
-            $data->columns = new DualAccessMap(TableValue::constrainColumnTypes(
-                $data->columnsArray(),
-                array_keys($this->getAllowedColumnTypeOptions()),
-            ));
-        }
-
-        return $data;
+        return TableValue::normalize($value, true);
     }
 
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
@@ -610,6 +592,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                 ? Craft::t('tablemaker', $this->captionPlaceholder)
                 : '',
             'typeOptions' => $typeOptions,
+            'typeLabels' => self::allColumnTypeOptions(),
             'enableWidthColumn' => $this->enableWidthColumn,
             'enableAlignmentColumn' => $this->enableAlignmentColumn,
             'minRows' => $this->minRows,

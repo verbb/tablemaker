@@ -479,6 +479,26 @@ describe('Table Maker Craft lifecycle', function() {
         expect($field->validate())->toBeTrue();
     });
 
+    it('preserves existing columns when allowed editor types change', function() {
+        $field = new TableMakerField(['name' => 'Restricted', 'handle' => 'restricted', 'allowedColumnTypes' => ['checkbox']]);
+        $input = [
+            'columns' => [
+                ['heading' => 'Text', 'type' => 'singleline'],
+                ['heading' => 'Choice', 'type' => 'select', 'options' => [['label' => 'Plan', 'value' => 'plan']]],
+            ],
+            'rows' => [['Keep this text', 'plan']],
+        ];
+        $stored = $field->normalizeValue($input, null);
+        $requested = $field->normalizeValueFromRequest($input, null);
+        foreach ([$stored, $requested] as $value) {
+            expect(array_column($value->columnsArray(), 'type'))->toBe(['singleline', 'select']);
+            expect($value->columns[1]['options'][0]['value'])->toBe('plan');
+            expect($field->normalizeValue($field->serializeValue($value, null), null)->rowsArray())
+                ->toBe(['row0' => ['col0' => 'Keep this text', 'col1' => 'plan']]);
+        }
+        expect(array_keys($field->getAllowedColumnTypeOptions()))->toBe(['checkbox']);
+    });
+
     it('renders allowed types for initial and minimum columns', function() {
         Tests\Support\CpRequestContext::activate('settings/fields');
         $field = new TableMakerField([

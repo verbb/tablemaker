@@ -7,7 +7,7 @@ import type {
 import type { ColumnDefinition } from './types.js';
 import { DropdownOptionsDialog } from './DropdownOptionsDialog.js';
 import { normalizeDropdownOptions } from './options.js';
-import { columnSchemaTableColumns, createColumn, defaultColumnType } from './shared.js';
+import { columnTypeChoices, columnSchemaTableColumns, createColumn, defaultColumnType } from './shared.js';
 import type { TableMakerSettings } from './types.js';
 
 export interface ColumnsSchemaDialogResult {
@@ -70,6 +70,9 @@ export class ColumnsSchemaDialog {
         const table = document.createElement('pk-editable-table') as PkEditableTable;
         table.columns = columnSchemaTableColumns(this.settings);
         table.rows = this.draftRows;
+        table.modifyColumn = (row, name) => name === 'type'
+            ? { options: columnTypeChoices(this.settings, String(row.type || 'singleline')) }
+            : null;
         table.allowReorder = true;
         table.addRowLabel = Craft.t('tablemaker', 'Add a column');
         table.newRowDefaults = {

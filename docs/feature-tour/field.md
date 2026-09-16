@@ -20,7 +20,7 @@ Enable **Enable Width Column** and **Enable Alignment Column** when editors shou
 
 Turn on **Enable Caption** when each table needs a descriptive title, such as “Monthly plans”. You can set its label, instructions and placeholder on the field. The caption appears below the editing grid and is available to Twig and GraphQL. Turning off the input does not remove a stored caption: it still renders, and editors can change it by turning the input back on.
 
-Use **Allowed Column Types** to limit the choices in **Edit columns**. For this pricing example, allow Row heading, Single-line text and Dropdown if editors need a billing-period column. Choose **All** to make every built-in type available.
+Use **Allowed Column Types** to limit the choices in **Edit columns**. For this pricing example, allow Row heading, Single-line text and Dropdown if editors need a billing-period column. Choose **All** to make every built-in type available. Changing this setting preserves existing columns and their values. An existing column keeps its current type as a choice; new columns and type changes use the allowed choices.
 
 Set **Min Rows**, **Max Rows**, **Min Columns** or **Max Columns** when the design requires bounds. For example, a minimum of two columns keeps a plan name and price together, while a maximum of four prevents a comparison table from growing too wide. **Add Row Label** lets you give the add action a name suited to the content, such as “Add a plan”.
 

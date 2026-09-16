@@ -3,6 +3,7 @@ import { craftTypeToPk } from './columnTypeMap.js';
 import { defaultSelectValue, normalizeDropdownOptions, toPkSelectOptions } from './options.js';
 import type {
     PkEditableTableColumn,
+    PkEditableTableOption,
     PkEditableTableRow,
 } from '@verbb/plugin-kit-web/components/editable-table/pk-editable-table.js';
 
@@ -144,6 +145,15 @@ export const nextInternalId = (prefix: string): string => {
 export const defaultColumnType = (settings: Pick<TableMakerSettings, 'typeOptions'>): string => {
     const types = Object.keys(settings.typeOptions || {});
     return types.includes('singleline') ? 'singleline' : (types[0] || 'singleline');
+};
+
+/** Keep an existing type selectable only on its own column after choices are restricted. */
+export const columnTypeChoices = (settings: TableMakerSettings, currentType?: string): PkEditableTableOption[] => {
+    const choices = toPkSelectOptions(settings.typeOptions || {});
+    if (currentType && !choices.some((option) => option.value === currentType)) {
+        choices.push({ value: currentType, label: settings.typeLabels?.[currentType] || currentType });
+    }
+    return choices;
 };
 
 export const createColumn = (settings: Pick<TableMakerSettings, 'typeOptions'> = {}): ColumnDefinition => ({
@@ -447,7 +457,7 @@ export const columnSchemaTableColumns = (settings: TableMakerSettings): PkEditab
         label: Craft.t('tablemaker', 'Type'),
         type: 'select',
         thin: true,
-        options: toPkSelectOptions(settings.typeOptions || {}),
+        options: columnTypeChoices(settings),
     });
 
     return columns;
