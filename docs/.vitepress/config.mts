@@ -90,7 +90,7 @@ export default defineConfig({
     lastUpdated: true,
     vite: {
         ssr: {
-            noExternal: ['@verbb/vitepress-theme'],
+            noExternal: ['@verbb/vitepress-theme', 'mark.js'],
         },
         plugins: [
             tailwindcss(),

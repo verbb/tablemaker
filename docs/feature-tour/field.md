@@ -1,24 +1,36 @@
 # Field
 
-Create a Table Maker field under **Settings → Fields**. Editors then manage both the column schema and the row content on the element itself.
+Use a Table Maker field when editors need to manage both the columns and the content of a table. For example, a pricing page might compare plans by price and billing period. Each entry can have its own headings, rows and optional caption.
 
-<img src="/_screenshots/feature-tour/usage.png" width="600" alt="Table Maker field with Plan/Price rows and caption." />
+## Create a Pricing Table
 
-**Edit columns** opens a modal for the column schema (heading, width, alignment, type):
+Create a Table Maker field under **Settings → Fields**, name it Pricing Table and give it the handle `pricingTable`. Add it to an entry type's field layout, then open an entry that uses that layout.
 
-<img src="/_screenshots/feature-tour/columns-modal.png" width="612" alt="Edit columns modal with heading, width, and alignment." />
+![Table Maker field with Plan and Price rows and a caption](/_screenshots/feature-tour/usage.png)
 
-## Field settings
+Use **Edit columns** to define the table. Add a Plan column with the **Row heading** type and a Price column with **Single-line text**. A row heading identifies the rest of its row: the generated HTML uses a `<th scope="row">` cell for each plan name.
 
-- **Enable Width Column** — show a width control when editing columns.
-- **Enable Alignment Column** — show left / center / right alignment when editing columns.
-- **Enable Caption** — show a caption input below the table for each field value. Label, instructions, and placeholder are optional. A stored caption still renders in Twig / GraphQL even if you later turn this setting off (editors just can’t edit it until you turn it back on).
-- **Allowed Column Types** — restrict which types appear in the Edit columns dialog. Leave **All** selected (or `*`) for every built-in type.
-- **Min / Max Rows** — bound how many content rows editors can add or remove.
-- **Min / Max Columns** — same for the column schema.
-- **Add Row Label** — customise the “Add a row” button text.
+![Edit columns dialog with heading, width and alignment controls](/_screenshots/feature-tour/columns-modal.png)
 
-### Column types
+Confirm the column changes, then enter Basic and Pro as plan names and $9 and $29 as their prices. Save the entry and reopen it to check the headings and values. [Rendering Tables](docs:template-guides/rendering-tables) shows how to display the result on the pricing page.
+
+## Field Settings
+
+Enable **Enable Width Column** and **Enable Alignment Column** when editors should control those properties for each column. Width and alignment affect generated table markup; your site's CSS still controls its overall appearance.
+
+Turn on **Enable Caption** when each table needs a descriptive title, such as “Monthly plans”. You can set its label, instructions and placeholder on the field. The caption appears below the editing grid and is available to Twig and GraphQL. Turning off the input does not remove a stored caption: it still renders, and editors can change it by turning the input back on.
+
+Use **Allowed Column Types** to limit the choices in **Edit columns**. For this pricing example, allow Row heading, Single-line text and Dropdown if editors need a billing-period column. Choose **All** to make every built-in type available.
+
+Set **Min Rows**, **Max Rows**, **Min Columns** or **Max Columns** when the design requires bounds. For example, a minimum of two columns keeps a plan name and price together, while a maximum of four prevents a comparison table from growing too wide. **Add Row Label** lets you give the add action a name suited to the content, such as “Add a plan”.
+
+### Column Types
+
+Choose a type according to the value editors need to enter. Text types suit labels and descriptions; Number, Date and Time provide inputs for those values. Email, URL and Color values are validated when the element is saved. Checkbox and Lightswitch suit yes/no information.
+
+For a fixed choice, add a **Dropdown** column and define its option labels and values in **Edit columns**. For example, Monthly and Yearly labels could store `monthly` and `yearly`. Templates receive the stored value, so account for that when building custom output.
+
+The handles below identify the types in Twig and GraphQL:
 
 | Handle | Label |
 | --- | --- |
@@ -35,15 +47,10 @@ Create a Table Maker field under **Settings → Fields**. Editors then manage bo
 | `time` | Time |
 | `url` | URL |
 
-## Editing content
+## Editing Content
 
-- **Edit columns** opens a modal to add, reorder, rename, and type columns (plus width / alignment / dropdown options when enabled). Deleting a column asks for confirmation.
-- **Paste** spreadsheet TSV into a focused cell to fill neighbouring cells and add rows (within max-row limits).
-- **Insert row above / below** from the row actions menu.
-- **Caption** (when enabled) sits below the grid and maps to `{{ entry.myField.caption }}` / GraphQL `caption`.
+Use **Edit columns** to add, reorder or rename columns and change their types. Changing a type can change how existing values are interpreted, so check the affected cells before saving. Deleting a column asks for confirmation because it removes that column's content.
 
-:::tip
-Older installs may still show Column / Row Label and Instructions settings in project config history — those were removed. Use the Craft field’s own label and instructions instead.
-:::
+To bring in spreadsheet data, copy the cells and paste into the first target cell in the table. Table Maker fills neighbouring cells and adds rows within the field's maximum row limit. Create the destination columns first, then check dates, dropdown choices and other typed values after pasting.
 
-For Twig and GraphQL output, see [Usage](docs:feature-tour/usage).
+Use **Insert row above / below** in a row's actions menu when you need to insert a plan between existing rows. Save the entry after editing, then compare the public table with the editing grid. For an application that reads or writes the table through an API, follow [GraphQL](docs:developers/graphql).

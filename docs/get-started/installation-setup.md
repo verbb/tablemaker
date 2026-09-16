@@ -16,3 +16,15 @@ cd /path/to/project
 ```shell
 composer require verbb/tablemaker && php craft plugin/install tablemaker
 ```
+
+## Create and Display a Table
+
+Create a Table Maker field with the handle `pricingTable` and add it to an entry type's field layout. Open an entry, use **Edit columns** to add Plan and Price columns, and enter two rows with recognisable values. Save the entry.
+
+In its Twig template, render the table:
+
+```twig
+{{ entry.pricingTable.table }}
+```
+
+Open the public page and compare its headings and rows with the editor. Your site's CSS supplies the table's appearance. [Field](docs:feature-tour/field) explains the column options, and [Rendering Tables](docs:template-guides/rendering-tables) shows how to customise the output.
