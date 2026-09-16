@@ -51,11 +51,11 @@ Use the complete `table` string when rendering generated markup, or omit it from
 
 ## Save a Table
 
-The schema must allow mutations for the target section. Table Maker accepts a column list, a positional row matrix and an optional caption:
+The schema must allow mutations for the target section. Craft names entry mutations `save_<sectionHandle>_<entryTypeHandle>_Entry`: the example below assumes a `pages` section and a `page` entry type. Replace both handles with your project's handles. Table Maker accepts a column list, a positional row matrix and an optional caption:
 
 ```graphql
 mutation SavePricingTable($id: ID!, $table: pricingTable_TableMakerInput) {
-    save_page_Entry(id: $id, pricingTable: $table) {
+    save_pages_page_Entry(id: $id, pricingTable: $table) {
         id
         pricingTable { caption rows }
     }
@@ -97,7 +97,7 @@ Each Table Maker field exposes an object type named from its handle. For `pricin
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `type` | `String` | The column type, such as `singleline`, `heading`, or `dropdown`. |
+| `type` | `String` | The column type, such as `singleline`, `heading`, or `select`. |
 | `heading` | `String` | The column heading. |
 | `width` | `String` | The configured width. |
 | `align` | `String` | The configured alignment; an empty string uses the default. |

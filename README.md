@@ -23,7 +23,7 @@ Originally created by the team at [Supercool Ltd](http://www.supercooldesign.co.
 
 ## Support
 
-Get in touch with us via the [Table Maker Support page](https://verbb.io/craft-plugins/table-maker/support) or by [creating a Github issue](https://github.com/verbb/table-maker/issues)
+Get in touch with us via the [Table Maker Support page](https://verbb.io/craft-plugins/table-maker/support) or by [creating a Github issue](https://github.com/verbb/tablemaker/issues)
 
 ## Sponsor
 
