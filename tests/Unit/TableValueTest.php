@@ -63,6 +63,22 @@ describe('DualAccessMap', function() {
 });
 
 describe('TableValue normalize + storage', function() {
+    it('preserves cells when normalizing temporary or historical column keys', function() {
+        $value = TableValue::normalize([
+            'columns' => [
+                'col_temp9' => ['heading' => 'Plan', 'type' => 'singleline'],
+                'colcol1' => ['heading' => 'Price', 'type' => 'singleline'],
+                'col0' => ['heading' => 'Notes', 'type' => 'singleline'],
+            ],
+            'rows' => ['row_temp9' => ['col_temp9' => 'Basic', 'colcol1' => '$9', 'col0' => 'Keep me']],
+        ]);
+
+        expect($value->rowsArray())->toBe([
+            'row0' => ['col0' => 'Basic', 'col1' => '$9', 'col2' => 'Keep me'],
+        ]);
+        expect(TableValue::normalize($value->toStorage())->rowsArray())->toBe($value->rowsArray());
+    });
+
     it('upgrades legacy positional columns/rows and discards bare table HTML', function() {
         $data = TableValue::normalize([
             'columns' => [

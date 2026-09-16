@@ -65,8 +65,8 @@
       "_form-control.styles-BQdimE5o-1wlcCSTt.js"
     ]
   },
-  "_shared-jL0sSsi8.js": {
-    "file": "assets/shared-jL0sSsi8.js",
+  "_shared-DZ3ZTz7U.js": {
+    "file": "assets/shared-DZ3ZTz7U.js",
     "name": "shared"
   },
   "_tablemakerPkComponents-CMG3ZekE.js": {
@@ -81,12 +81,12 @@
     ]
   },
   "field/src/js/input/ColumnsSchemaDialog.ts": {
-    "file": "assets/ColumnsSchemaDialog-RAVRHCHB.js",
+    "file": "assets/ColumnsSchemaDialog-DMOt42yU.js",
     "name": "ColumnsSchemaDialog",
     "src": "field/src/js/input/ColumnsSchemaDialog.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_shared-jL0sSsi8.js"
+      "_shared-DZ3ZTz7U.js"
     ]
   },
   "field/src/js/plugin-kit-register.ts": {
@@ -108,13 +108,13 @@
     ]
   },
   "field/src/js/tablemaker.ts": {
-    "file": "assets/tablemaker-VBiwETnA.js",
+    "file": "assets/tablemaker-Ck8MILsj.js",
     "name": "tablemaker",
     "src": "field/src/js/tablemaker.ts",
     "isEntry": true,
     "imports": [
       "_tablemakerPkComponents-CMG3ZekE.js",
-      "_shared-jL0sSsi8.js"
+      "_shared-DZ3ZTz7U.js"
     ],
     "dynamicImports": [
       "../../../node_modules/@verbb/plugin-kit-web/dist/components/field/pk-field.js",

@@ -46,8 +46,9 @@ class TableValue
         // Legacy saves sometimes persisted the preview Markup as a string — drop it.
         unset($value['table']);
 
-        $columns = self::canonicalizeColumns($value['columns'] ?? []);
-        $rows = self::canonicalizeRows($value['rows'] ?? [], $columns, $fromRequest);
+        $columnKeys = [];
+        $columns = self::canonicalizeColumns($value['columns'] ?? [], $columnKeys);
+        $rows = self::canonicalizeRows($value['rows'] ?? [], $columns, $fromRequest, $columnKeys);
         $caption = self::normalizeCaption($value['caption'] ?? '');
 
         return new TableMakerData($columns, $rows, $caption);
@@ -503,7 +504,7 @@ class TableValue
      * @param mixed $columns
      * @return array<string, array<string, mixed>>
      */
-    private static function canonicalizeColumns(mixed $columns): array
+    private static function canonicalizeColumns(mixed $columns, array &$columnKeys): array
     {
         if (!is_array($columns) || $columns === []) {
             return [];
@@ -538,6 +539,7 @@ class TableValue
             }
 
             $out[$colId] = $next;
+            $columnKeys[$colId] = $key;
             $index++;
         }
 
@@ -549,7 +551,7 @@ class TableValue
      * @param array<string, array<string, mixed>> $columns
      * @return array<string, array<string, mixed>>
      */
-    private static function canonicalizeRows(mixed $rows, array $columns, bool $fromRequest): array
+    private static function canonicalizeRows(mixed $rows, array $columns, bool $fromRequest, array $columnKeys): array
     {
         if (!is_array($rows) || $rows === []) {
             return [];
@@ -567,7 +569,8 @@ class TableValue
             $rowId = self::prefixedKey($key, 'row', $index, array_keys($out));
 
             // Positional legacy row: [cell0, cell1, …] aligned to column order.
-            if ($row !== [] && array_is_list($row) && $colIds !== []) {
+            $positional = $row !== [] && array_is_list($row) && $colIds !== [];
+            if ($positional) {
                 $mapped = [];
 
                 foreach ($colIds as $i => $colId) {
@@ -580,8 +583,12 @@ class TableValue
             $cells = [];
 
             foreach ($colIds as $colId) {
-                // Named keys may still be bare integers from older dual formats.
-                $raw = $row[$colId] ?? $row[self::stripPrefix($colId, 'col')] ?? null;
+                // Follow the original column key when repairing temporary or legacy IDs.
+                // Looking up the renamed key first can copy a neighbouring column's cell.
+                $sourceKey = $columnKeys[$colId] ?? $colId;
+                $raw = !$positional && array_key_exists($sourceKey, $row)
+                    ? $row[$sourceKey]
+                    : ($row[$colId] ?? $row[self::stripPrefix($colId, 'col')] ?? null);
                 $type = $columns[$colId]['type'] ?? 'singleline';
                 $cells[$colId] = self::normalizeCell($type, $raw, $fromRequest);
             }

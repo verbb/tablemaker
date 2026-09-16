@@ -24,6 +24,7 @@
 - Align documentation filenames with page titles and update internal links.
 
 ### Fixed
+- Fix cell values being lost when saving newly added columns or loading tables with legacy column identifiers.
 - Fix opening an entry with a Table Maker field immediately creating an unsaved provisional draft.
 - Preserve the canonical empty alignment and options defaults across database round-trips.
 - Fix `.table` HTML staying stale after in-request mutation of columns/rows/caption.

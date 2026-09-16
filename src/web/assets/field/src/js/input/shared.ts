@@ -80,7 +80,7 @@ export const normalizeTimeForEditor = (value: unknown): string => {
 };
 
 export const ensurePrefixedKey = (id: string | undefined, prefix: string, used: Set<string>): string => {
-    if (id && id.startsWith(prefix) && /^\w+\d+$/.test(id) && !used.has(id)) {
+    if (id && id.startsWith(prefix) && /^\d+$/.test(id.slice(prefix.length)) && !used.has(id)) {
         used.add(id);
         return id;
     }

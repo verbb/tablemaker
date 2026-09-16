@@ -34,6 +34,18 @@ describe('table editor normalization', () => {
         expect(ensurePrefixedKey('legacy', 'col', used)).toBe('col3');
     });
 
+    it('serializes temporary column IDs as canonical keys without losing their cells', () => {
+        const payload = JSON.parse(serializeValueBlob([
+            { _id: 'col_mabc_123', heading: 'Plan', type: 'singleline', width: '', align: 'left', options: [] },
+            { _id: 'col0', heading: 'Price', type: 'singleline', width: '', align: 'left', options: [] },
+        ], [
+            { _id: 'row_temporary9', col_mabc_123: 'Basic', col0: '$9' },
+        ], { name: 'pricing', columns: {}, rows: {} }));
+
+        expect(Object.keys(payload.columns)).toEqual(['col0', 'col1']);
+        expect(payload.rows).toEqual({ row0: { col0: 'Basic', col1: '$9' } });
+    });
+
     it('serializes the stable initial payload used by Craft change tracking', () => {
         expect(serializeValueBlob([
             {
