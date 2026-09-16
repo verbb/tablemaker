@@ -24,6 +24,7 @@
 - Align documentation filenames with page titles and update internal links.
 
 ### Fixed
+- Use an allowed column type when creating or padding columns in restricted fields.
 - Preserve table columns, blank rows and captions when saving an entry for the first time.
 - Fix cell values being lost when saving newly added columns or loading tables with legacy column identifiers.
 - Fix opening an entry with a Table Maker field immediately creating an unsaved provisional draft.

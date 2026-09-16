@@ -7,7 +7,7 @@ import type {
 import type { ColumnDefinition } from './types.js';
 import { DropdownOptionsDialog } from './DropdownOptionsDialog.js';
 import { normalizeDropdownOptions } from './options.js';
-import { columnSchemaTableColumns, createColumn } from './shared.js';
+import { columnSchemaTableColumns, createColumn, defaultColumnType } from './shared.js';
 import type { TableMakerSettings } from './types.js';
 
 export interface ColumnsSchemaDialogResult {
@@ -43,7 +43,7 @@ export class ColumnsSchemaDialog {
             }));
 
             if (this.draftRows.length === 0) {
-                const blank = createColumn();
+                const blank = createColumn(this.settings);
                 this.draftRows = [{ ...blank }];
             }
 
@@ -76,7 +76,7 @@ export class ColumnsSchemaDialog {
             heading: '',
             width: '',
             align: 'left',
-            type: 'singleline',
+            type: defaultColumnType(this.settings),
             options: [],
         };
         this.applyColumnBounds(table);
@@ -227,7 +227,7 @@ export class ColumnsSchemaDialog {
         const normalized = this.normalizeDraft(rows);
 
         if (normalized.length === 0) {
-            return [createColumn()];
+            return [createColumn(this.settings)];
         }
 
         return normalized.map((row) => ({

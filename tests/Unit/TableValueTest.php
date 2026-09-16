@@ -198,6 +198,17 @@ describe('TableValue normalize + storage', function() {
 });
 
 describe('Table Maker Craft lifecycle', function() {
+    it('renders allowed types for initial and minimum columns', function() {
+        Tests\Support\CpRequestContext::activate('settings/fields');
+        $field = new TableMakerField([
+            'name' => 'Numbers', 'handle' => 'numbers', 'allowedColumnTypes' => ['number'], 'minColumns' => 2,
+        ]);
+        $html = $field->getInputHtml(null, null);
+        preg_match('/data-settings="([^"]+)"/', $html, $matches);
+        $settings = json_decode(html_entity_decode($matches[1], ENT_QUOTES), true);
+        expect(array_column($settings['columns'], 'type'))->toBe(['number', 'number']);
+    });
+
     it('keeps empty editor maps stable for browser change tracking', function() {
         $field = new TableMakerField(['name' => 'Empty fixture', 'handle' => 'emptyFixture']);
         $method = new ReflectionMethod($field, 'serializeEditorValue');

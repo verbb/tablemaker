@@ -3,12 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { defaultSelectValue, normalizeDropdownOptions } from './options.js';
 import {
     ensurePrefixedKey,
+    seedColumns,
     normalizeDateForEditor,
     normalizeTimeForEditor,
     serializeValueBlob,
 } from './shared.js';
 
 describe('table editor normalization', () => {
+    it('starts a restricted field with an allowed column type', () => {
+        const columns = seedColumns({ name: 'numbers', columns: {}, rows: {}, typeOptions: { number: 'Number' } });
+        expect(columns[0].type).toBe('number');
+    });
     it('normalizes Craft maps and honours an explicit dropdown default', () => {
         expect(normalizeDropdownOptions({ basic: 'Basic', pro: 'Pro' })).toEqual([
             { label: 'Basic', value: 'basic', default: false },

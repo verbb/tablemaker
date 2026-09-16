@@ -518,6 +518,8 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         $columns = $data->columnsArray();
         $rows = $data->rowsArray();
         $caption = $data->caption;
+        $typeOptions = $this->getAllowedColumnTypeOptions();
+        $defaultType = isset($typeOptions['singleline']) ? 'singleline' : array_key_first($typeOptions);
 
         if ($columns === []) {
             $columns = [
@@ -525,7 +527,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                     'heading' => '',
                     'align' => 'left',
                     'width' => '',
-                    'type' => 'singleline',
+                    'type' => $defaultType,
                 ],
             ];
         }
@@ -555,13 +557,11 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                     'heading' => '',
                     'align' => 'left',
                     'width' => '',
-                    'type' => 'singleline',
+                    'type' => $defaultType,
                 ];
                 $nextIndex++;
             }
         }
-
-        $typeOptions = $this->getAllowedColumnTypeOptions();
 
         // Keys are already colN/rowN from TableValue — do not re-prefix (avoids colcol0).
         $componentSettings = [

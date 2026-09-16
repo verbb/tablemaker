@@ -101,12 +101,17 @@ export const nextInternalId = (prefix: string): string => {
     return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
 };
 
-export const createColumn = (): ColumnDefinition => ({
+export const defaultColumnType = (settings: Pick<TableMakerSettings, 'typeOptions'>): string => {
+    const types = Object.keys(settings.typeOptions || {});
+    return types.includes('singleline') ? 'singleline' : (types[0] || 'singleline');
+};
+
+export const createColumn = (settings: Pick<TableMakerSettings, 'typeOptions'> = {}): ColumnDefinition => ({
     _id: nextInternalId('col'),
     heading: '',
     width: '',
     align: 'left',
-    type: 'singleline',
+    type: defaultColumnType(settings),
     options: [],
 });
 
@@ -115,7 +120,7 @@ export const seedColumns = (settings: TableMakerSettings): ColumnDefinition[] =>
     const keys = Object.keys(columns);
 
     if (keys.length === 0) {
-        return [createColumn()];
+        return [createColumn(settings)];
     }
 
     return keys.map((key) => {
