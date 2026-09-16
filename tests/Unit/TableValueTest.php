@@ -510,6 +510,23 @@ describe('Table Maker Craft lifecycle', function() {
         expect(array_column($settings['columns'], 'type'))->toBe(['number', 'number']);
     });
 
+    it('preserves layout metadata when its editor controls are hidden', function(bool $width, bool $alignment) {
+        $field = new TableMakerField([
+            'name' => 'Hidden layout', 'handle' => 'hiddenLayout',
+            'enableWidthColumn' => $width, 'enableAlignmentColumn' => $alignment,
+        ]);
+        $value = TableValue::normalize([
+            'columns' => [['heading' => 'Plan', 'type' => 'singleline', 'width' => '37%', 'align' => 'right']],
+            'rows' => [['Keep text']],
+        ]);
+        $method = new ReflectionMethod($field, 'serializeEditorValue');
+        $payload = $method->invoke($field, $value->columnsArray(), $value->rowsArray(), '');
+        $submitted = $field->normalizeValueFromRequest($payload, null);
+        expect($submitted->columns[0]['width'])->toBe('37%');
+        expect($submitted->columns[0]['align'])->toBe('right');
+        expect((string)$submitted->getTable())->toContain('width="37%"')->toContain('text-align: right');
+    })->with([[false, false], [true, false], [false, true]]);
+
     it('keeps legacy float spelling identical in the editor settings and hidden baseline', function() {
         Tests\Support\CpRequestContext::activate('content/entries');
         $field = new TableMakerField(['name' => 'Numbers', 'handle' => 'numbers']);

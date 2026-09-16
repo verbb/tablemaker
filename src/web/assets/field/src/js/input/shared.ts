@@ -363,13 +363,9 @@ export const serializeValueBlob = (
             type: craftType,
         };
 
-        if (settings.enableWidthColumn) {
-            next.width = column.width;
-        }
-
-        if (settings.enableAlignmentColumn) {
-            next.align = column.align || 'left';
-        }
+        // Preserve formatting even when the corresponding editor controls are hidden.
+        next.width = column.width;
+        next.align = column.align || 'left';
 
         if (craftType === 'select') {
             next.options = normalizeDropdownOptions(column.options);

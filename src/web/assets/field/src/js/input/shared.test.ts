@@ -118,6 +118,23 @@ describe('table editor normalization', () => {
         })).toBe('{"columns":{"col0":{"heading":"Plan","type":"singleline","width":"","align":"left"}},"rows":{"row0":{"col0":"Basic"}}}');
     });
 
+    it('preserves layout metadata while its editing controls are hidden', () => {
+        for (const [enableWidthColumn, enableAlignmentColumn] of [[false, false], [true, false], [false, true]]) {
+            const settings = {
+                name: 'hiddenLayout', enableWidthColumn, enableAlignmentColumn,
+                columns: { col0: { heading: 'Plan', type: 'singleline', width: '37%', align: 'right' } },
+                rows: { row0: { col0: 'Before' } },
+            };
+            const columns = seedColumns(settings);
+            const rows = seedContentRows(settings, columns);
+            rows[0].col0 = 'After';
+            const payload = JSON.parse(serializeValueBlob(columns, rows, settings));
+            expect(payload.columns.col0.width).toBe('37%');
+            expect(payload.columns.col0.align).toBe('right');
+            expect(payload.rows.row0.col0).toBe('After');
+        }
+    });
+
     it('rejects pasted type choices while retaining existing column types', async () => {
         const dialog = new ColumnsSchemaDialog({
             name: 'restricted', columns: {}, rows: {}, typeOptions: { singleline: 'Single-line text' },

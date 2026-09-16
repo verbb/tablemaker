@@ -631,13 +631,9 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                 'type' => $type,
             ];
 
-            if ($this->enableWidthColumn) {
-                $editorColumn['width'] = (string)($column['width'] ?? '');
-            }
-
-            if ($this->enableAlignmentColumn) {
-                $editorColumn['align'] = TableValue::normalizeAlignment($column['align'] ?? '') ?: 'left';
-            }
+            // Hidden layout controls must not discard existing column formatting.
+            $editorColumn['width'] = (string)($column['width'] ?? '');
+            $editorColumn['align'] = TableValue::normalizeAlignment($column['align'] ?? '') ?: 'left';
 
             if ($type === 'select') {
                 $editorColumn['options'] = array_map(static fn(array $option): array => [

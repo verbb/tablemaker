@@ -16,7 +16,7 @@ Confirm the column changes, then enter Basic and Pro as plan names and $9 and $2
 
 ## Field Settings
 
-Enable **Enable Width Column** and **Enable Alignment Column** when editors should control those properties for each column. Width and alignment affect generated table markup; your site's CSS still controls its overall appearance.
+Enable **Enable Width Column** and **Enable Alignment Column** when editors should control those properties for each column. Width and alignment affect generated table markup; your site's CSS still controls its overall appearance. Turning these controls off preserves the stored widths and alignment.
 
 Turn on **Enable Caption** when each table needs a descriptive title, such as “Monthly plans”. You can set its label, instructions and placeholder on the field. The caption appears below the editing grid and is available to Twig and GraphQL. Turning off the input does not remove a stored caption: it still renders, and editors can change it by turning the input back on.
 
