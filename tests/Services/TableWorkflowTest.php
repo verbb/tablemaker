@@ -90,6 +90,33 @@ it('persists every column type and cleared values through Craft', function() {
     expect($cleared->rowsArray())->toBe([])->and($cleared->caption)->toBe('');
 });
 
+it('preserves native decimal precision in public output after saving', function(float $number, string $expected) {
+    $handle = $this->tableField->handle;
+    $this->entry->setFieldValue($handle, [
+        'columns' => [['heading' => 'Number', 'type' => 'number']],
+        'rows' => [[$number]],
+    ]);
+    expect(Craft::$app->getElements()->saveElement($this->entry))->toBeTrue();
+    $saved = Entry::find()->id($this->entry->id)->status(null)->one()->getFieldValue($handle);
+    expect($saved->rows['row0']['col0'])->toBe($number);
+
+    $schema = new GqlSchema([
+        'name' => 'Native decimal',
+        'uid' => craft\helpers\StringHelper::UUID(),
+        'scope' => ["sections.{$this->section->uid}:read"],
+    ]);
+    $query = '{ entry(id: ' . $this->entry->id . ') { ... on ' . $this->entryType->handle . '_Entry { ' . $handle . ' { rows table } } } }';
+    $result = Craft::$app->getGql()->executeQuery($schema, $query, null, null, true);
+    expect($result['errors'] ?? [])->toBe([]);
+    expect($result['data']['entry'][$handle]['rows'])->toBe([[$expected]]);
+    expect($result['data']['entry'][$handle]['table'])->toContain('<td>' . $expected . '</td>');
+    expect((string)$saved->table)->toContain('<td>' . $expected . '</td>');
+    expect($this->tableField->getSearchKeywords($saved, $this->entry))->toBe('Number ' . $expected);
+})->with([
+    'large exact fraction' => [12345678901234.5, '12345678901234.5'],
+    'fractional digits' => [0.1234567890123456, '0.1234567890123456'],
+]);
+
 it('rejects invalid numbers without replacing saved table content', function(string $number) {
     $handle = $this->tableField->handle;
     $this->entry->setFieldValueFromRequest($handle, [

@@ -462,7 +462,7 @@ class TableValue
 
             foreach ($row as $cell) {
                 if (is_scalar($cell) && (string)$cell !== '' && !is_bool($cell)) {
-                    $parts[] = (string)$cell;
+                    $parts[] = self::_stringifyCell($cell);
                 }
             }
         }
@@ -507,7 +507,7 @@ class TableValue
                 } elseif (is_array($cell)) {
                     $cell = '';
                 } elseif ($cell !== null) {
-                    $cell = (string)$cell;
+                    $cell = self::_stringifyCell($cell);
                 }
 
                 $line[] = $cell;
@@ -553,6 +553,13 @@ class TableValue
         }
 
         return $columns;
+    }
+
+    private static function _stringifyCell(mixed $value): string
+    {
+        // PHP's display precision can truncate native decimals that storage
+        // preserves. Use the same round-trippable spelling as JSON persistence.
+        return is_float($value) && is_finite($value) ? Json::encode($value) : (string)$value;
     }
 
     private static function _restoreOrder(mixed $items, mixed $order): mixed
@@ -783,7 +790,7 @@ class TableValue
             return $value ? '1' : '';
         }
 
-        $string = (string)$value;
+        $string = self::_stringifyCell($value);
 
         if ($type === 'multiline') {
             // Encode first so nl2br only injects safe <br> tags.

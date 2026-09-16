@@ -33,7 +33,7 @@
 - Keep copied table row values independent when edited through PHP.
 - Prevent invalid ISO calendar dates from silently changing to another day.
 - Keep existing rows when PHP integrations append after deletion or construct reordered numeric collections.
-- Preserve large numbers and precise decimals through saves and reject invalid number cells.
+- Preserve large numbers and precise decimals through saves, HTML, GraphQL and search output, and reject invalid number cells.
 - Preserve existing row and column keys when inserting new items before them.
 - Save automatically added rows and columns when minimum limits increase on existing tables.
 - Keep cells aligned with their columns when empty column definitions are omitted.
