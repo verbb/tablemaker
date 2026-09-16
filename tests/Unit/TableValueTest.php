@@ -37,6 +37,14 @@ describe('DualAccessMap', function() {
         expect((new DualAccessMap(['col0' => 'A', 0 => 'B']))->all())->toBe(['col0' => 'A', 0 => 'B']);
     });
 
+    it('keeps copied row values independent of the source table', function() {
+        $original = new TableMakerData(['col0' => ['heading' => 'Plan']], ['row0' => ['col0' => 'Original']]);
+        $copy = new TableMakerData($original->columns, $original->rows);
+        $copy->rows['row0']['col0'] = 'Copy';
+        expect($original->rows['row0']['col0'])->toBe('Original');
+        expect($copy->rows['row0']['col0'])->toBe('Copy');
+    });
+
     it('wraps reordered numeric table arrays without overwriting rows or cells', function() {
         $columns = [2 => ['heading' => 'A'], 0 => ['heading' => 'B']];
         $rows = [4 => [2 => 'First A', 0 => 'First B'], 0 => [2 => 'Second A', 0 => 'Second B']];

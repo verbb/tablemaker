@@ -177,9 +177,9 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
         $wrapped = [];
 
         foreach ($rows as $rowId => $row) {
-            $wrapped[(string)$rowId] = $row instanceof DualAccessMap
-                ? $row
-                : new DualAccessMap(is_array($row) ? $row : []);
+            $wrapped[(string)$rowId] = new DualAccessMap(
+                $row instanceof DualAccessMap ? $row->all() : (is_array($row) ? $row : []),
+            );
         }
 
         return new DualAccessMap($wrapped);
