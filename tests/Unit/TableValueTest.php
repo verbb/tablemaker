@@ -198,6 +198,15 @@ describe('TableValue normalize + storage', function() {
 });
 
 describe('Table Maker Craft lifecycle', function() {
+    it('rejects a maximum column count that the editor cannot satisfy', function() {
+        $field = new TableMakerField(['name' => 'Bounded table', 'handle' => 'boundedTable', 'maxColumns' => 0]);
+        expect($field->validate())->toBeFalse();
+        expect($field->getErrors('maxColumns'))->not->toBeEmpty();
+        $field->maxColumns = 1;
+        $field->maxRows = 0;
+        expect($field->validate())->toBeTrue();
+    });
+
     it('renders allowed types for initial and minimum columns', function() {
         Tests\Support\CpRequestContext::activate('settings/fields');
         $field = new TableMakerField([

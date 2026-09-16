@@ -470,7 +470,8 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['minRows', 'maxRows', 'minColumns', 'maxColumns'], 'integer', 'min' => 0];
+        $rules[] = [['minRows', 'maxRows', 'minColumns'], 'integer', 'min' => 0];
+        $rules[] = [['maxColumns'], 'integer', 'min' => 1];
         $rules[] = [
             ['minRows'],
             'compare',

@@ -24,6 +24,8 @@ Use **Allowed Column Types** to limit the choices in **Edit columns**. For this 
 
 Set **Min Rows**, **Max Rows**, **Min Columns** or **Max Columns** when the design requires bounds. For example, a minimum of two columns keeps a plan name and price together, while a maximum of four prevents a comparison table from growing too wide. **Add Row Label** lets you give the add action a name suited to the content, such as “Add a plan”.
 
+Tables keep at least one column, so **Max Columns** must be at least 1 when set. Leave a maximum blank for no upper limit. A table can have no content rows; use **Min Rows** when rows are required.
+
 ### Column Types
 
 Choose a type according to the value editors need to enter. Text types suit labels and descriptions; Number, Date and Time provide inputs for those values. Email, URL and Color values are validated when the element is saved. Checkbox and Lightswitch suit yes/no information.
