@@ -47,8 +47,8 @@ class TableValue
         unset($value['table']);
 
         $columnKeys = [];
-        $columns = self::canonicalizeColumns($value['columns'] ?? [], $columnKeys);
-        $rows = self::canonicalizeRows($value['rows'] ?? [], $columns, $fromRequest, $columnKeys);
+        $columns = self::canonicalizeColumns(self::_restoreOrder($value['columns'] ?? [], $value['columnOrder'] ?? null), $columnKeys);
+        $rows = self::canonicalizeRows(self::_restoreOrder($value['rows'] ?? [], $value['rowOrder'] ?? null), $columns, $fromRequest, $columnKeys);
         $caption = self::normalizeCaption($value['caption'] ?? '');
 
         return new TableMakerData($columns, $rows, $caption);
@@ -57,7 +57,7 @@ class TableValue
     /**
      * @param array<string, array<string, mixed>> $columns
      * @param array<string, array<string, mixed>> $rows
-     * @return array{columns: array<string, array<string, mixed>>, rows: array<string, array<string, mixed>>, caption?: string}
+     * @return array{columns: array<string, array<string, mixed>>, rows: array<string, array<string, mixed>>, columnOrder: list<string>, rowOrder: list<string>, caption?: string}
      */
     public static function toStorage(array $columns, array $rows, string $caption = ''): array
     {
@@ -105,9 +105,13 @@ class TableValue
         $out = [
             'columns' => $outColumns,
             'rows' => $outRows,
+            // JSON databases can reorder object keys. Lists preserve display order
+            // without changing the stable IDs used to match columns and cells.
+            'columnOrder' => array_keys($outColumns),
+            'rowOrder' => array_keys($outRows),
         ];
 
-        // Omit empty caption so legacy `{columns, rows}` shape stays the default on disk.
+        // Caption remains optional in stored values.
         $caption = self::normalizeCaption($caption);
         if ($caption !== '') {
             $out['caption'] = $caption;
@@ -509,6 +513,24 @@ class TableValue
         }
 
         return $columns;
+    }
+
+    private static function _restoreOrder(mixed $items, mixed $order): mixed
+    {
+        if (!is_array($items) || !is_array($order)) {
+            return $items;
+        }
+
+        $ordered = [];
+
+        foreach ($order as $key) {
+            if ((is_string($key) || is_int($key)) && array_key_exists($key, $items)) {
+                $ordered[$key] = $items[$key];
+            }
+        }
+
+        // Keep entries missing from partial or older ordering metadata.
+        return $ordered + $items;
     }
 
     /**

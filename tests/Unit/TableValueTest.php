@@ -63,6 +63,20 @@ describe('DualAccessMap', function() {
 });
 
 describe('TableValue normalize + storage', function() {
+    it('keeps all entries when stored ordering metadata is incomplete or malformed', function() {
+        $value = TableValue::normalize([
+            'columns' => [
+                'col0' => ['heading' => 'First', 'type' => 'singleline'],
+                'col1' => ['heading' => 'Second', 'type' => 'singleline'],
+            ],
+            'columnOrder' => ['missing', 'col1', 'col1', ['invalid']],
+            'rows' => ['row0' => ['col0' => 'A', 'col1' => 'B']],
+            'rowOrder' => 'invalid',
+        ]);
+        expect(array_keys($value->columnsArray()))->toBe(['col1', 'col0']);
+        expect($value->rowsArray())->toBe(['row0' => ['col1' => 'B', 'col0' => 'A']]);
+    });
+
     it('normalizes Unicode line breaks while preserving multiline whitespace', function() {
         $text = " First\r\nSecond\rThird\u{0085}Fourth\u{2028}Fifth\u{2029}Last ";
         $normalized = " First\nSecond\nThird\nFourth\nFifth\nLast ";

@@ -129,6 +129,33 @@ it('keeps drafts and duplicates independent of canonical table data', function()
     expect(Entry::find()->id($copy->id)->status(null)->one()->getFieldValue($handle)->rows['row0']['col0'])->toBe('Copy plan');
 });
 
+it('preserves reordered rows and columns through database saves', function() {
+    $handle = $this->tableField->handle;
+    $value = [
+        'columns' => [
+            'col2' => ['heading' => 'Third', 'type' => 'singleline'],
+            'col0' => ['heading' => 'First', 'type' => 'singleline'],
+            'col1' => ['heading' => 'Second', 'type' => 'singleline'],
+        ],
+        'rows' => [
+            'row2' => ['col0' => 'A3', 'col1' => 'B3', 'col2' => 'C3'],
+            'row0' => ['col0' => 'A1', 'col1' => 'B1', 'col2' => 'C1'],
+            'row1' => ['col0' => 'A2', 'col1' => 'B2', 'col2' => 'C2'],
+        ],
+    ];
+    $this->entry->setFieldValue($handle, $value);
+    for ($save = 0; $save < 2; $save++) {
+        expect(Craft::$app->getElements()->saveElement($this->entry))->toBeTrue();
+        $this->entry = Entry::find()->id($this->entry->id)->status(null)->one();
+        $saved = $this->entry->getFieldValue($handle);
+        expect(array_keys($saved->columnsArray()))->toBe(['col2', 'col0', 'col1']);
+        expect(array_keys($saved->rowsArray()))->toBe(['row2', 'row0', 'row1']);
+        expect(array_map('array_values', array_values($saved->rowsArray())))->toBe([
+            ['C3', 'A3', 'B3'], ['C1', 'A1', 'B1'], ['C2', 'A2', 'B2'],
+        ]);
+    }
+});
+
 it('validates row limits and rejects invalid cells without overwriting saved content', function() {
     $handle = $this->tableField->handle;
     $this->entry->setFieldValue($handle, ['columns' => [['heading' => 'Email', 'type' => 'email']], 'rows' => [['invalid']]]);
