@@ -54,7 +54,6 @@ beforeEach(function() {
 });
 
 afterEach(function() {
-    Craft::$app->getGql()->setActiveSchema(null);
     if (isset($this->section)) {
         Craft::$app->getEntries()->deleteSection($this->section);
     }
@@ -64,6 +63,7 @@ afterEach(function() {
     if (isset($this->tableField)) {
         Craft::$app->getFields()->deleteField($this->tableField);
     }
+    Craft::$app->getGql()->flushCaches();
 });
 
 it('persists every column type and cleared values through Craft', function() {
