@@ -262,7 +262,9 @@ class TableValue
                 // Canonical CP/storage forms match pk-date-picker (Y-m-d) and
                 // pk-time-picker (H:i). Full ISO8601 from older saves is accepted
                 // on read so column edits no longer wipe or NaN-corrupt cells (#54).
-                $dateTime = DateTimeHelper::toDateTime($value);
+                // These are wall values, not instants; converting time zones before
+                // dropping the zone changes legacy values and drifts on every save.
+                $dateTime = DateTimeHelper::toDateTime($value, true, false);
 
                 if (!$dateTime) {
                     return null;

@@ -24,6 +24,7 @@
 - Align documentation filenames with page titles and update internal links.
 
 ### Fixed
+- Preserve date and time values across site time zones and legacy data upgrades.
 - Preserve dropdown selections whose values contain literal emoji shortcodes.
 - Reject a maximum column count of zero, which prevented tables from being saved.
 - Disable table editing controls when viewing read-only fields and revisions.

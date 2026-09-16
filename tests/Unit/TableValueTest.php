@@ -63,6 +63,28 @@ describe('DualAccessMap', function() {
 });
 
 describe('TableValue normalize + storage', function() {
+    it('keeps date and time wall values stable across site time zones', function(string $timeZone) {
+        $original = Craft::$app->getTimeZone();
+        Craft::$app->setTimeZone($timeZone);
+        try {
+            $value = TableValue::normalize([
+                'columns' => [['heading' => 'Date', 'type' => 'date'], ['heading' => 'Time', 'type' => 'time']],
+                'rows' => [
+                    ['2026-09-16', '19:05'],
+                    ['2026-09-16T00:00:00+10:00', '2026-09-16T19:05:00+10:00'],
+                ],
+            ], true);
+            $expected = [
+                'row0' => ['col0' => '2026-09-16', 'col1' => '19:05'],
+                'row1' => ['col0' => '2026-09-16', 'col1' => '19:05'],
+            ];
+            expect($value->rowsArray())->toBe($expected);
+            expect(TableValue::normalize($value->toStorage())->rowsArray())->toBe($expected);
+        } finally {
+            Craft::$app->setTimeZone($original);
+        }
+    })->with(['UTC', 'Australia/Melbourne', 'America/New_York']);
+
     it('preserves literal dropdown values that resemble emoji shortcodes', function() {
         $value = TableValue::normalize([
             'columns' => [['heading' => 'Reaction', 'type' => 'select', 'options' => [['label' => 'Smile', 'value' => ':smile:']]]],
