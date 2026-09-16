@@ -37,6 +37,27 @@ describe('DualAccessMap', function() {
         expect((new DualAccessMap(['col0' => 'A', 0 => 'B']))->all())->toBe(['col0' => 'A', 0 => 'B']);
     });
 
+    it('applies nested edits to column metadata and appended rows', function() {
+        $value = TableValue::normalize([
+            'columns' => [['heading' => 'Plan', 'type' => 'singleline']],
+            'rows' => [['Original']],
+        ], true);
+        $value->columns[0]['heading'] = 'Renamed';
+        $value->rows[] = ['col0' => 'Appended'];
+        $value->rows[1]['col0'] = 'Changed';
+        expect($value->columns['col0']['heading'])->toBe('Renamed');
+        expect($value->rowsArray()['item1']['col0'])->toBe('Changed');
+        expect((string)$value->table)->toContain('Renamed')->toContain('Changed');
+        expect($value->rows['missing'])->toBeNull();
+        expect(count($value->rows))->toBe(2);
+        $rows = $value->rowsArray();
+        $columns = $value->columnsArray();
+        $rows['item1']['col0'] = 'Detached';
+        $columns['col0']['heading'] = 'Detached';
+        expect($value->rows[1]['col0'])->toBe('Changed');
+        expect($value->columns[0]['heading'])->toBe('Renamed');
+    });
+
     it('keeps copied row values independent of the source table', function() {
         $original = new TableMakerData(['col0' => ['heading' => 'Plan']], ['row0' => ['col0' => 'Original']]);
         $copy = new TableMakerData($original->columns, $original->rows);

@@ -24,6 +24,7 @@
 - Align documentation filenames with page titles and update internal links.
 
 ### Fixed
+- Apply nested PHP edits to column settings and newly appended rows.
 - Keep copied table row values independent when edited through PHP.
 - Prevent invalid ISO calendar dates from silently changing to another day.
 - Keep existing rows when PHP integrations append after deletion or construct reordered numeric collections.

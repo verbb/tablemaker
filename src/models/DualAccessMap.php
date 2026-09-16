@@ -60,15 +60,18 @@ class DualAccessMap implements ArrayAccess, IteratorAggregate, Countable, JsonSe
         return is_string($offset) && array_key_exists($offset, $this->items);
     }
 
-    public function offsetGet(mixed $offset): mixed
+    public function &offsetGet(mixed $offset): mixed
     {
-        if ($this->_isPositional($offset)) {
-            $key = $this->order[(int)$offset] ?? null;
+        $key = $this->_isPositional($offset)
+            ? ($this->order[(int)$offset] ?? null)
+            : (is_string($offset) ? $offset : null);
 
-            return $key !== null ? ($this->items[$key] ?? null) : null;
+        if ($key !== null && array_key_exists($key, $this->items)) {
+            return $this->items[$key];
         }
 
-        return is_string($offset) ? ($this->items[$offset] ?? null) : null;
+        $missing = null;
+        return $missing;
     }
 
     public function offsetSet(mixed $offset, mixed $value): void
