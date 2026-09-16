@@ -36,6 +36,7 @@ return [
   'Left' => 'Left',
   'Max Columns' => 'Max Columns',
   'Min Columns' => 'Min Columns',
+  'Number cells must contain a finite number.' => 'Number cells must contain a finite number.',
   'Right' => 'Right',
   'Row Instructions' => 'Row Instructions',
   'Row Label' => 'Row Label',

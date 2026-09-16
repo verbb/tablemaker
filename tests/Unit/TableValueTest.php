@@ -63,6 +63,35 @@ describe('DualAccessMap', function() {
 });
 
 describe('TableValue normalize + storage', function() {
+    it('preserves numeric precision across storage and editor JSON', function(mixed $input, mixed $expected) {
+        $value = TableValue::normalize([
+            'columns' => [['heading' => 'Number', 'type' => 'number']],
+            'rows' => [[$input]],
+        ], true);
+        expect($value->rows['row0']['col0'])->toBe($expected);
+        $reloaded = TableValue::normalize($value->toStorage());
+        expect($reloaded->rows['row0']['col0'])->toBe($expected);
+        $field = new TableMakerField(['name' => 'Numbers', 'handle' => 'numbers']);
+        $serializer = new ReflectionMethod($field, 'serializeEditorValue');
+        $json = $serializer->invoke($field, $reloaded->columnsArray(), $reloaded->rowsArray(), '');
+        expect(json_decode($json, true)['rows']['row0']['col0'])->toBe($expected);
+    })->with([
+        'large integer string' => ['9007199254740993', '9007199254740993'],
+        'existing large integer' => [9007199254740993, '9007199254740993'],
+        'negative large integer' => [-9007199254740993, '-9007199254740993'],
+        'precise decimal' => ['0.1234567890123456789', '0.1234567890123456789'],
+        'exponent' => ['1.234567890123456789e20', '1.234567890123456789e20'],
+        'numeric whitespace and plus' => [' +1.25 ', '1.25'],
+        'trailing decimal point' => ['1.e2', '1e2'],
+        'native zero' => [0, 0],
+        'native decimal' => [9.5, 9.5],
+    ]);
+
+    it('rejects invalid and nonfinite number cells', function(mixed $value) {
+        expect(TableValue::validateCell('number', $value, $error))->toBeFalse();
+        expect($error)->not->toBeEmpty();
+    })->with(['text' => ['not a number'], 'overflow' => ['1e309'], 'infinity' => [INF], 'nan' => [NAN]]);
+
     it('reserves existing named identities before repairing inserted keys', function() {
         $data = TableValue::normalize([
             'columns' => [

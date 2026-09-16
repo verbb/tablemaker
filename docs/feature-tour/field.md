@@ -28,7 +28,7 @@ Tables keep at least one column, so **Max Columns** must be at least 1 when set.
 
 ### Column Types
 
-Choose a type according to the value editors need to enter. Text types suit labels and descriptions; Number, Date and Time provide inputs for those values. Email, URL and Color values are validated when the element is saved. Checkbox and Lightswitch suit yes/no information.
+Choose a type according to the value editors need to enter. Text types suit labels and descriptions; Number, Date and Time provide inputs for those values. Number, Email, URL and Color values are validated when the element is saved. Checkbox and Lightswitch suit yes/no information.
 
 For a fixed choice, add a **Dropdown** column and define its option labels and values in **Edit columns**. For example, Monthly and Yearly labels could store `monthly` and `yearly`. Templates receive the stored value, so account for that when building custom output.
 

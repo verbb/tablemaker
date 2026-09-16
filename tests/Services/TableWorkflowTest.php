@@ -90,6 +90,17 @@ it('persists every column type and cleared values through Craft', function() {
     expect($cleared->rowsArray())->toBe([])->and($cleared->caption)->toBe('');
 });
 
+it('rejects invalid numbers without replacing saved table content', function(string $number) {
+    $handle = $this->tableField->handle;
+    $this->entry->setFieldValueFromRequest($handle, [
+        'columns' => [['heading' => 'Number', 'type' => 'number']],
+        'rows' => [[$number]],
+    ]);
+    expect(Craft::$app->getElements()->saveElement($this->entry))->toBeFalse();
+    expect($this->entry->getErrors($handle))->not->toBeEmpty();
+    expect(Entry::find()->id($this->entry->id)->status(null)->one()->getFieldValue($handle)->rows['row0']['col0'])->toBe('Basic');
+})->with(['overflow' => ['1e309'], 'text' => ['not a number']]);
+
 it('preserves significant cell whitespace through validated saves', function(string $type, string $cell) {
     $handle = $this->tableField->handle;
     $this->entry->setFieldValueFromRequest($handle, [

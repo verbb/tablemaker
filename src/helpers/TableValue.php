@@ -3,6 +3,7 @@ namespace verbb\tablemaker\helpers;
 
 use verbb\tablemaker\models\TableMakerData;
 
+use Craft;
 use craft\fields\data\ColorData;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
@@ -287,7 +288,28 @@ class TableValue
                     return null;
                 }
 
-                return is_numeric($value) ? $value + 0 : $value;
+                if (is_string($value)) {
+                    $value = trim($value);
+                    if ($value === '') {
+                        return null;
+                    }
+
+                    // Keep exact digits across PHP, JSON and the browser. Native
+                    // number inputs omit a leading plus and a trailing decimal point.
+                    if (is_numeric($value)) {
+                        $value = ltrim($value, '+');
+                        $value = preg_replace('/\.(?=[eE]|$)/', '', $value) ?? $value;
+                    }
+
+                    return $value;
+                }
+
+                if ((is_int($value) && ($value > 9007199254740991 || $value < -9007199254740991))
+                    || (is_float($value) && !is_finite($value))) {
+                    return (string)$value;
+                }
+
+                return $value;
 
             case 'select':
                 // Dropdown values are escaped on storage too; decode without trimming
@@ -341,6 +363,13 @@ class TableValue
         }
 
         switch ($type) {
+            case 'number':
+                if (!is_numeric($value) || !is_finite((float)$value)) {
+                    $error = Craft::t('tablemaker', 'Number cells must contain a finite number.');
+                    return false;
+                }
+
+                return true;
             case 'color':
                 if ($value instanceof ColorData) {
                     $value = $value->getHex();

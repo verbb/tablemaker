@@ -16,6 +16,10 @@ Date cells are normalised to `Y-m-d` strings and time cells to `H:i` strings, in
 
 For example, a time value such as `2026-09-16T19:05:00+10:00` becomes `19:05`. Use a date column as well when your table needs both pieces of information.
 
+### Number Values
+
+Numeric strings retain their digits instead of being converted to PHP integers or floats, so large integers and precise decimals survive browser and database round trips. Existing integers beyond JavaScript's safe range are exposed as strings as well. Custom PHP integrations should accept numeric strings; only cast when the precision limits of the target type are appropriate. Invalid or non-finite numbers now fail validation when saving. Digits already lost to earlier numeric conversions cannot be recovered.
+
 ### PHP Value Objects
 
 A field value is now a `TableMakerData` object. Twig loops and named access such as `entry.pricingTable.rows` continue to work, and positional access such as `columns[loop.index0]` remains available. PHP integrations that require arrays should use the conversion methods:
