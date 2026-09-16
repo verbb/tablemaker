@@ -274,12 +274,19 @@ class TableValue
                     return null;
                 }
 
+                if ($type === 'time' && is_string($value)
+                    && preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', trim($value))) {
+                    // A time-only cell has no date to resolve through a DST transition.
+                    return trim($value);
+                }
+
                 // Canonical CP/storage forms match pk-date-picker (Y-m-d) and
                 // pk-time-picker (H:i). Full ISO8601 from older saves is accepted
                 // on read so column edits no longer wipe or NaN-corrupt cells (#54).
                 // These are wall values, not instants; converting time zones before
                 // dropping the zone changes legacy values and drifts on every save.
-                $dateTime = DateTimeHelper::toDateTime($value, true, false);
+                // Parse unzoned values in UTC so skipped local dates/hours cannot roll over.
+                $dateTime = DateTimeHelper::toDateTime($value, false, false);
 
                 if (!$dateTime) {
                     return null;

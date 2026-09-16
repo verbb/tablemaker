@@ -269,18 +269,20 @@ describe('TableValue normalize + storage', function() {
                 'rows' => [
                     ['2026-09-16', '19:05'],
                     ['2026-09-16T00:00:00+10:00', '2026-09-16T19:05:00+10:00'],
+                    ['2011-12-30', '2026-03-08T02:30:00'],
                 ],
             ], true);
             $expected = [
                 'row0' => ['col0' => '2026-09-16', 'col1' => '19:05'],
                 'row1' => ['col0' => '2026-09-16', 'col1' => '19:05'],
+                'row2' => ['col0' => '2011-12-30', 'col1' => '02:30'],
             ];
             expect($value->rowsArray())->toBe($expected);
             expect(TableValue::normalize($value->toStorage())->rowsArray())->toBe($expected);
         } finally {
             Craft::$app->setTimeZone($original);
         }
-    })->with(['UTC', 'Australia/Melbourne', 'America/New_York']);
+    })->with(['UTC', 'Australia/Melbourne', 'America/New_York', 'Pacific/Apia']);
 
     it('preserves literal dropdown values that resemble emoji shortcodes', function() {
         $value = TableValue::normalize([
