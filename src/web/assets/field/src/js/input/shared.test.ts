@@ -29,7 +29,9 @@ describe('table editor normalization', () => {
         expect(normalizeDateForEditor('2026-09-13T11:12:00+10:00')).toBe('2026-09-13');
         expect(normalizeDateForEditor('not-a-date')).toBe('');
         expect(normalizeTimeForEditor('2026-09-13T07:05:00Z')).toBe('07:05');
-        expect(normalizeTimeForEditor('7:05 pm')).toBe('07:05');
+        expect(normalizeTimeForEditor('7:05 pm')).toBe('19:05');
+        expect(normalizeTimeForEditor('12:00 AM')).toBe('00:00');
+        expect(normalizeTimeForEditor('12:00 PM')).toBe('12:00');
     });
 
     it('keeps canonical keys unique and fills the next available position', () => {

@@ -70,6 +70,22 @@ export const normalizeTimeForEditor = (value: unknown): string => {
         return `${isoTime[1]}:${isoTime[2]}`;
     }
 
+    // Spreadsheet/Craft text can use a 12-hour clock; keep its meridiem before
+    // converting to the canonical 24-hour value submitted by the editor.
+    const clockTime = /^(\d{1,2}):(\d{2})(?::\d{2})?\s*([ap])\.?m\.?$/i.exec(raw);
+
+    if (clockTime) {
+        const hours = Number(clockTime[1]);
+        const minutes = Number(clockTime[2]);
+
+        if (hours < 1 || hours > 12 || minutes > 59) {
+            return '';
+        }
+
+        const canonicalHours = hours % 12 + (clockTime[3].toLowerCase() === 'p' ? 12 : 0);
+        return `${String(canonicalHours).padStart(2, '0')}:${clockTime[2]}`;
+    }
+
     const hm = /^(\d{1,2}):(\d{2})/.exec(raw);
 
     if (!hm) {

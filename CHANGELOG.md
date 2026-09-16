@@ -24,6 +24,7 @@
 - Align documentation filenames with page titles and update internal links.
 
 ### Fixed
+- Preserve AM/PM times when pasting spreadsheet cells.
 - Prevent duplicate column editors when Edit columns is activated repeatedly while loading.
 - Preserve row and column order when saving tables to JSON database columns.
 - Fix saving text cells on Craft 5.6–5.8.
