@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { defaultSelectValue, normalizeDropdownOptions } from './options.js';
 import {
@@ -10,6 +10,23 @@ import {
 } from './shared.js';
 
 describe('table editor normalization', () => {
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('accepts pasted dates through the host format and calendar validation', () => {
+        const datepickerOptions = { dateFormat: 'dd/mm/yy' };
+        vi.stubGlobal('Craft', { datepickerOptions });
+        const parseDate = vi.fn((format: string, value: string) => {
+            if (format === 'dd/mm/yy' && value === '01/02/2026') {
+                return new Date(2026, 1, 1);
+            }
+            throw new Error('Invalid date');
+        });
+        vi.stubGlobal('jQuery', { datepicker: { parseDate } });
+        expect(normalizeDateForEditor('01/02/2026')).toBe('2026-02-01');
+        expect(parseDate).toHaveBeenCalledWith('dd/mm/yy', '01/02/2026', datepickerOptions);
+        expect(normalizeDateForEditor('31/02/2026')).toBe('');
+    });
+
     it('starts a restricted field with an allowed column type', () => {
         const columns = seedColumns({ name: 'numbers', columns: {}, rows: {}, typeOptions: { number: 'Number' } });
         expect(columns[0].type).toBe('number');

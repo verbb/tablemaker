@@ -179,7 +179,8 @@ export class TableMakerInput {
         this.applyRowBounds(table);
         table.addEventListener('pk-change', ((event: CustomEvent<{ rows: PkEditableTableRow[] }>) => {
             // Content edits only — schema is applied in batches from the modal Done path.
-            this.contentRows = event.detail?.rows ?? [];
+            this.contentRows = reconstructContentRows(this.columns, event.detail?.rows ?? []);
+            table.rows = this.contentRows;
             this.applyRowBounds(table);
             this.syncValueBlob();
         }) as EventListener);

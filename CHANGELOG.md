@@ -24,6 +24,7 @@
 - Align documentation filenames with page titles and update internal links.
 
 ### Fixed
+- Preserve dates pasted in the Control Panel's date format and show normalized pasted values immediately.
 - Apply dropdown defaults to rows added automatically by the minimum row setting.
 - Preserve literal shortcodes, backslashes and Unicode text when upgrading and saving tables.
 - Preserve multiline whitespace and exact dropdown values when editing and saving tables.

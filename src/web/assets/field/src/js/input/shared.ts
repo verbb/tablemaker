@@ -22,7 +22,7 @@ export const isTruthyCell = (value: unknown): boolean => {
     return value === true || value === 1 || value === '1' || value === 'true';
 };
 
-/** pk-date-picker only accepts `YYYY-MM-DD` — strip legacy ISO8601 timestamps. */
+/** Keep picker values canonical, including dates pasted in Craft's display format. */
 export const normalizeDateForEditor = (value: unknown): string => {
     if (value == null || value === '') {
         return '';
@@ -43,7 +43,24 @@ export const normalizeDateForEditor = (value: unknown): string => {
     const raw = String(value).trim();
     const match = /^(\d{4}-\d{2}-\d{2})/.exec(raw);
 
-    return match ? match[1] : '';
+    if (match) {
+        return match[1];
+    }
+
+    // Use the inverse of Craft.formatDate so ambiguous dates follow the user's
+    // configured order and localized month names retain the host's validation.
+    if (typeof Craft !== 'undefined' && Craft.datepickerOptions?.dateFormat
+        && typeof jQuery !== 'undefined' && jQuery.datepicker?.parseDate) {
+        try {
+            return normalizeDateForEditor(jQuery.datepicker.parseDate(
+                Craft.datepickerOptions.dateFormat, raw, Craft.datepickerOptions,
+            ));
+        } catch {
+            // The host rejects incomplete dates and invalid calendar days.
+        }
+    }
+
+    return '';
 };
 
 /** pk-time-picker options use `HH:MM` — accept ISO times and Craft time strings. */
