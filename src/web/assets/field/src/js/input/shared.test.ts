@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { ColumnsSchemaDialog } from './ColumnsSchemaDialog.js';
 import { defaultSelectValue, normalizeDropdownOptions } from './options.js';
 import {
     ensurePrefixedKey,
@@ -115,6 +116,27 @@ describe('table editor normalization', () => {
             enableWidthColumn: true,
             enableAlignmentColumn: true,
         })).toBe('{"columns":{"col0":{"heading":"Plan","type":"singleline","width":"","align":"left"}},"rows":{"row0":{"col0":"Basic"}}}');
+    });
+
+    it('rejects pasted type choices while retaining existing column types', async () => {
+        const dialog = new ColumnsSchemaDialog({
+            name: 'restricted', columns: {}, rows: {}, typeOptions: { singleline: 'Single-line text' },
+        });
+        const state = dialog as any;
+        vi.spyOn(state, 'mount').mockImplementation(() => undefined);
+        const pending = dialog.open([
+            { _id: 'col0', heading: 'Text', width: '', align: 'left', type: 'singleline', options: [] },
+            { _id: 'col1', heading: 'Choice', width: '', align: 'left', type: 'select', options: [{ label: 'Plan', value: 'plan' }] },
+        ]);
+        const pasted = state.normalizeDraft([
+            { ...state.draftRows[0], type: 'checkbox' },
+            state.draftRows[1],
+            { _id: 'col_new', heading: 'New', type: 'number' },
+        ]);
+        expect(pasted.map((column: any) => column.type)).toEqual(['singleline', 'select', 'singleline']);
+        expect(pasted[1].options[0].value).toBe('plan');
+        state.close(null);
+        await expect(pending).resolves.toBeNull();
     });
 
     it('keeps a stored type only among its own column choices', () => {

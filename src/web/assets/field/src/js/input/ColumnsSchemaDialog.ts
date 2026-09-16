@@ -22,6 +22,7 @@ export class ColumnsSchemaDialog {
     private dialog: HTMLElement | null = null;
     private table: PkEditableTable | null = null;
     private draftRows: PkEditableTableRow[] = [];
+    private originalTypes = new Map<string, string>();
     private resolvePromise: ((result: ColumnsSchemaDialogResult | null) => void) | null = null;
 
     constructor(settings: TableMakerSettings) {
@@ -33,6 +34,7 @@ export class ColumnsSchemaDialog {
 
         return new Promise((resolve) => {
             this.resolvePromise = resolve;
+            this.originalTypes = new Map(columns.map((column) => [column._id, column.type]));
             this.draftRows = columns.map((column) => ({
                 _id: column._id,
                 heading: column.heading,
@@ -210,8 +212,16 @@ export class ColumnsSchemaDialog {
     }
 
     private normalizeDraft(rows: PkEditableTableRow[]): PkEditableTableRow[] {
+        const allowedTypes = Object.keys(this.settings.typeOptions || {});
+        const previousTypes = new Map(this.draftRows.map((row) => [String(row._id), row.type]));
         return rows.map((row) => {
-            const type = String(row.type || 'singleline');
+            const id = String(row._id);
+            let type = String(row.type || 'singleline');
+            // Clipboard import can write raw select values. Only grandfather the
+            // type this column had on opening, never a newly pasted choice.
+            if (allowedTypes.length > 0 && !allowedTypes.includes(type) && this.originalTypes.get(id) !== type) {
+                type = String(previousTypes.get(id) || defaultColumnType(this.settings));
+            }
 
             return {
                 ...row,
@@ -255,6 +265,7 @@ export class ColumnsSchemaDialog {
 
         this.table = null;
         this.draftRows = [];
+        this.originalTypes.clear();
 
         if (resolve) {
             resolve(result);
