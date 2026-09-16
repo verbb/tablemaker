@@ -279,6 +279,13 @@ class TableValue
 
                 return is_numeric($value) ? $value + 0 : $value;
 
+            case 'select':
+                // Dropdown values are escaped on storage too; decode without trimming
+                // so the saved value still matches the option's exact identifier.
+                return is_string($value) && !$fromRequest
+                    ? StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value))
+                    : $value;
+
             case 'heading':
             case 'singleline':
             case 'multiline':

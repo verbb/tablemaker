@@ -63,6 +63,16 @@ describe('DualAccessMap', function() {
 });
 
 describe('TableValue normalize + storage', function() {
+    it('preserves literal dropdown values that resemble emoji shortcodes', function() {
+        $value = TableValue::normalize([
+            'columns' => [['heading' => 'Reaction', 'type' => 'select', 'options' => [['label' => 'Smile', 'value' => ':smile:']]]],
+            'rows' => [[':smile:']],
+        ], true);
+        $reloaded = TableValue::normalize($value->toStorage());
+        expect($reloaded->rows['row0']['col0'])->toBe(':smile:');
+        expect($reloaded->rows['row0']['col0'])->toBe($reloaded->columns['col0']['options'][0]['value']);
+    });
+
     it('preserves cells when normalizing temporary or historical column keys', function() {
         $value = TableValue::normalize([
             'columns' => [
