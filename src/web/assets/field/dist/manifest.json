@@ -1,25 +1,25 @@
 {
   "../../../node_modules/@verbb/plugin-kit-web/dist/components/dialog/pk-dialog.js": {
-    "file": "assets/pk-dialog-CDM_nde3.js",
+    "file": "assets/pk-dialog-BQp3sqpU.js",
     "name": "pk-dialog",
     "src": "../../../node_modules/@verbb/plugin-kit-web/dist/components/dialog/pk-dialog.js",
     "isDynamicEntry": true,
     "imports": [
-      "_icons-BR8JcQj2-DHrCYt6-.js",
+      "_icons-BR8JcQj2-CqR11aHb.js",
       "_directive-Dt008SrX.js",
-      "_animate-with-class-CsDwYnXL-CKtwKdmS.js"
+      "_animate-with-class-CsDwYnXL-DpFfZCiB.js"
     ]
   },
   "../../../node_modules/@verbb/plugin-kit-web/dist/components/field/pk-field.js": {
-    "file": "assets/pk-field-BcYhm2IZ.js",
+    "file": "assets/pk-field-BtTUQKIe.js",
     "name": "pk-field",
     "src": "../../../node_modules/@verbb/plugin-kit-web/dist/components/field/pk-field.js",
     "isDynamicEntry": true,
     "imports": [
-      "_icons-BR8JcQj2-DHrCYt6-.js",
+      "_icons-BR8JcQj2-CqR11aHb.js",
       "_directive-Dt008SrX.js",
       "_form-control.styles-BQdimE5o-1wlcCSTt.js",
-      "_unsafe-html-ChbJx5tc.js"
+      "_unsafe-html-CeyHfull.js"
     ]
   },
   "../../../node_modules/@verbb/plugin-kit-web/dist/components/input/pk-input.js": {
@@ -31,11 +31,11 @@
       "_pk-input-CF_icEtR-YSIbFemU.js"
     ]
   },
-  "_animate-with-class-CsDwYnXL-CKtwKdmS.js": {
-    "file": "assets/animate-with-class-CsDwYnXL-CKtwKdmS.js",
+  "_animate-with-class-CsDwYnXL-DpFfZCiB.js": {
+    "file": "assets/animate-with-class-CsDwYnXL-DpFfZCiB.js",
     "name": "animate-with-class-CsDwYnXL",
     "imports": [
-      "_icons-BR8JcQj2-DHrCYt6-.js",
+      "_icons-BR8JcQj2-CqR11aHb.js",
       "_directive-Dt008SrX.js"
     ]
   },
@@ -50,8 +50,8 @@
       "_directive-Dt008SrX.js"
     ]
   },
-  "_icons-BR8JcQj2-DHrCYt6-.js": {
-    "file": "assets/icons-BR8JcQj2-DHrCYt6-.js",
+  "_icons-BR8JcQj2-CqR11aHb.js": {
+    "file": "assets/icons-BR8JcQj2-CqR11aHb.js",
     "name": "icons-BR8JcQj2",
     "imports": [
       "_directive-Dt008SrX.js"
@@ -73,11 +73,11 @@
     "file": "assets/tablemakerPkComponents-CMG3ZekE.js",
     "name": "tablemakerPkComponents"
   },
-  "_unsafe-html-ChbJx5tc.js": {
-    "file": "assets/unsafe-html-ChbJx5tc.js",
+  "_unsafe-html-CeyHfull.js": {
+    "file": "assets/unsafe-html-CeyHfull.js",
     "name": "unsafe-html",
     "imports": [
-      "_icons-BR8JcQj2-DHrCYt6-.js"
+      "_icons-BR8JcQj2-CqR11aHb.js"
     ]
   },
   "field/src/js/input/ColumnsSchemaDialog.ts": {
@@ -90,25 +90,25 @@
     ]
   },
   "field/src/js/plugin-kit-register.ts": {
-    "file": "assets/pluginKit-D_zVwvFe.js",
+    "file": "assets/pluginKit-CStI1vwj.js",
     "name": "pluginKit",
     "src": "field/src/js/plugin-kit-register.ts",
     "isEntry": true,
     "imports": [
-      "_icons-BR8JcQj2-DHrCYt6-.js",
+      "_icons-BR8JcQj2-CqR11aHb.js",
       "_directive-Dt008SrX.js",
       "_pk-input-CF_icEtR-YSIbFemU.js",
-      "_animate-with-class-CsDwYnXL-CKtwKdmS.js",
+      "_animate-with-class-CsDwYnXL-DpFfZCiB.js",
       "_form-control.styles-BQdimE5o-1wlcCSTt.js",
       "_tablemakerPkComponents-CMG3ZekE.js",
-      "_unsafe-html-ChbJx5tc.js"
+      "_unsafe-html-CeyHfull.js"
     ],
     "css": [
       "assets/pluginKit-BVOgxY4N.css"
     ]
   },
   "field/src/js/tablemaker.ts": {
-    "file": "assets/tablemaker-UzAC1aAr.js",
+    "file": "assets/tablemaker-CD7oww8i.js",
     "name": "tablemaker",
     "src": "field/src/js/tablemaker.ts",
     "isEntry": true,
