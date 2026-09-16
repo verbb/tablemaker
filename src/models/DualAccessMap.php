@@ -13,21 +13,19 @@ use Traversable;
  * double-yielding on foreach — iteration walks each entry once under its named key.
  *
  * Lets legacy Twig `columns[loop.index0]` keep working while new templates zip by `colId`.
- *
- * @implements ArrayAccess<int|string, mixed>
- * @implements IteratorAggregate<string, mixed>
  */
 class DualAccessMap implements ArrayAccess, IteratorAggregate, Countable, JsonSerializable
 {
-    /** @var array<string, mixed> */
-    private array $items = [];
+    // Properties
+    // =========================================================================
 
-    /** @var list<string> */
+    private array $items = [];
     private array $order = [];
 
-    /**
-     * @param array<string|int, mixed> $items
-     */
+
+    // Public Methods
+    // =========================================================================
+
     public function __construct(array $items = [])
     {
         foreach ($items as $key => $value) {
@@ -35,9 +33,6 @@ class DualAccessMap implements ArrayAccess, IteratorAggregate, Countable, JsonSe
         }
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     public function all(): array
     {
         $out = [];
@@ -57,7 +52,7 @@ class DualAccessMap implements ArrayAccess, IteratorAggregate, Countable, JsonSe
 
     public function offsetExists(mixed $offset): bool
     {
-        if ($this->isPositional($offset)) {
+        if ($this->_isPositional($offset)) {
             return isset($this->order[(int)$offset]);
         }
 
@@ -66,7 +61,7 @@ class DualAccessMap implements ArrayAccess, IteratorAggregate, Countable, JsonSe
 
     public function offsetGet(mixed $offset): mixed
     {
-        if ($this->isPositional($offset)) {
+        if ($this->_isPositional($offset)) {
             $key = $this->order[(int)$offset] ?? null;
 
             return $key !== null ? ($this->items[$key] ?? null) : null;
@@ -83,7 +78,7 @@ class DualAccessMap implements ArrayAccess, IteratorAggregate, Countable, JsonSe
 
         $key = (string)$offset;
 
-        if ($this->isPositional($offset) && isset($this->order[(int)$offset])) {
+        if ($this->_isPositional($offset) && isset($this->order[(int)$offset])) {
             $key = $this->order[(int)$offset];
         }
 
@@ -96,7 +91,7 @@ class DualAccessMap implements ArrayAccess, IteratorAggregate, Countable, JsonSe
 
     public function offsetUnset(mixed $offset): void
     {
-        if ($this->isPositional($offset)) {
+        if ($this->_isPositional($offset)) {
             $key = $this->order[(int)$offset] ?? null;
 
             if ($key === null) {
@@ -133,7 +128,11 @@ class DualAccessMap implements ArrayAccess, IteratorAggregate, Countable, JsonSe
         return count($this->order);
     }
 
-    private function isPositional(mixed $offset): bool
+
+    // Private Methods
+    // =========================================================================
+
+    private function _isPositional(mixed $offset): bool
     {
         return is_int($offset) || (is_string($offset) && $offset !== '' && ctype_digit($offset));
     }

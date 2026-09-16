@@ -44,6 +44,62 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         return TableMakerData::class . '|null';
     }
 
+    /**
+     * Canonical storage for the allowed-types setting: `*` or a list of type handles.
+     */
+    public static function normalizeAllowedColumnTypesSetting(mixed $value): string|array
+    {
+        $all = array_keys(self::allColumnTypeOptions());
+
+        if ($value === null || $value === '' || $value === '*' || $value === []) {
+            return '*';
+        }
+
+        if (is_string($value)) {
+            return in_array($value, $all, true) ? [$value] : '*';
+        }
+
+        if (!is_array($value)) {
+            return '*';
+        }
+
+        if (in_array('*', $value, true)) {
+            return '*';
+        }
+
+        $filtered = array_values(array_intersect($all, $value));
+
+        if ($filtered === [] || count($filtered) === count($all)) {
+            return '*';
+        }
+
+        return $filtered;
+    }
+
+    /**
+     * Full Craft-style type map (handle → label), sorted by label.
+     */
+    public static function allColumnTypeOptions(): array
+    {
+        $typeOptions = [
+            'checkbox' => Craft::t('app', 'Checkbox'),
+            'color' => Craft::t('app', 'Color'),
+            'date' => Craft::t('app', 'Date'),
+            'select' => Craft::t('app', 'Dropdown'),
+            'email' => Craft::t('app', 'Email'),
+            'heading' => Craft::t('app', 'Row heading'),
+            'lightswitch' => Craft::t('app', 'Lightswitch'),
+            'multiline' => Craft::t('app', 'Multi-line text'),
+            'number' => Craft::t('app', 'Number'),
+            'singleline' => Craft::t('app', 'Single-line text'),
+            'time' => Craft::t('app', 'Time'),
+            'url' => Craft::t('app', 'URL'),
+        ];
+        asort($typeOptions);
+
+        return $typeOptions;
+    }
+
 
     // Properties
     // =========================================================================
@@ -66,11 +122,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     /** Placeholder for the caption input; empty by default (no placeholder shown). */
     public ?string $captionPlaceholder = null;
 
-    /**
-     * Column type handles editors may use. `*` = all built-in types (#53).
-     *
-     * @var string|string[]|null
-     */
+    /** Column type handles editors may use. `*` means all built-in types (#53). */
     public mixed $allowedColumnTypes = '*';
 
     public ?int $minRows = null;
@@ -114,40 +166,6 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         return parent::beforeSave($isNew);
     }
 
-    /**
-     * Canonical storage for the allowed-types setting: `*` or a list of type handles.
-     *
-     * @return '*'|list<string>
-     */
-    public static function normalizeAllowedColumnTypesSetting(mixed $value): string|array
-    {
-        $all = array_keys(self::allColumnTypeOptions());
-
-        if ($value === null || $value === '' || $value === '*' || $value === []) {
-            return '*';
-        }
-
-        if (is_string($value)) {
-            return in_array($value, $all, true) ? [$value] : '*';
-        }
-
-        if (!is_array($value)) {
-            return '*';
-        }
-
-        if (in_array('*', $value, true)) {
-            return '*';
-        }
-
-        $filtered = array_values(array_intersect($all, $value));
-
-        if ($filtered === [] || count($filtered) === count($all)) {
-            return '*';
-        }
-
-        return $filtered;
-    }
-
     public function allowsAllColumnTypes(): bool
     {
         $allowed = $this->allowedColumnTypes;
@@ -159,77 +177,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             || (is_array($allowed) && in_array('*', $allowed, true));
     }
 
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-        $rules[] = [['minRows', 'maxRows', 'minColumns', 'maxColumns'], 'integer', 'min' => 0];
-        $rules[] = [
-            ['minRows'],
-            'compare',
-            'compareAttribute' => 'maxRows',
-            'operator' => '<=',
-            'type' => 'number',
-            'when' => fn() => $this->maxRows !== null,
-        ];
-        $rules[] = [
-            ['maxRows'],
-            'compare',
-            'compareAttribute' => 'minRows',
-            'operator' => '>=',
-            'type' => 'number',
-            'when' => fn() => $this->minRows !== null,
-        ];
-        $rules[] = [
-            ['minColumns'],
-            'compare',
-            'compareAttribute' => 'maxColumns',
-            'operator' => '<=',
-            'type' => 'number',
-            'when' => fn() => $this->maxColumns !== null,
-        ];
-        $rules[] = [
-            ['maxColumns'],
-            'compare',
-            'compareAttribute' => 'minColumns',
-            'operator' => '>=',
-            'type' => 'number',
-            'when' => fn() => $this->minColumns !== null,
-        ];
-
-        return $rules;
-    }
-
-    /**
-     * Full Craft-style type map (handle → label), sorted by label.
-     *
-     * @return array<string, string>
-     */
-    public static function allColumnTypeOptions(): array
-    {
-        $typeOptions = [
-            'checkbox' => Craft::t('app', 'Checkbox'),
-            'color' => Craft::t('app', 'Color'),
-            'date' => Craft::t('app', 'Date'),
-            'select' => Craft::t('app', 'Dropdown'),
-            'email' => Craft::t('app', 'Email'),
-            'heading' => Craft::t('app', 'Row heading'),
-            'lightswitch' => Craft::t('app', 'Lightswitch'),
-            'multiline' => Craft::t('app', 'Multi-line text'),
-            'number' => Craft::t('app', 'Number'),
-            'singleline' => Craft::t('app', 'Single-line text'),
-            'time' => Craft::t('app', 'Time'),
-            'url' => Craft::t('app', 'URL'),
-        ];
-        asort($typeOptions);
-
-        return $typeOptions;
-    }
-
-    /**
-     * Type options for the CP schema editor after applying {@see $allowedColumnTypes}.
-     *
-     * @return array<string, string>
-     */
+    /** Type options for the CP schema editor after applying {@see $allowedColumnTypes}. */
     public function getAllowedColumnTypeOptions(): array
     {
         $all = self::allColumnTypeOptions();
@@ -513,6 +461,46 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     // Protected Methods
     // =========================================================================
 
+    protected function defineRules(): array
+    {
+        $rules = parent::defineRules();
+        $rules[] = [['minRows', 'maxRows', 'minColumns', 'maxColumns'], 'integer', 'min' => 0];
+        $rules[] = [
+            ['minRows'],
+            'compare',
+            'compareAttribute' => 'maxRows',
+            'operator' => '<=',
+            'type' => 'number',
+            'when' => fn() => $this->maxRows !== null,
+        ];
+        $rules[] = [
+            ['maxRows'],
+            'compare',
+            'compareAttribute' => 'minRows',
+            'operator' => '>=',
+            'type' => 'number',
+            'when' => fn() => $this->minRows !== null,
+        ];
+        $rules[] = [
+            ['minColumns'],
+            'compare',
+            'compareAttribute' => 'maxColumns',
+            'operator' => '<=',
+            'type' => 'number',
+            'when' => fn() => $this->maxColumns !== null,
+        ];
+        $rules[] = [
+            ['maxColumns'],
+            'compare',
+            'compareAttribute' => 'minColumns',
+            'operator' => '>=',
+            'type' => 'number',
+            'when' => fn() => $this->minColumns !== null,
+        ];
+
+        return $rules;
+    }
+
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $view = Craft::$app->getView();
@@ -597,16 +585,85 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                 : Craft::t('tablemaker', 'Add a row'),
         ];
 
-        $valueBlob = Json::encode(array_filter([
-            'columns' => $columns,
-            'rows' => $rows,
-            'caption' => $caption !== '' ? $caption : null,
-        ], static fn($v) => $v !== null), JSON_UNESCAPED_UNICODE);
+        $valueBlob = $this->serializeEditorValue($columns, $rows, $caption);
 
         return $view->renderTemplate('tablemaker/_field/input', [
             'name' => $this->handle,
             'valueBlob' => $valueBlob,
             'componentSettings' => Json::encode($componentSettings, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
         ]);
+    }
+
+    /**
+     * Match the browser serializer exactly. Craft snapshots form values before the
+     * component upgrades; any shape/order drift here creates a provisional draft
+     * merely by opening an entry.
+     *
+     * @param array<string, array<string, mixed>> $columns
+     * @param array<string, array<string, mixed>> $rows
+     */
+    private function serializeEditorValue(array $columns, array $rows, string $caption): string
+    {
+        $editorColumns = [];
+        foreach ($columns as $columnId => $column) {
+            $type = TableValue::normalizeType($column['type'] ?? 'singleline');
+            $editorColumn = [
+                'heading' => (string)($column['heading'] ?? ''),
+                'type' => $type,
+            ];
+
+            if ($this->enableWidthColumn) {
+                $editorColumn['width'] = (string)($column['width'] ?? '');
+            }
+
+            if ($this->enableAlignmentColumn) {
+                $editorColumn['align'] = TableValue::normalizeAlignment($column['align'] ?? '') ?: 'left';
+            }
+
+            if ($type === 'select') {
+                $editorColumn['options'] = array_map(static fn(array $option): array => [
+                    'label' => (string)($option['label'] ?? $option['value'] ?? ''),
+                    'value' => (string)($option['value'] ?? $option['label'] ?? ''),
+                    'default' => !empty($option['default']),
+                ], array_values($column['options'] ?? []));
+            }
+
+            $editorColumns[(string)$columnId] = $editorColumn;
+        }
+
+        $editorRows = [];
+        foreach ($rows as $rowId => $row) {
+            $editorRow = [];
+
+            foreach ($editorColumns as $columnId => $column) {
+                $value = $row[$columnId] ?? null;
+                $type = $column['type'];
+
+                if (in_array($type, ['checkbox', 'lightswitch'], true)) {
+                    $value = $value === true || $value === 1 || $value === '1' || $value === 'true';
+                } elseif ($value === null || is_object($value) || is_array($value)) {
+                    $value = '';
+                }
+
+                $editorRow[$columnId] = $value;
+            }
+
+            $editorRows[(string)$rowId] = $editorRow;
+        }
+
+        $editorPayload = [
+            'columns' => $editorColumns,
+            'rows' => $editorRows,
+        ];
+
+        $caption = trim($caption);
+        if ($caption !== '') {
+            $editorPayload['caption'] = $caption;
+        }
+
+        return Json::encode(
+            $editorPayload,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+        );
     }
 }

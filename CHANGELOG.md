@@ -2,21 +2,6 @@
 
 ## Unreleased
 
-### Changed
-- Now requires Craft CMS 5.6+.
-- Public Twig access to `columns` / `rows` supports both `colN`/`rowN` keys and legacy positional indexes (`columns[loop.index0]`).
-- Rebuild the field input UI on [Plugin Kit](https://docs.verbb.io/plugin-kit/web/) (web components).
-- The field input now moves the Column table in a modal for a leaner UI.
-- Rewrite the PHP value layer: normalize/serialize store pure `{columns, rows}` with stable `colN`/`rowN` keys; `.table` HTML is lazy, encoded, and never persisted.
-
-### Fixed
-- Fix `.table` HTML staying stale after in-request mutation of columns/rows/caption.
-- Fix `.table` output HTML-encoding headings/cells.
-- Fix GraphQL column type registry lookup; expose column `options`; resolve `table` lazily.
-- Fix CP input re-prefixing already-canonical `colN` keys (`colcol0`).
-- Fix cloning / Neo block duplicate saves failing with undefined column keys when dropdown options were missing ([#61](https://github.com/verbb/tablemaker/issues/61)).
-- Fix Date/Time cells wiping or showing invalid empty values when editing columns; store `Y-m-d` / `H:i` for CP round-trip ([#54](https://github.com/verbb/tablemaker/issues/54)).
-
 ### Added
 - Add **Row heading** column type (Craft Table parity): editable in the CP, rendered as `<th scope="row">` in `.table` HTML ([#6](https://github.com/verbb/tablemaker/issues/6)).
 - Add optional per-value table **caption** field ([#60](https://github.com/verbb/tablemaker/issues/60)).
@@ -27,6 +12,26 @@
 - Add field settings for min/max rows and min/max columns ([#38](https://github.com/verbb/tablemaker/issues/38)).
 - Confirm before deleting a column in the Edit columns dialog ([#58](https://github.com/verbb/tablemaker/issues/58)).
 - Allow passing an attributes array to `.table` HTML output ([#4](https://github.com/verbb/tablemaker/issues/4)).
+
+### Changed
+- Lazy-load the column configuration dialog and update Plugin Kit and lodash dependencies to their patched releases.
+- Now requires Craft CMS 5.6+.
+- Public Twig access to `columns` / `rows` supports both `colN`/`rowN` keys and legacy positional indexes (`columns[loop.index0]`).
+- Rebuild the field input UI on [Plugin Kit](https://docs.verbb.io/plugin-kit/web/) (web components).
+- The field input now moves the Column table in a modal for a leaner UI.
+- Rewrite the PHP value layer: normalize/serialize store pure `{columns, rows}` with stable `colN`/`rowN` keys; `.table` HTML is lazy, encoded, and never persisted.
+- Clarify table setup, column choices and required template changes in the documentation, and document GraphQL table, column, and option types.
+- Align documentation filenames with page titles and update internal links.
+
+### Fixed
+- Fix opening an entry with a Table Maker field immediately creating an unsaved provisional draft.
+- Preserve the canonical empty alignment and options defaults across database round-trips.
+- Fix `.table` HTML staying stale after in-request mutation of columns/rows/caption.
+- Fix `.table` output HTML-encoding headings/cells.
+- Fix GraphQL column type registry lookup; expose column `options`; resolve `table` lazily.
+- Fix CP input re-prefixing already-canonical `colN` keys (`colcol0`).
+- Fix cloning / Neo block duplicate saves failing with undefined column keys when dropdown options were missing ([#61](https://github.com/verbb/tablemaker/issues/61)).
+- Fix Date/Time cells wiping or showing invalid empty values when editing columns; store `Y-m-d` / `H:i` for CP round-trip ([#54](https://github.com/verbb/tablemaker/issues/54)).
 
 ### Removed
 - Removed Column Label field setting.

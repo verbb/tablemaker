@@ -1,27 +1,126 @@
 {
-  "_tablemakerPkComponents-CsIJh7Lw.js": {
-    "file": "assets/tablemakerPkComponents-CsIJh7Lw.js",
+  "../../../node_modules/@verbb/plugin-kit-web/dist/components/dialog/pk-dialog.js": {
+    "file": "assets/pk-dialog-CDM_nde3.js",
+    "name": "pk-dialog",
+    "src": "../../../node_modules/@verbb/plugin-kit-web/dist/components/dialog/pk-dialog.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_icons-BR8JcQj2-DHrCYt6-.js",
+      "_directive-Dt008SrX.js",
+      "_animate-with-class-CsDwYnXL-CKtwKdmS.js"
+    ]
+  },
+  "../../../node_modules/@verbb/plugin-kit-web/dist/components/field/pk-field.js": {
+    "file": "assets/pk-field-BcYhm2IZ.js",
+    "name": "pk-field",
+    "src": "../../../node_modules/@verbb/plugin-kit-web/dist/components/field/pk-field.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_icons-BR8JcQj2-DHrCYt6-.js",
+      "_directive-Dt008SrX.js",
+      "_form-control.styles-BQdimE5o-1wlcCSTt.js",
+      "_unsafe-html-ChbJx5tc.js"
+    ]
+  },
+  "../../../node_modules/@verbb/plugin-kit-web/dist/components/input/pk-input.js": {
+    "file": "assets/pk-input-tGwu_pHX.js",
+    "name": "pk-input",
+    "src": "../../../node_modules/@verbb/plugin-kit-web/dist/components/input/pk-input.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_pk-input-CF_icEtR-YSIbFemU.js"
+    ]
+  },
+  "_animate-with-class-CsDwYnXL-CKtwKdmS.js": {
+    "file": "assets/animate-with-class-CsDwYnXL-CKtwKdmS.js",
+    "name": "animate-with-class-CsDwYnXL",
+    "imports": [
+      "_icons-BR8JcQj2-DHrCYt6-.js",
+      "_directive-Dt008SrX.js"
+    ]
+  },
+  "_directive-Dt008SrX.js": {
+    "file": "assets/directive-Dt008SrX.js",
+    "name": "directive"
+  },
+  "_form-control.styles-BQdimE5o-1wlcCSTt.js": {
+    "file": "assets/form-control.styles-BQdimE5o-1wlcCSTt.js",
+    "name": "form-control.styles-BQdimE5o",
+    "imports": [
+      "_directive-Dt008SrX.js"
+    ]
+  },
+  "_icons-BR8JcQj2-DHrCYt6-.js": {
+    "file": "assets/icons-BR8JcQj2-DHrCYt6-.js",
+    "name": "icons-BR8JcQj2",
+    "imports": [
+      "_directive-Dt008SrX.js"
+    ]
+  },
+  "_pk-input-CF_icEtR-YSIbFemU.js": {
+    "file": "assets/pk-input-CF_icEtR-YSIbFemU.js",
+    "name": "pk-input-CF_icEtR",
+    "imports": [
+      "_directive-Dt008SrX.js",
+      "_form-control.styles-BQdimE5o-1wlcCSTt.js"
+    ]
+  },
+  "_shared-jL0sSsi8.js": {
+    "file": "assets/shared-jL0sSsi8.js",
+    "name": "shared"
+  },
+  "_tablemakerPkComponents-CMG3ZekE.js": {
+    "file": "assets/tablemakerPkComponents-CMG3ZekE.js",
     "name": "tablemakerPkComponents"
   },
+  "_unsafe-html-ChbJx5tc.js": {
+    "file": "assets/unsafe-html-ChbJx5tc.js",
+    "name": "unsafe-html",
+    "imports": [
+      "_icons-BR8JcQj2-DHrCYt6-.js"
+    ]
+  },
+  "field/src/js/input/ColumnsSchemaDialog.ts": {
+    "file": "assets/ColumnsSchemaDialog-RAVRHCHB.js",
+    "name": "ColumnsSchemaDialog",
+    "src": "field/src/js/input/ColumnsSchemaDialog.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "_shared-jL0sSsi8.js"
+    ]
+  },
   "field/src/js/plugin-kit-register.ts": {
-    "file": "assets/pluginKit-XmEXL2iz.js",
+    "file": "assets/pluginKit-D_zVwvFe.js",
     "name": "pluginKit",
     "src": "field/src/js/plugin-kit-register.ts",
     "isEntry": true,
     "imports": [
-      "_tablemakerPkComponents-CsIJh7Lw.js"
+      "_icons-BR8JcQj2-DHrCYt6-.js",
+      "_directive-Dt008SrX.js",
+      "_pk-input-CF_icEtR-YSIbFemU.js",
+      "_animate-with-class-CsDwYnXL-CKtwKdmS.js",
+      "_form-control.styles-BQdimE5o-1wlcCSTt.js",
+      "_tablemakerPkComponents-CMG3ZekE.js",
+      "_unsafe-html-ChbJx5tc.js"
     ],
     "css": [
-      "assets/pluginKit-CMhC2VHa.css"
+      "assets/pluginKit-BVOgxY4N.css"
     ]
   },
   "field/src/js/tablemaker.ts": {
-    "file": "assets/tablemaker-d3j6OlF3.js",
+    "file": "assets/tablemaker-VBiwETnA.js",
     "name": "tablemaker",
     "src": "field/src/js/tablemaker.ts",
     "isEntry": true,
     "imports": [
-      "_tablemakerPkComponents-CsIJh7Lw.js"
+      "_tablemakerPkComponents-CMG3ZekE.js",
+      "_shared-jL0sSsi8.js"
+    ],
+    "dynamicImports": [
+      "../../../node_modules/@verbb/plugin-kit-web/dist/components/field/pk-field.js",
+      "../../../node_modules/@verbb/plugin-kit-web/dist/components/input/pk-input.js",
+      "field/src/js/input/ColumnsSchemaDialog.ts",
+      "../../../node_modules/@verbb/plugin-kit-web/dist/components/dialog/pk-dialog.js"
     ],
     "css": [
       "assets/tablemaker-CIf7-uMm.css"

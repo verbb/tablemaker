@@ -76,7 +76,7 @@ class TableValue
             }
 
             if (array_key_exists('align', $column)) {
-                $next['align'] = self::normalizeAlignment($column['align'] ?? '') ?: 'left';
+                $next['align'] = self::normalizeAlignment($column['align'] ?? '');
             }
 
             if ($type === 'select') {
@@ -527,9 +527,10 @@ class TableValue
 
             $next = [
                 'heading' => (string)($column['heading'] ?? ''),
-                'align' => self::normalizeAlignment($column['align'] ?? '') ?: 'left',
-                'width' => (string)($column['width'] ?? ''),
                 'type' => $type,
+                'width' => (string)($column['width'] ?? ''),
+                'align' => self::normalizeAlignment($column['align'] ?? ''),
+                'options' => [],
             ];
 
             if ($type === 'select') {

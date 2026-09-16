@@ -1,0 +1,44 @@
+name: Tests
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pest:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["8.2", "8.3", "8.4"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Validate Composer manifest
+        run: composer validate --no-plugins --no-check-publish
+      - name: Build production assets
+        run: npm ci && npm audit --omit=dev && npm run test:frontend && npm run build
+      - uses: ddev/github-action-setup-ddev@v1
+        with:
+          version: "1.24.4"
+          autostart: false
+      - name: Configure PHP runtime
+        run: ddev config --php-version=${{ matrix.php }}
+      - name: Clean-install integration and performance tests
+        run: ddev test --suite=all
+      - name: Test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-diagnostics-php-${{ matrix.php }}
+          include-hidden-files: true
+          path: |
+            .cache/verbb-tests/latest.log
+            .cache/verbb-tests/junit.xml
+            .cache/verbb-tests/result.json
+            .cache/verbb-tests/app/storage/logs/

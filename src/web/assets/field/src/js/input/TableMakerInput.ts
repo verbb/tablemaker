@@ -11,7 +11,6 @@ import type {
     PkEditableTableRow,
 } from '@verbb/plugin-kit-web/components/editable-table/pk-editable-table.js';
 
-import { ColumnsSchemaDialog } from './ColumnsSchemaDialog.js';
 import type { ColumnDefinition } from './types.js';
 import {
     contentNewRowDefaults,
@@ -28,7 +27,7 @@ export class TableMakerInput {
     private readonly root: HTMLElement;
     private readonly settings: TableMakerSettings;
     private readonly hiddenInput: HTMLInputElement | null;
-    private readonly schemaDialog: ColumnsSchemaDialog;
+    private schemaDialog: import('./ColumnsSchemaDialog.js').ColumnsSchemaDialog | null = null;
 
     private columns: ColumnDefinition[] = [];
     private contentRows: PkEditableTableRow[] = [];
@@ -44,10 +43,25 @@ export class TableMakerInput {
             columns: {},
             rows: {},
         });
-        this.schemaDialog = new ColumnsSchemaDialog(this.settings);
     }
 
     init(): void {
+        void this.initialize();
+    }
+
+    private async initialize(): Promise<void> {
+        if (this.settings.enableCaption) {
+            // Caption controls are optional, so keep them out of the common field bundle.
+            await Promise.all([
+                import('@verbb/plugin-kit-web/components/field/pk-field.js'),
+                import('@verbb/plugin-kit-web/components/input/pk-input.js'),
+            ]);
+            await Promise.all([
+                customElements.whenDefined('pk-field'),
+                customElements.whenDefined('pk-input'),
+            ]);
+        }
+
         this.columns = seedColumns(this.settings);
         this.contentRows = seedContentRows(this.settings, this.columns);
         this.caption = String(this.settings.caption ?? '').trim();
@@ -189,6 +203,17 @@ export class TableMakerInput {
      * table untouched — no live reconstruct while the user is still configuring.
      */
     private async openColumnsEditor(): Promise<void> {
+        if (!this.schemaDialog) {
+            // Column configuration is uncommon during content editing. Load its dialog
+            // implementation and component only when the author asks for it.
+            const [{ ColumnsSchemaDialog }] = await Promise.all([
+                import('./ColumnsSchemaDialog.js'),
+                import('@verbb/plugin-kit-web/components/dialog/pk-dialog.js'),
+            ]);
+            await customElements.whenDefined('pk-dialog');
+            this.schemaDialog = new ColumnsSchemaDialog(this.settings);
+        }
+
         const result = await this.schemaDialog.open(this.columns);
 
         if (!result) {

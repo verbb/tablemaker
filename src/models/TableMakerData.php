@@ -10,6 +10,7 @@ use ArrayIterator;
 use Countable;
 use IteratorAggregate;
 use Traversable;
+
 use Twig\Markup;
 
 /**
@@ -18,35 +19,31 @@ use Twig\Markup;
  *
  * Public `$columns` / `$rows` are DualAccessMap so Twig can use either named
  * `colN`/`rowN` keys or legacy positional indexes (`columns[loop.index0]`).
- *
- * @implements ArrayAccess<string, mixed>
- * @implements IteratorAggregate<string, mixed>
  */
 class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
 {
+    // Properties
+    // =========================================================================
+
     public DualAccessMap $columns;
-
     public DualAccessMap $rows;
-
     /** Optional per-value table caption (#60). */
     public string $caption = '';
 
-    /**
-     * @param array<string, array<string, mixed>>|DualAccessMap $columns
-     * @param array<string, array<string, mixed>>|DualAccessMap $rows
-     */
+
+    // Public Methods
+    // =========================================================================
+
     public function __construct(array|DualAccessMap $columns = [], array|DualAccessMap $rows = [], string $caption = '')
     {
-        $this->columns = $this->wrapColumns($columns);
-        $this->rows = $this->wrapRows($rows);
+        $this->columns = $this->_wrapColumns($columns);
+        $this->rows = $this->_wrapRows($rows);
         $this->caption = $caption;
     }
 
     /**
      * Encoded HTML preview — same Twig API as before (`entry.field.table`).
      * Optional attribute bag for the root `<table>` (#4).
-     *
-     * @param array<string, mixed>|null $attributes
      */
     public function getTable(?array $attributes = null): Markup
     {
@@ -56,17 +53,13 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
 
         return Template::raw(TableValue::renderHtml(
             $this->columns->all(),
-            $this->rowsAsStorage(),
+            $this->_rowsAsStorage(),
             $attrs,
             $this->caption,
         ));
     }
 
-    /**
-     * Twig `{{ entry.field.table({ class: 'specs' }) }}` resolves as a method call.
-     *
-     * @param array<string, mixed>|null $attributes
-     */
+    /** Twig `{{ entry.field.table({ class: 'specs' }) }}` resolves as a method call. */
     public function table(?array $attributes = null): Markup
     {
         return $this->getTable($attributes);
@@ -101,9 +94,9 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
     public function offsetSet(mixed $offset, mixed $value): void
     {
         if ($offset === 'columns' && (is_array($value) || $value instanceof DualAccessMap)) {
-            $this->columns = $this->wrapColumns($value);
+            $this->columns = $this->_wrapColumns($value);
         } elseif ($offset === 'rows' && (is_array($value) || $value instanceof DualAccessMap)) {
-            $this->rows = $this->wrapRows($value);
+            $this->rows = $this->_wrapRows($value);
         } elseif ($offset === 'caption') {
             $this->caption = trim((string)$value);
         }
@@ -135,36 +128,27 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
         return 4;
     }
 
-    /**
-     * Persistable payload — never includes derived `table` HTML.
-     *
-     * @return array{columns: array<string, array<string, mixed>>, rows: array<string, array<string, mixed>>, caption?: string}
-     */
+    /** Persistable payload — never includes derived `table` HTML. */
     public function toStorage(): array
     {
-        return TableValue::toStorage($this->columns->all(), $this->rowsAsStorage(), $this->caption);
+        return TableValue::toStorage($this->columns->all(), $this->_rowsAsStorage(), $this->caption);
     }
 
-    /**
-     * @return array<string, array<string, mixed>>
-     */
     public function columnsArray(): array
     {
         return $this->columns->all();
     }
 
-    /**
-     * @return array<string, array<string, mixed>>
-     */
     public function rowsArray(): array
     {
-        return $this->rowsAsStorage();
+        return $this->_rowsAsStorage();
     }
 
-    /**
-     * @return array<string, array<string, mixed>>
-     */
-    private function rowsAsStorage(): array
+
+    // Private Methods
+    // =========================================================================
+
+    private function _rowsAsStorage(): array
     {
         $out = [];
 
@@ -179,10 +163,7 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
         return $out;
     }
 
-    /**
-     * @param array<string, array<string, mixed>>|DualAccessMap $columns
-     */
-    private function wrapColumns(array|DualAccessMap $columns): DualAccessMap
+    private function _wrapColumns(array|DualAccessMap $columns): DualAccessMap
     {
         if ($columns instanceof DualAccessMap) {
             return $columns;
@@ -191,10 +172,7 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
         return new DualAccessMap($columns);
     }
 
-    /**
-     * @param array<string, array<string, mixed>>|DualAccessMap $rows
-     */
-    private function wrapRows(array|DualAccessMap $rows): DualAccessMap
+    private function _wrapRows(array|DualAccessMap $rows): DualAccessMap
     {
         if ($rows instanceof DualAccessMap) {
             // Ensure nested cells are also dual-access.

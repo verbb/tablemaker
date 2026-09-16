@@ -44,3 +44,9 @@ node_modules
 /docs/node_modules
 /docs/.vitepress/cache
 /docs/.vitepress/dist
+
+/.cache/
+
+/.ddev/docker-compose.tests-local.yaml
+
+/.phpunit.result.cache

@@ -4,11 +4,8 @@ import '@verbb/plugin-kit-web/plugin-kit.css';
 // registration side effect. Referencing the classes from the registrar keeps the
 // decorator modules from being tree-shaken.
 import { PkButton } from '@verbb/plugin-kit-web/components/button/pk-button.js';
-import { PkDialog } from '@verbb/plugin-kit-web/components/dialog/pk-dialog.js';
 import { PkEditableTable } from '@verbb/plugin-kit-web/components/editable-table/pk-editable-table.js';
-import { PkField } from '@verbb/plugin-kit-web/components/field/pk-field.js';
 import { PkIcon } from '@verbb/plugin-kit-web/components/icon/pk-icon.js';
-import { PkInput } from '@verbb/plugin-kit-web/components/input/pk-input.js';
 
 // Opt-in glyphs for `<pk-icon icon="…">`.
 import {
@@ -33,7 +30,7 @@ registerIcons({
 });
 
 /** Constructors whose modules run `@customElement` — must stay reachable so Rollup can't DCE them. */
-const TABLEMAKER_PK_CTORS = [PkButton, PkDialog, PkEditableTable, PkField, PkIcon, PkInput] as const;
+const TABLEMAKER_PK_CTORS = [PkButton, PkEditableTable, PkIcon] as const;
 
 let registered = false;
 
