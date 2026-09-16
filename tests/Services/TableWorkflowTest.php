@@ -90,6 +90,26 @@ it('persists every column type and cleared values through Craft', function() {
     expect($cleared->rowsArray())->toBe([])->and($cleared->caption)->toBe('');
 });
 
+it('preserves significant cell whitespace through validated saves', function(string $type, string $cell) {
+    $handle = $this->tableField->handle;
+    $this->entry->setFieldValueFromRequest($handle, [
+        'columns' => [['heading' => 'Value', 'type' => $type, 'options' => [['label' => 'Exact', 'value' => $cell]]]],
+        'rows' => [[$cell]],
+    ]);
+    for ($save = 0; $save < 2; $save++) {
+        expect(Craft::$app->getElements()->saveElement($this->entry))->toBeTrue();
+        $this->entry = Entry::find()->id($this->entry->id)->status(null)->one();
+        $saved = $this->entry->getFieldValue($handle);
+        expect($saved->rows['row0']['col0'])->toBe($cell);
+        if ($type === 'select') {
+            expect($saved->columns['col0']['options'][0]['value'])->toBe($cell);
+        }
+    }
+})->with([
+    'multiline indentation and blank lines' => ['multiline', "\n  first\nlast  \n"],
+    'exact dropdown identifier' => ['select', ' exact '],
+]);
+
 it('preserves table structure and captions on the first save without populated cells', function() {
     $entry = new Entry([
         'sectionId' => $this->section->id,

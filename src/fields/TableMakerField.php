@@ -320,14 +320,9 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 
         foreach ($rows as $rowId => $row) {
             foreach ($data->columnsArray() as $colId => $column) {
-                $cell = $row[$colId] ?? '';
-
-                if (is_string($cell)) {
-                    $cell = trim($cell);
-                }
-
-                $rows[$rowId][$colId] = $cell;
                 $type = TableValue::normalizeType($column['type'] ?? 'singleline');
+                $cell = TableValue::normalizeCell($type, $row[$colId] ?? '', true);
+                $rows[$rowId][$colId] = $cell;
 
                 if (!TableValue::validateCell($type, $cell, $error)) {
                     $element->addError($this->handle, (string)$error);
@@ -335,7 +330,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             }
         }
 
-        // Persist trimmed cells so validation cleanup survives into serialize.
+        // Keep type-specific cleanup without changing multiline whitespace or option IDs.
         $data->rows = new DualAccessMap(array_map(
             static fn(array $row) => new DualAccessMap($row),
             $rows,

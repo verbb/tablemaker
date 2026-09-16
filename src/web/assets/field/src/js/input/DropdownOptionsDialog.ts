@@ -128,7 +128,7 @@ export class DropdownOptionsDialog {
         return this.optionRows
             .map((row) => ({
                 label: String(row.label ?? '').trim(),
-                value: String(row.value ?? '').trim(),
+                value: String(row.value ?? ''),
                 default: Boolean(row.isDefault),
             }))
             .filter((row) => row.label !== '' || row.value !== '');
