@@ -648,12 +648,12 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                 $editorRow[$columnId] = $value;
             }
 
-            $editorRows[(string)$rowId] = $editorRow;
+            $editorRows[(string)$rowId] = (object)$editorRow;
         }
 
         $editorPayload = [
-            'columns' => $editorColumns,
-            'rows' => $editorRows,
+            'columns' => (object)$editorColumns,
+            'rows' => (object)$editorRows,
         ];
 
         $caption = trim($caption);

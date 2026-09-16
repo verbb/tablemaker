@@ -198,6 +198,15 @@ describe('TableValue normalize + storage', function() {
 });
 
 describe('Table Maker Craft lifecycle', function() {
+    it('keeps empty editor maps stable for browser change tracking', function() {
+        $field = new TableMakerField(['name' => 'Empty fixture', 'handle' => 'emptyFixture']);
+        $method = new ReflectionMethod($field, 'serializeEditorValue');
+
+        expect($method->invoke($field, [], [], ''))->toBe('{"columns":{},"rows":{}}');
+        expect($method->invoke($field, ['col0' => ['heading' => '', 'type' => 'singleline']], [], ''))
+            ->toBe('{"columns":{"col0":{"heading":"","type":"singleline","width":"","align":"left"}},"rows":{}}');
+    });
+
     it('exposes ordered, scalar rows through the actual GraphQL field resolver', function() {
         $field = new TableMakerField([
             'name' => 'GraphQL fixture',
