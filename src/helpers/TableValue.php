@@ -3,7 +3,6 @@ namespace verbb\tablemaker\helpers;
 
 use verbb\tablemaker\models\TableMakerData;
 
-use Craft;
 use craft\fields\data\ColorData;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
@@ -48,7 +47,11 @@ class TableValue
 
         $columnKeys = [];
         $columns = self::canonicalizeColumns(self::_restoreOrder($value['columns'] ?? [], $value['columnOrder'] ?? null), $columnKeys);
-        $rows = self::canonicalizeRows(self::_restoreOrder($value['rows'] ?? [], $value['rowOrder'] ?? null), $columns, $fromRequest, $columnKeys);
+        // The 5.0 serializer wrote positional lists with raw strings. Only the
+        // unmarked keyed beta format used Craft's ambiguous shortcode encoding.
+        $legacy = is_array($value['columns'] ?? null) && array_is_list($value['columns']);
+        $jsonEncoded = !$fromRequest && ($value['cellEncoding'] ?? null) === 'json-v1';
+        $rows = self::canonicalizeRows(self::_restoreOrder($value['rows'] ?? [], $value['rowOrder'] ?? null), $columns, $fromRequest || $legacy || $jsonEncoded, $columnKeys, $jsonEncoded);
         $caption = self::normalizeCaption($value['caption'] ?? '');
 
         return new TableMakerData($columns, $rows, $caption);
@@ -57,7 +60,7 @@ class TableValue
     /**
      * @param array<string, array<string, mixed>> $columns
      * @param array<string, array<string, mixed>> $rows
-     * @return array{columns: array<string, array<string, mixed>>, rows: array<string, array<string, mixed>>, columnOrder: list<string>, rowOrder: list<string>, caption?: string}
+     * @return array{columns: array<string, array<string, mixed>>, rows: array<string, array<string, mixed>>, columnOrder: list<string>, rowOrder: list<string>, cellEncoding: string, caption?: string}
      */
     public static function toStorage(array $columns, array $rows, string $caption = ''): array
     {
@@ -109,6 +112,7 @@ class TableValue
             // without changing the stable IDs used to match columns and cells.
             'columnOrder' => array_keys($outColumns),
             'rowOrder' => array_keys($outRows),
+            'cellEncoding' => 'json-v1',
         ];
 
         // Caption remains optional in stored values.
@@ -322,15 +326,9 @@ class TableValue
         $type = self::normalizeType($type);
         $value = self::normalizeCell($type, $value, true);
 
-        if (is_string($value)) {
-            $value = StringHelper::escapeShortcodes($value);
-
-            if (!Craft::$app->getDb()->getSupportsMb4()) {
-                $value = StringHelper::emojiToShortcodes($value);
-            }
-        }
-
-        return $value;
+        // Explicit JSON string encoding preserves literal shortcodes/backslashes
+        // and every Unicode character, including on databases without mb4 support.
+        return is_string($value) ? Json::encode($value, 0) : $value;
     }
 
     public static function validateCell(string $type, mixed $value, ?string &$error = null): bool
@@ -584,7 +582,7 @@ class TableValue
      * @param array<string, array<string, mixed>> $columns
      * @return array<string, array<string, mixed>>
      */
-    private static function canonicalizeRows(mixed $rows, array $columns, bool $fromRequest, array $columnKeys): array
+    private static function canonicalizeRows(mixed $rows, array $columns, bool $fromRequest, array $columnKeys, bool $jsonEncoded = false): array
     {
         if (!is_array($rows) || $rows === []) {
             return [];
@@ -622,6 +620,10 @@ class TableValue
                 $raw = !$positional && array_key_exists($sourceKey, $row)
                     ? $row[$sourceKey]
                     : ($row[$colId] ?? $row[self::stripPrefix($colId, 'col')] ?? null);
+                if ($jsonEncoded && is_string($raw)) {
+                    $decoded = Json::decodeIfJson($raw);
+                    $raw = is_string($decoded) ? $decoded : $raw;
+                }
                 $type = $columns[$colId]['type'] ?? 'singleline';
                 $cells[$colId] = self::normalizeCell($type, $raw, $fromRequest);
             }

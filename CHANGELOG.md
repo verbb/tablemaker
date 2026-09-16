@@ -24,6 +24,7 @@
 - Align documentation filenames with page titles and update internal links.
 
 ### Fixed
+- Preserve literal shortcodes, backslashes and Unicode text when upgrading and saving tables.
 - Preserve multiline whitespace and exact dropdown values when editing and saving tables.
 - Preserve AM/PM times when pasting spreadsheet cells.
 - Prevent duplicate column editors when Edit columns is activated repeatedly while loading.

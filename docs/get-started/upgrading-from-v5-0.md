@@ -29,12 +29,14 @@ $storedValue = $table->toStorage();
 
 The arrays use `colN` and `rowN` keys. Match cells to their column keys instead of assuming that a numeric suffix is its current position. Generated `table` HTML is derived from the value and is not included in storage.
 
+Use `rowsArray()` for readable cell values. `toStorage()` returns persistence data: its string cells are JSON-encoded and identified by `cellEncoding: json-v1`, preserving literal shortcodes, backslashes and Unicode characters. Pass the complete stored value through the field's normalisation before reading or editing its cells; do not submit encoded storage rows as editor or GraphQL input.
+
 ### Removed Field Settings
 
 The Column Label, Column Instructions, Add Column Label, Row Label and Row Instructions settings have been removed. Use the Craft field's name and instructions to describe the table. Add Row Label remains available. Remove the corresponding `columnsLabel`, `columnsInstructions`, `columnsAddRowLabel`, `rowsLabel` and `rowsInstructions` options from custom code that assigns field properties. Existing saved field configuration containing these options can still be loaded.
 
 ## Stored Tables and the Editor
 
-Existing positional column and row arrays are normalised when read; saving writes the canonical keyed structure with `columnOrder` and `rowOrder` lists to preserve display order in JSON database columns. No separate content conversion command is needed. Check tables with dropdown options, reordered columns, dates and times before deploying the update.
+Existing positional column and row arrays are normalised when read, preserving literal text such as `:smile:`. Saving writes the canonical keyed structure with `columnOrder` and `rowOrder` lists to preserve display order in JSON database columns. No separate content conversion command is needed. Check tables with dropdown options, reordered columns, dates and times before deploying the update.
 
 Editors configure columns in **Edit columns**, then choose **Done** to apply the schema changes or **Cancel** to discard them. Save the entry to persist the table. [Field](docs:feature-tour/field) explains the available controls and settings.

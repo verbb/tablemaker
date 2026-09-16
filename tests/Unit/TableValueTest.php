@@ -63,6 +63,54 @@ describe('DualAccessMap', function() {
 });
 
 describe('TableValue normalize + storage', function() {
+    it('preserves literal shortcodes in legacy cells and subsequent saves', function() {
+        $cells = [':smile:', '\\:smile\\:', ':smile:smile:', '😄', '\\folder\\file', '__MB4_DL__text__MB4_DR__'];
+        $data = TableValue::normalize([
+            'columns' => [['heading' => 'Literal', 'type' => 'select', 'options' => array_map(
+                static fn(string $cell) => ['label' => $cell, 'value' => $cell], $cells,
+            )]],
+            'rows' => array_map(static fn(string $cell) => [$cell], $cells),
+        ]);
+        for ($save = 0; $save < 3; $save++) {
+            expect(array_column($data->rowsArray(), 'col0'))->toBe($cells);
+            expect(array_column($data->columns['col0']['options'], 'value'))->toBe($cells);
+            $data = TableValue::normalize($data->toStorage());
+        }
+    });
+
+    it('stores new literal text without shortcode or backslash collisions', function() {
+        $cells = [':smile:', '\\:smile\\:', ':smile:smile:', '😄', '𠀀', '"quoted"', '\\folder\\file'];
+        $data = TableValue::normalize([
+            'columns' => [['heading' => 'Text', 'type' => 'singleline']],
+            'rows' => array_map(static fn(string $cell) => [$cell], $cells),
+        ], true);
+        for ($save = 0; $save < 3; $save++) {
+            $stored = $data->toStorage();
+            foreach ($stored['rows'] as $row) {
+                expect(preg_match('/[^\x00-\x7f]/', $row['col0']))->toBe(0);
+            }
+            $data = TableValue::normalize($stored);
+            expect(array_column($data->rowsArray(), 'col0'))->toBe($cells);
+        }
+    });
+
+    it('does not decode storage markers supplied as editor input', function() {
+        $data = TableValue::normalize([
+            'cellEncoding' => 'json-v1',
+            'columns' => ['col0' => ['heading' => 'Text', 'type' => 'singleline']],
+            'rows' => ['row0' => ['col0' => '"quoted"']],
+        ], true);
+        expect($data->rows['row0']['col0'])->toBe('"quoted"');
+    });
+
+    it('continues decoding unmarked canonical beta values', function() {
+        $data = TableValue::normalize([
+            'columns' => ['col0' => ['heading' => 'Text', 'type' => 'singleline']],
+            'rows' => ['row0' => ['col0' => '\\:smile\\:'], 'row1' => ['col0' => ':smile:']],
+        ]);
+        expect(array_column($data->rowsArray(), 'col0'))->toBe([':smile:', '😄']);
+    });
+
     it('keeps all entries when stored ordering metadata is incomplete or malformed', function() {
         $value = TableValue::normalize([
             'columns' => [
