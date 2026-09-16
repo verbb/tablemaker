@@ -105,6 +105,7 @@ export class TableMakerInput {
         // Nameless on purpose — value lives in the hidden JSON blob, not a parallel POST key.
         const input = document.createElement('pk-input') as HTMLElement & { value: string };
         input.setAttribute('width', 'full');
+        input.toggleAttribute('disabled', this.hiddenInput?.disabled ?? false);
         if (placeholder) {
             input.setAttribute('placeholder', placeholder);
         }
@@ -149,6 +150,7 @@ export class TableMakerInput {
         edit.className = 'tm-edit-columns';
         edit.setAttribute('type', 'button');
         edit.setAttribute('size', 'xs');
+        edit.toggleAttribute('disabled', this.hiddenInput?.disabled ?? false);
 
         const gear = document.createElement('pk-icon');
         gear.setAttribute('slot', 'start');
@@ -165,6 +167,7 @@ export class TableMakerInput {
     private buildContentTable(): PkEditableTable {
         const table = document.createElement('pk-editable-table') as PkEditableTable;
         table.className = 'tm-content-table';
+        table.disabled = this.hiddenInput?.disabled ?? false;
         table.columns = contentSchemaColumns(this.columns);
         table.rows = this.contentRows;
         table.allowReorder = true;
@@ -203,6 +206,10 @@ export class TableMakerInput {
      * table untouched — no live reconstruct while the user is still configuring.
      */
     private async openColumnsEditor(): Promise<void> {
+        if (this.hiddenInput?.disabled) {
+            return;
+        }
+
         if (!this.schemaDialog) {
             // Column configuration is uncommon during content editing. Load its dialog
             // implementation and component only when the author asks for it.

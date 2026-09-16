@@ -24,6 +24,7 @@
 - Align documentation filenames with page titles and update internal links.
 
 ### Fixed
+- Disable table editing controls when viewing read-only fields and revisions.
 - Use an allowed column type when creating or padding columns in restricted fields.
 - Preserve table columns, blank rows and captions when saving an entry for the first time.
 - Fix cell values being lost when saving newly added columns or loading tables with legacy column identifiers.
