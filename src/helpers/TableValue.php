@@ -543,6 +543,7 @@ class TableValue
 
         $out = [];
         $index = 0;
+        $reservedKeys = array_keys($columns);
 
         foreach ($columns as $key => $column) {
             if (!is_array($column)) {
@@ -554,7 +555,7 @@ class TableValue
                 continue;
             }
 
-            $colId = self::prefixedKey($key, 'col', $index, array_keys($out));
+            $colId = self::prefixedKey($key, 'col', $index, array_keys($out), $reservedKeys);
             $type = self::normalizeType($column['type'] ?? 'singleline');
 
             $next = [
@@ -591,13 +592,14 @@ class TableValue
         $colIds = array_keys($columns);
         $out = [];
         $index = 0;
+        $reservedKeys = array_keys($rows);
 
         foreach ($rows as $key => $row) {
             if (!is_array($row)) {
                 continue;
             }
 
-            $rowId = self::prefixedKey($key, 'row', $index, array_keys($out));
+            $rowId = self::prefixedKey($key, 'row', $index, array_keys($out), $reservedKeys);
 
             // Positional legacy row: [cell0, cell1, …] aligned to column order.
             $positional = $row !== [] && array_is_list($row) && $colIds !== [];
@@ -640,8 +642,9 @@ class TableValue
 
     /**
      * @param list<string|int> $used
+     * @param list<string|int> $reserved Existing identities later in display order.
      */
-    private static function prefixedKey(string|int $key, string $prefix, int $fallbackIndex, array $used): string
+    private static function prefixedKey(string|int $key, string $prefix, int $fallbackIndex, array $used, array $reserved): string
     {
         $key = (string)$key;
 
@@ -653,7 +656,7 @@ class TableValue
         if (ctype_digit($key) || is_int($key)) {
             $candidate = $prefix . $key;
 
-            if (!in_array($candidate, $used, true)) {
+            if (!in_array($candidate, $used, true) && !in_array($candidate, $reserved, true)) {
                 return $candidate;
             }
         }
@@ -662,14 +665,14 @@ class TableValue
         if (str_starts_with($key, $prefix . $prefix)) {
             $stripped = substr($key, strlen($prefix));
 
-            if (preg_match('/^' . preg_quote($prefix, '/') . '\d+$/', $stripped) === 1 && !in_array($stripped, $used, true)) {
+            if (preg_match('/^' . preg_quote($prefix, '/') . '\d+$/', $stripped) === 1 && !in_array($stripped, $used, true) && !in_array($stripped, $reserved, true)) {
                 return $stripped;
             }
         }
 
         $candidate = $prefix . $fallbackIndex;
 
-        while (in_array($candidate, $used, true)) {
+        while (in_array($candidate, $used, true) || in_array($candidate, $reserved, true)) {
             $fallbackIndex++;
             $candidate = $prefix . $fallbackIndex;
         }

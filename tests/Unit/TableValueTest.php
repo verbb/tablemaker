@@ -63,6 +63,25 @@ describe('DualAccessMap', function() {
 });
 
 describe('TableValue normalize + storage', function() {
+    it('reserves existing named identities before repairing inserted keys', function() {
+        $data = TableValue::normalize([
+            'columns' => [
+                'col_new' => ['heading' => 'Inserted', 'type' => 'singleline'],
+                'col0' => ['heading' => 'Original', 'type' => 'singleline'],
+                'col1' => ['heading' => 'Another', 'type' => 'singleline'],
+            ],
+            'rows' => [
+                'row_new' => ['col_new' => 'New'],
+                'row0' => ['col0' => 'Original A', 'col1' => 'Original B'],
+                'row1' => ['col0' => 'Original C', 'col1' => 'Original D'],
+            ],
+        ], true);
+        expect(array_keys($data->columnsArray()))->toBe(['col2', 'col0', 'col1']);
+        expect(array_keys($data->rowsArray()))->toBe(['row2', 'row0', 'row1']);
+        expect($data->rows['row0']['col0'])->toBe('Original A');
+        expect(TableValue::normalize($data->toStorage())->rows['row1']['col1'])->toBe('Original D');
+    });
+
     it('preserves original cell positions when invalid column definitions are skipped', function(mixed $omitted) {
         $data = TableValue::normalize([
             'columns' => [$omitted, ['heading' => 'Price', 'type' => 'singleline']],
@@ -183,7 +202,7 @@ describe('TableValue normalize + storage', function() {
         ]);
 
         expect($value->rowsArray())->toBe([
-            'row0' => ['col0' => 'Basic', 'col1' => '$9', 'col2' => 'Keep me'],
+            'row0' => ['col1' => 'Basic', 'col2' => '$9', 'col0' => 'Keep me'],
         ]);
         expect(TableValue::normalize($value->toStorage())->rowsArray())->toBe($value->rowsArray());
     });

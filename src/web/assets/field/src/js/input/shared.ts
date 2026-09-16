@@ -112,7 +112,7 @@ export const normalizeTimeForEditor = (value: unknown): string => {
     return `${hm[1].padStart(2, '0')}:${hm[2]}`;
 };
 
-export const ensurePrefixedKey = (id: string | undefined, prefix: string, used: Set<string>): string => {
+export const ensurePrefixedKey = (id: string | undefined, prefix: string, used: Set<string>, reserved = used): string => {
     if (id && id.startsWith(prefix) && /^\d+$/.test(id.slice(prefix.length)) && !used.has(id)) {
         used.add(id);
         return id;
@@ -120,7 +120,7 @@ export const ensurePrefixedKey = (id: string | undefined, prefix: string, used: 
 
     let index = 0;
 
-    while (used.has(`${prefix}${index}`)) {
+    while (used.has(`${prefix}${index}`) || reserved.has(`${prefix}${index}`)) {
         index += 1;
     }
 
@@ -331,10 +331,13 @@ export const serializeValueBlob = (
 ): string => {
     const outColumns: Record<string, TableColumn> = {};
     const usedColKeys = new Set<string>();
+    // Inserted items can precede existing IDs; keep those identities available
+    // until their original column/row is serialized.
+    const reservedColKeys = new Set(columns.map((column) => column._id));
     const colKeyById = new Map<string, string>();
 
     for (const column of columns) {
-        const key = ensurePrefixedKey(column._id, 'col', usedColKeys);
+        const key = ensurePrefixedKey(column._id, 'col', usedColKeys, reservedColKeys);
         colKeyById.set(column._id, key);
 
         const craftType = column.type || 'singleline';
@@ -360,9 +363,10 @@ export const serializeValueBlob = (
 
     const outRows: Record<string, Record<string, unknown>> = {};
     const usedRowKeys = new Set<string>();
+    const reservedRowKeys = new Set(contentRows.map((row) => String(row._id)));
 
     for (const row of contentRows) {
-        const rowKey = ensurePrefixedKey(String(row._id), 'row', usedRowKeys);
+        const rowKey = ensurePrefixedKey(String(row._id), 'row', usedRowKeys, reservedRowKeys);
         const cells: Record<string, unknown> = {};
 
         for (const column of columns) {

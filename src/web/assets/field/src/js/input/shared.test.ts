@@ -58,6 +58,21 @@ describe('table editor normalization', () => {
         expect(ensurePrefixedKey('legacy', 'col', used)).toBe('col3');
     });
 
+    it('keeps existing named keys when new columns and rows are inserted before them', () => {
+        const columns = ['col_new', 'col0', 'col1'].map((_id) => ({
+            _id, heading: _id, type: 'singleline', width: '', align: 'left', options: [],
+        }));
+        const payload = JSON.parse(serializeValueBlob(columns, [
+            { _id: 'row_new', col_new: 'New', col0: '', col1: '' },
+            { _id: 'row0', col_new: '', col0: 'Original A', col1: 'Original B' },
+            { _id: 'row1', col_new: '', col0: 'Original C', col1: 'Original D' },
+        ], { name: 'insertions', columns: {}, rows: {} }));
+        expect(Object.keys(payload.columns)).toEqual(['col2', 'col0', 'col1']);
+        expect(Object.keys(payload.rows)).toEqual(['row2', 'row0', 'row1']);
+        expect(payload.rows.row0.col0).toBe('Original A');
+        expect(payload.rows.row1.col1).toBe('Original D');
+    });
+
     it('serializes temporary column IDs as canonical keys without losing their cells', () => {
         const payload = JSON.parse(serializeValueBlob([
             { _id: 'col_mabc_123', heading: 'Plan', type: 'singleline', width: '', align: 'left', options: [] },
@@ -66,8 +81,8 @@ describe('table editor normalization', () => {
             { _id: 'row_temporary9', col_mabc_123: 'Basic', col0: '$9' },
         ], { name: 'pricing', columns: {}, rows: {} }));
 
-        expect(Object.keys(payload.columns)).toEqual(['col0', 'col1']);
-        expect(payload.rows).toEqual({ row0: { col0: 'Basic', col1: '$9' } });
+        expect(Object.keys(payload.columns)).toEqual(['col1', 'col0']);
+        expect(payload.rows).toEqual({ row0: { col1: 'Basic', col0: '$9' } });
     });
 
     it('serializes the stable initial payload used by Craft change tracking', () => {
