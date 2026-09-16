@@ -27,6 +27,15 @@ describe('table editor normalization', () => {
         expect(normalizeDateForEditor('31/02/2026')).toBe('');
     });
 
+    it('validates ISO calendar days before accepting a pasted date', () => {
+        for (const value of ['2026-02-31', '2026-02-29', '2100-02-29', '2026-00-10', '2026-13-01', '0000-01-01']) {
+            expect(normalizeDateForEditor(value)).toBe('');
+        }
+        expect(normalizeDateForEditor('2024-02-29')).toBe('2024-02-29');
+        expect(normalizeDateForEditor('2000-02-29T19:05:00+10:00')).toBe('2000-02-29');
+        expect(normalizeDateForEditor('0099-01-01')).toBe('0099-01-01');
+    });
+
     it('starts a restricted field with an allowed column type', () => {
         const columns = seedColumns({ name: 'numbers', columns: {}, rows: {}, typeOptions: { number: 'Number' } });
         expect(columns[0].type).toBe('number');

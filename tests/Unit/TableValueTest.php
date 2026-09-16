@@ -96,6 +96,16 @@ describe('DualAccessMap', function() {
 });
 
 describe('TableValue normalize + storage', function() {
+    it('rejects impossible ISO calendar dates without rolling to another day', function(string $input) {
+        expect(TableValue::normalizeCell('date', $input, true))->toBeNull();
+    })->with(['2026-02-31', '2026-02-29', '2100-02-29', '2026-00-10', '2026-13-01', '0000-01-01']);
+
+    it('preserves valid leap days and legacy ISO date values', function() {
+        expect(TableValue::normalizeCell('date', '2024-02-29', true))->toBe('2024-02-29');
+        expect(TableValue::normalizeCell('date', '2000-02-29T19:05:00+10:00', true))->toBe('2000-02-29');
+        expect(TableValue::normalizeCell('date', '0099-01-01', true))->toBe('0099-01-01');
+    });
+
     it('preserves numeric precision across storage and editor JSON', function(mixed $input, mixed $expected) {
         $value = TableValue::normalize([
             'columns' => [['heading' => 'Number', 'type' => 'number']],

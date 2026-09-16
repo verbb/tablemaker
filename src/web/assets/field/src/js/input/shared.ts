@@ -44,7 +44,14 @@ export const normalizeDateForEditor = (value: unknown): string => {
     const match = /^(\d{4}-\d{2}-\d{2})/.exec(raw);
 
     if (match) {
-        return match[1];
+        const [year, month, day] = match[1].split('-').map(Number);
+        const date = new Date(0);
+        date.setUTCFullYear(year, month - 1, day);
+
+        return year > 0 && date.getUTCFullYear() === year
+            && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+            ? match[1]
+            : '';
     }
 
     // Use the inverse of Craft.formatDate so ambiguous dates follow the user's

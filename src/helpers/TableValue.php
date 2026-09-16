@@ -268,6 +268,12 @@ class TableValue
                     return null;
                 }
 
+                if ($type === 'date' && is_string($value)
+                    && preg_match('/^(\d{4})-(\d{2})-(\d{2})/', trim($value), $parts)
+                    && !checkdate((int)$parts[2], (int)$parts[3], (int)$parts[1])) {
+                    return null;
+                }
+
                 // Canonical CP/storage forms match pk-date-picker (Y-m-d) and
                 // pk-time-picker (H:i). Full ISO8601 from older saves is accepted
                 // on read so column edits no longer wipe or NaN-corrupt cells (#54).
