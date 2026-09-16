@@ -303,9 +303,11 @@ class TableValue
                     $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
                 }
 
-                return $type === 'multiline'
-                    ? StringHelper::convertLineBreaks($value)
-                    : trim(StringHelper::convertLineBreaks($value));
+                // StringHelper::convertLineBreaks requires Craft 5.9; retain the
+                // same Unicode normalization on the supported Craft 5.6 baseline.
+                $value = preg_replace('/\R/u', "\n", $value) ?? $value;
+
+                return $type === 'multiline' ? $value : trim($value);
         }
 
         return $value;

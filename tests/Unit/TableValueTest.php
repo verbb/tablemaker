@@ -63,6 +63,13 @@ describe('DualAccessMap', function() {
 });
 
 describe('TableValue normalize + storage', function() {
+    it('normalizes Unicode line breaks while preserving multiline whitespace', function() {
+        $text = " First\r\nSecond\rThird\u{0085}Fourth\u{2028}Fifth\u{2029}Last ";
+        $normalized = " First\nSecond\nThird\nFourth\nFifth\nLast ";
+        expect(TableValue::normalizeCell('multiline', $text, true))->toBe($normalized);
+        expect(TableValue::normalizeCell('singleline', $text, true))->toBe(trim($normalized));
+    });
+
     it('keeps date and time wall values stable across site time zones', function(string $timeZone) {
         $original = Craft::$app->getTimeZone();
         Craft::$app->setTimeZone($timeZone);

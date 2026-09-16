@@ -24,6 +24,7 @@
 - Align documentation filenames with page titles and update internal links.
 
 ### Fixed
+- Fix saving text cells on Craft 5.6–5.8.
 - Preserve date and time values across site time zones and legacy data upgrades.
 - Preserve dropdown selections whose values contain literal emoji shortcodes.
 - Reject a maximum column count of zero, which prevented tables from being saved.
