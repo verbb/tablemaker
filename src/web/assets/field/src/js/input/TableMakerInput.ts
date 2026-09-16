@@ -28,6 +28,7 @@ export class TableMakerInput {
     private readonly settings: TableMakerSettings;
     private readonly hiddenInput: HTMLInputElement | null;
     private schemaDialog: import('./ColumnsSchemaDialog.js').ColumnsSchemaDialog | null = null;
+    private columnsEditorOpen = false;
 
     private columns: ColumnDefinition[] = [];
     private contentRows: PkEditableTableRow[] = [];
@@ -206,31 +207,39 @@ export class TableMakerInput {
      * table untouched — no live reconstruct while the user is still configuring.
      */
     private async openColumnsEditor(): Promise<void> {
-        if (this.hiddenInput?.disabled) {
+        if (this.hiddenInput?.disabled || this.columnsEditorOpen) {
             return;
         }
 
-        if (!this.schemaDialog) {
-            // Column configuration is uncommon during content editing. Load its dialog
-            // implementation and component only when the author asks for it.
-            const [{ ColumnsSchemaDialog }] = await Promise.all([
-                import('./ColumnsSchemaDialog.js'),
-                import('@verbb/plugin-kit-web/components/dialog/pk-dialog.js'),
-            ]);
-            await customElements.whenDefined('pk-dialog');
-            this.schemaDialog = new ColumnsSchemaDialog(this.settings);
+        // Claim the editor before loading its modules so rapid activation cannot
+        // create competing dialogs while the first import is still pending.
+        this.columnsEditorOpen = true;
+
+        try {
+            if (!this.schemaDialog) {
+                // Column configuration is uncommon during content editing. Load its dialog
+                // implementation and component only when the author asks for it.
+                const [{ ColumnsSchemaDialog }] = await Promise.all([
+                    import('./ColumnsSchemaDialog.js'),
+                    import('@verbb/plugin-kit-web/components/dialog/pk-dialog.js'),
+                ]);
+                await customElements.whenDefined('pk-dialog');
+                this.schemaDialog = new ColumnsSchemaDialog(this.settings);
+            }
+
+            const result = await this.schemaDialog.open(this.columns);
+
+            if (!result) {
+                return;
+            }
+
+            this.columns = result.columns;
+            this.contentRows = reconstructContentRows(this.columns, this.contentRows);
+            this.applyContentSchema();
+            this.syncValueBlob();
+        } finally {
+            this.columnsEditorOpen = false;
         }
-
-        const result = await this.schemaDialog.open(this.columns);
-
-        if (!result) {
-            return;
-        }
-
-        this.columns = result.columns;
-        this.contentRows = reconstructContentRows(this.columns, this.contentRows);
-        this.applyContentSchema();
-        this.syncValueBlob();
     }
 
     private applyContentSchema(): void {
