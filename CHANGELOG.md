@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Add an optional **Rich text** column type when Craft's CKEditor plugin is installed and enabled, with a raw-HTML fallback for existing cells when CKEditor is unavailable ([#69](https://github.com/verbb/tablemaker/issues/69)).
 - Add **Row heading** column type (Craft Table parity): editable in the CP, rendered as `<th scope="row">` in `.table` HTML ([#6](https://github.com/verbb/tablemaker/issues/6)).
 - Add optional per-value table **caption** field ([#60](https://github.com/verbb/tablemaker/issues/60)).
 - Add GraphQL mutation input for Table Maker values (`columns` + `rows` + optional `caption`) ([#33](https://github.com/verbb/tablemaker/issues/33)).

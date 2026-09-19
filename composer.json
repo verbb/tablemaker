@@ -34,6 +34,9 @@
         "nystudio107/craft-plugin-vite": "^5.0.0",
         "verbb/base": "^3.0.0"
     },
+    "suggest": {
+        "craftcms/ckeditor": "Enables the optional Rich text column type."
+    },
     "autoload": {
         "psr-4": {
             "verbb\\tablemaker\\": "src/"

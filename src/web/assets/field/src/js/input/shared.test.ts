@@ -7,6 +7,7 @@ import {
     seedColumns,
     seedContentRows,
     columnTypeChoices,
+    contentSchemaColumns,
     normalizeDateForEditor,
     normalizeTimeForEditor,
     serializeValueBlob,
@@ -42,6 +43,15 @@ describe('table editor normalization', () => {
     it('starts a restricted field with an allowed column type', () => {
         const columns = seedColumns({ name: 'numbers', columns: {}, rows: {}, typeOptions: { number: 'Number' } });
         expect(columns[0].type).toBe('number');
+    });
+
+    it('uses CKEditor custom cells only while the provider is available', () => {
+        const columns = [{
+            _id: 'col0', heading: 'Description', type: 'richtext', width: '', align: 'left', options: [],
+        }];
+
+        expect(contentSchemaColumns(columns, true)[0].type).toBe('custom');
+        expect(contentSchemaColumns(columns, false)[0].type).toBe('textarea');
     });
     it('normalizes Craft maps and honours an explicit dropdown default', () => {
         expect(normalizeDropdownOptions({ basic: 'Basic', pro: 'Pro' })).toEqual([

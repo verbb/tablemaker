@@ -272,12 +272,17 @@ export const seedContentRows = (
     return seeded;
 };
 
-export const contentSchemaColumns = (columns: ColumnDefinition[]): PkEditableTableColumn[] => {
+export const contentSchemaColumns = (
+    columns: ColumnDefinition[],
+    ckeditorAvailable = false,
+): PkEditableTableColumn[] => {
     return columns.map((column) => {
         const next: PkEditableTableColumn = {
             name: column._id,
             label: column.heading.trim() || '\u00a0',
-            type: craftTypeToPk(column.type),
+            type: column.type === 'richtext' && ckeditorAvailable
+                ? 'custom'
+                : craftTypeToPk(column.type),
         };
 
         if (column.width) {

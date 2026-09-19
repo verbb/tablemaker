@@ -56,7 +56,9 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
      */
     public static function normalizeAllowedColumnTypesSetting(mixed $value): string|array
     {
-        $all = array_keys(self::allColumnTypeOptions());
+        // Keep unavailable optional types in saved field config so temporarily
+        // disabling their provider does not silently rewrite the allowlist.
+        $all = array_keys(self::allColumnTypeLabels());
 
         if ($value === null || $value === '' || $value === '*' || $value === []) {
             return '*';
@@ -83,10 +85,23 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         return $filtered;
     }
 
-    /**
-     * Full Craft-style type map (handle → label), sorted by label.
-     */
+    /** Available Craft-style type map (handle → label), sorted by label. */
     public static function allColumnTypeOptions(): array
+    {
+        $typeOptions = self::allColumnTypeLabels();
+
+        if (!self::isCkeditorAvailable()) {
+            unset($typeOptions['richtext']);
+        }
+
+        return $typeOptions;
+    }
+
+    /**
+     * Labels include optional types even when their provider is unavailable.
+     * Existing columns can therefore retain a meaningful label and raw fallback.
+     */
+    public static function allColumnTypeLabels(): array
     {
         $typeOptions = [
             'checkbox' => Craft::t('app', 'Checkbox'),
@@ -98,6 +113,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             'lightswitch' => Craft::t('app', 'Lightswitch'),
             'multiline' => Craft::t('app', 'Multi-line text'),
             'number' => Craft::t('app', 'Number'),
+            'richtext' => Craft::t('tablemaker', 'Rich text'),
             'singleline' => Craft::t('app', 'Single-line text'),
             'time' => Craft::t('app', 'Time'),
             'url' => Craft::t('app', 'URL'),
@@ -107,6 +123,36 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         return $typeOptions;
     }
 
+    /**
+     * Show optional types in field settings, but prevent selecting them while
+     * their provider is unavailable.
+     */
+    public static function allColumnTypeSettingOptions(): array
+    {
+        $labels = self::allColumnTypeLabels();
+        $available = array_fill_keys(array_keys(self::allColumnTypeOptions()), true);
+
+        return array_map(
+            static fn(string $handle, string $label): array => [
+                'label' => $label,
+                'value' => $handle,
+                'disabled' => !isset($available[$handle]),
+            ],
+            array_keys($labels),
+            array_values($labels),
+        );
+    }
+
+    public static function isCkeditorAvailable(): bool
+    {
+        if (!class_exists('craft\\ckeditor\\Plugin')) {
+            return false;
+        }
+
+        $plugins = Craft::$app->getPlugins();
+
+        return $plugins->isPluginInstalled('ckeditor') && $plugins->isPluginEnabled('ckeditor');
+    }
 
     // Properties
     // =========================================================================
@@ -358,10 +404,16 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 
     public function getSettingsHtml(): ?string
     {
+        $allowedColumnTypes = self::normalizeAllowedColumnTypesSetting($this->allowedColumnTypes);
+        $unavailableAllowedColumnTypes = is_array($allowedColumnTypes)
+            ? array_values(array_diff($allowedColumnTypes, array_keys(self::allColumnTypeOptions())))
+            : [];
+
         return Craft::$app->getView()->renderTemplate('tablemaker/_field/settings', [
             'field' => $this,
             'settings' => $this->getSettings(),
-            'allColumnTypeOptions' => self::allColumnTypeOptions(),
+            'allColumnTypeOptions' => self::allColumnTypeSettingOptions(),
+            'unavailableAllowedColumnTypes' => $unavailableAllowedColumnTypes,
         ]);
     }
 
@@ -524,9 +576,16 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $view = Craft::$app->getView();
+        $ckeditorAvailable = self::isCkeditorAvailable();
 
         // Register Plugin Kit web components + the field app (hidden JSON blob round-trip).
         Plugin::registerFieldAssets();
+
+        if ($ckeditorAvailable) {
+            // Optional dependency: use CKEditor's supported CP bundle without making
+            // it a Composer requirement for Table Maker installations.
+            $view->registerAssetBundle('craft\\ckeditor\\web\\assets\\ckeditor\\CkeditorAsset');
+        }
 
         $data = TableValue::normalize($value, false) ?? new TableMakerData();
         $columns = $data->columnsArray();
@@ -628,7 +687,8 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                 ? Craft::t('tablemaker', $this->captionPlaceholder)
                 : '',
             'typeOptions' => $typeOptions,
-            'typeLabels' => self::allColumnTypeOptions(),
+            'typeLabels' => self::allColumnTypeLabels(),
+            'ckeditorAvailable' => $ckeditorAvailable,
             'enableWidthColumn' => $this->enableWidthColumn,
             'enableAlignmentColumn' => $this->enableAlignmentColumn,
             'minRows' => $this->minRows,

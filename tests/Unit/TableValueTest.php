@@ -406,6 +406,33 @@ describe('TableValue normalize + storage', function() {
             ->and($html)->toContain('Second');
     });
 
+    it('sanitizes and renders rich-text cells as a limited HTML vocabulary', function() {
+        $data = TableValue::normalize([
+            'columns' => [['heading' => 'Description', 'type' => 'richtext']],
+            'rows' => [[
+                '<p><strong>Bold</strong> <em>copy</em> <a href="javascript:alert(1)" onclick="alert(1)">link</a></p>'
+                . '<ul><li>Item</li></ul><img src=x onerror=alert(1)><script>alert(1)</script>',
+            ]],
+        ], true);
+
+        $cell = $data->rows['row0']['col0'];
+        $html = (string)$data->getTable();
+
+        expect($cell)->toContain('<strong>Bold</strong>')
+            ->and($cell)->toContain('<ul><li>Item</li></ul>')
+            ->and($cell)->not->toContain('javascript:')
+            ->and($cell)->not->toContain('onclick')
+            ->and($cell)->not->toContain('<img')
+            ->and($cell)->not->toContain('<script')
+            ->and($html)->toContain('<td><p><strong>Bold</strong>')
+            ->and($html)->not->toContain('&lt;strong&gt;');
+
+        $roundTrip = TableValue::normalize($data->toStorage());
+        expect($roundTrip->rows['row0']['col0'])->toBe($cell)
+            ->and(TableValue::searchKeywords($roundTrip->columnsArray(), $roundTrip->rowsArray()))
+            ->toContain('Bold copy link')->not->toContain('<strong>');
+    });
+
     it('rejects invalid typed cells', function() {
         expect(TableValue::validateCell('email', 'not-an-email'))->toBeFalse();
         expect(TableValue::validateCell('email', 'user@example.com'))->toBeTrue();
@@ -430,6 +457,30 @@ describe('TableValue normalize + storage', function() {
 });
 
 describe('Table Maker Craft lifecycle', function() {
+    it('keeps rich text labelled but unavailable when CKEditor is not enabled', function() {
+        $settingOptions = array_column(TableMakerField::allColumnTypeSettingOptions(), null, 'value');
+
+        expect(TableMakerField::allColumnTypeLabels())->toHaveKey('richtext')
+            ->and(TableMakerField::allColumnTypeOptions())->not->toHaveKey('richtext')
+            ->and($settingOptions['richtext']['disabled'])->toBeTrue()
+            ->and(TableMakerField::normalizeAllowedColumnTypesSetting(['richtext']))->toBe(['richtext']);
+    });
+
+    it('preserves unavailable optional types through the field settings form', function() {
+        Tests\Support\CpRequestContext::activate('settings/fields');
+        $field = new TableMakerField([
+            'name' => 'Rich table',
+            'handle' => 'richTable',
+            'allowedColumnTypes' => ['richtext'],
+        ]);
+
+        $html = $field->getSettingsHtml();
+
+        expect($html)->toContain('value="richtext"')
+            ->and($html)->toContain('disabled')
+            ->and($html)->toContain('name="allowedColumnTypes[]"');
+    });
+
     it('rejects oversized request shapes before canonical expansion', function() {
         $field = new TableMakerField(['name' => 'Bounded table', 'handle' => 'boundedTable']);
         $column = ['heading' => 'Value', 'type' => 'singleline'];

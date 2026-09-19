@@ -6,7 +6,7 @@ Before upgrading to Table Maker 5.1, back up your database and test the update o
 
 ### Encoded Table Output
 
-Generated `table` markup now HTML-encodes headings, cells and captions. HTML stored in a text cell displays as text; it is no longer inserted into the generated table as markup. Multi-line cells still produce line breaks.
+Generated `table` markup now HTML-encodes headings, ordinary text cells and captions. HTML stored in an ordinary text cell displays as text; it is no longer inserted into the generated table as markup. Multi-line cells still produce line breaks. The new CKEditor-backed Rich text column is the exception: its limited, sanitised HTML is rendered as markup.
 
 If your site relies on HTML in cells, build custom markup using the column and row values and sanitise that content against your project's allowed HTML before marking it as safe. Do not apply `raw` to unrestricted editor input. [Rendering Tables](docs:template-guides/rendering-tables) shows a complete custom rendering example.
 

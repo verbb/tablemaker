@@ -12,7 +12,7 @@ Use `table` when the generated semantic HTML suits your design:
 {% endif %}
 ```
 
-The helper HTML-encodes headings, cells, caption and attribute values. It includes a `<caption>` when the field value has one. Your site's stylesheet controls the table's appearance.
+The helper HTML-encodes headings, ordinary cells, caption and attribute values. Rich-text cells render Table Maker's sanitised HTML allowlist: paragraphs, line breaks, bold, italic, links and ordered or unordered lists. It includes a `<caption>` when the field value has one. Your site's stylesheet controls the table's appearance.
 
 ## Build Custom Markup
 
@@ -42,6 +42,9 @@ Loop through `columns` and `rows` when different column types require different 
                             <td><a href="mailto:{{ cell }}">{{ cell }}</a></td>
                         {% elseif column.type == 'multiline' and cell %}
                             <td>{{ cell | nl2br }}</td>
+                        {% elseif column.type == 'richtext' and cell %}
+                            {# Table Maker sanitises rich-text cells when the value is normalised. #}
+                            <td>{{ cell | raw }}</td>
                         {% elseif column.type in ['checkbox', 'lightswitch'] %}
                             <td>{{ cell ? 'Yes' : 'No' }}</td>
                         {% else %}
@@ -55,6 +58,6 @@ Loop through `columns` and `rows` when different column types require different 
 {% endif %}
 ```
 
-Twig escapes cell values by default. If a project intentionally stores markup in a text cell, sanitise it against a project-defined allowlist before applying `raw`; do not render editor input as unrestricted HTML.
+Twig escapes cell values by default. Table Maker sanitises a `richtext` cell against its limited allowlist, so it can be rendered with `raw` as shown. If a project intentionally stores markup in any other text cell, sanitise it against a project-defined allowlist before applying `raw`; do not render editor input as unrestricted HTML.
 
 Match each cell to its column key when building custom markup so headings and values stay paired after columns are reordered.

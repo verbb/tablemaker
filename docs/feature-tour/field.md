@@ -22,6 +22,8 @@ Turn on **Enable Caption** when each table needs a descriptive title, such as �
 
 Use **Allowed Column Types** to limit the choices in **Edit columns**. For this pricing example, allow Row heading, Single-line text and Dropdown if editors need a billing-period column. Choose **All** to make every built-in type available. Changing this setting preserves existing columns and their values. An existing column keeps its current type as a choice; new columns and type changes use the allowed choices.
 
+**Rich text** is available as a column choice only when Craft's CKEditor plugin is installed and enabled. Rich-text cells open a focused editor with bold, italic, link and list controls. If CKEditor is later disabled or uninstalled, existing rich-text columns and their content are preserved and the cells fall back to raw HTML textareas until CKEditor is available again.
+
 Set **Min Rows**, **Max Rows**, **Min Columns** or **Max Columns** when the design requires bounds. For example, a minimum of two columns keeps a plan name and price together, while a maximum of four prevents a comparison table from growing too wide. **Add Row Label** lets you give the add action a name suited to the content, such as “Add a plan”.
 
 Tables keep at least one column, so **Max Columns** must be at least 1 when set. Leave a maximum blank for no upper limit. A table can have no content rows; use **Min Rows** when rows are required.
@@ -45,6 +47,7 @@ The handles below identify the types in Twig and GraphQL:
 | `lightswitch` | Lightswitch |
 | `multiline` | Multi-line text |
 | `number` | Number |
+| `richtext` | Rich text (requires CKEditor) |
 | `singleline` | Single-line text |
 | `time` | Time |
 | `url` | URL |

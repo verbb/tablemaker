@@ -22,6 +22,8 @@ export interface TableMakerSettings {
     columnSettings?: Record<string, unknown>;
     typeOptions?: Record<string, string>;
     typeLabels?: Record<string, string>;
+    /** Whether the installed and enabled CKEditor plugin can edit rich-text cells. */
+    ckeditorAvailable?: boolean;
     enableWidthColumn?: boolean;
     enableAlignmentColumn?: boolean;
     /** Custom label for the content table “Add a row” button. */

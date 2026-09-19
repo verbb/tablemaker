@@ -7,6 +7,7 @@ use Craft;
 use craft\fields\data\ColorData;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
+use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
@@ -22,6 +23,8 @@ use yii\validators\EmailValidator;
  */
 class TableValue
 {
+    private const RICH_TEXT_ALLOWED_HTML = 'p,br,strong,b,em,i,a[href|title],ul,ol,li';
+
     /**
      * @return TableMakerData|null
      */
@@ -351,6 +354,13 @@ class TableValue
                 $value = preg_replace('/\R/u', "\n", $value) ?? $value;
 
                 return $type === 'multiline' ? $value : trim($value);
+
+            case 'richtext':
+                if ($value === null) {
+                    return null;
+                }
+
+                return self::sanitizeRichText((string)$value);
         }
 
         return $value;
@@ -460,9 +470,14 @@ class TableValue
                 continue;
             }
 
-            foreach ($row as $cell) {
+            foreach ($columns as $colId => $column) {
+                $cell = $row[$colId] ?? null;
+
                 if (is_scalar($cell) && (string)$cell !== '' && !is_bool($cell)) {
-                    $parts[] = self::_stringifyCell($cell);
+                    $text = self::_stringifyCell($cell);
+                    $parts[] = self::normalizeType($column['type'] ?? 'singleline') === 'richtext'
+                        ? trim(Html::decode(strip_tags($text)))
+                        : $text;
                 }
             }
         }
@@ -801,6 +816,18 @@ class TableValue
             return nl2br(Html::encode($string), false);
         }
 
+        if ($type === 'richtext') {
+            return self::sanitizeRichText($string);
+        }
+
         return Html::encode($string);
+    }
+
+    /** Keep the cell contract as HTML text while enforcing Table Maker's small toolbar vocabulary. */
+    private static function sanitizeRichText(string $value): string
+    {
+        return HtmlPurifier::process($value, [
+            'HTML.Allowed' => self::RICH_TEXT_ALLOWED_HTML,
+        ]);
     }
 }

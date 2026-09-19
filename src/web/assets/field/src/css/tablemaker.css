@@ -31,6 +31,37 @@
     display: block;
 }
 
+.tm-richtext-cell {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tm-richtext-dialog {
+    --pk-dialog-max-width: 52rem;
+}
+
+.tm-richtext-dialog-body {
+    min-width: min(49rem, 100%);
+}
+
+.tm-richtext-dialog-body .ck-editor__editable {
+    min-height: 14rem;
+}
+
+.tm-richtext-source {
+    min-height: 14rem;
+    resize: vertical;
+}
+
+.tm-richtext-error {
+    margin-top: var(--pk-spacing-3, 0.75rem);
+}
+
 /* Per-value caption (#60) — below the content grid when enableCaption is on. */
 .tm-caption-field {
     display: block;

@@ -12,6 +12,8 @@ const CRAFT_TO_PK: Record<string, PkEditableTableColumnType> = {
     lightswitch: 'lightswitch',
     multiline: 'textarea',
     number: 'number',
+    // Raw HTML textarea fallback when the optional CKEditor provider is unavailable.
+    richtext: 'textarea',
     singleline: 'text',
     time: 'time',
     url: 'url',
@@ -26,6 +28,7 @@ const PK_TO_CRAFT: Record<string, string> = {
     lightswitch: 'lightswitch',
     textarea: 'multiline',
     number: 'number',
+    // A raw textarea cannot infer rich text; schema definitions retain this type explicitly.
     text: 'singleline',
     time: 'time',
     url: 'url',

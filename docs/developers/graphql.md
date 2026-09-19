@@ -25,7 +25,7 @@ Send variables separately:
 { "id": 123 }
 ```
 
-`rows` is returned as a positional string matrix. `table` contains generated, encoded HTML; query `columns` and `rows` instead when the client should build its own markup.
+`rows` is returned as a positional string matrix. A rich-text cell is returned as a sanitised HTML string. `table` contains generated HTML with ordinary values encoded and rich-text cells sanitised; query `columns` and `rows` instead when the client should build its own markup.
 
 A response has the following shape:
 
@@ -88,8 +88,8 @@ Each Table Maker field exposes an object type named from its handle. For `pricin
 | --- | --- | --- |
 | `caption` | `String` | The table caption, or null when blank. |
 | `columns` | `[{fieldHandle}_TableMakerField_column]` | Columns in their saved order. |
-| `rows` | `[[String]]` | Rows of cell values, ordered to match the columns. |
-| `table` | `String` | Generated table HTML with encoded headings and cell values. |
+| `rows` | `[[String]]` | Rows of cell values, ordered to match the columns; rich-text cells contain sanitised HTML. |
+| `table` | `String` | Generated table HTML with encoded ordinary values and sanitised rich-text cells. |
 
 ### Column Type
 

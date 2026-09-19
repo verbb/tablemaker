@@ -54,12 +54,15 @@
 {% endif %}
 {{ forms.checkboxSelectField({
     label: 'Allowed Column Types' | t('tablemaker'),
-    instructions: 'Select which column types editors can pick when editing columns.' | t('tablemaker'),
+    instructions: 'Select which column types editors can pick when editing columns. Rich text requires the CKEditor plugin to be installed and enabled.' | t('tablemaker'),
     name: 'allowedColumnTypes',
     options: allColumnTypeOptions,
     values: allowedValues,
     showAllOption: true,
 }) }}
+{% for type in unavailableAllowedColumnTypes %}
+    <input type="hidden" name="{{ 'allowedColumnTypes[]' | namespaceInputName }}" value="{{ type }}">
+{% endfor %}
 
 {{ forms.textField({
     label: 'Min Rows' | t('app'),

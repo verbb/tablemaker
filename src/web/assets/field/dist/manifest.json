@@ -65,13 +65,21 @@
       "_form-control.styles-BQdimE5o-1wlcCSTt.js"
     ]
   },
-  "_shared-DFmMwoHw.js": {
-    "file": "assets/shared-DFmMwoHw.js",
+  "_shared-3S4XvNhP.js": {
+    "file": "assets/shared-3S4XvNhP.js",
     "name": "shared"
   },
-  "_tablemakerPkComponents-CMG3ZekE.js": {
-    "file": "assets/tablemakerPkComponents-CMG3ZekE.js",
-    "name": "tablemakerPkComponents"
+  "_tablemakerPkComponents-vB3uxhMO.js": {
+    "file": "assets/tablemakerPkComponents-vB3uxhMO.js",
+    "name": "tablemakerPkComponents",
+    "imports": [
+      "_icons-BR8JcQj2-CqR11aHb.js",
+      "_directive-Dt008SrX.js",
+      "_pk-input-CF_icEtR-YSIbFemU.js",
+      "_animate-with-class-CsDwYnXL-DpFfZCiB.js",
+      "_form-control.styles-BQdimE5o-1wlcCSTt.js",
+      "_unsafe-html-CeyHfull.js"
+    ]
   },
   "_unsafe-html-CeyHfull.js": {
     "file": "assets/unsafe-html-CeyHfull.js",
@@ -81,49 +89,53 @@
     ]
   },
   "field/src/js/input/ColumnsSchemaDialog.ts": {
-    "file": "assets/ColumnsSchemaDialog-DowRnOVM.js",
+    "file": "assets/ColumnsSchemaDialog-qnuYd1JV.js",
     "name": "ColumnsSchemaDialog",
     "src": "field/src/js/input/ColumnsSchemaDialog.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_shared-DFmMwoHw.js"
+      "_shared-3S4XvNhP.js"
     ]
   },
+  "field/src/js/input/RichTextCellDialog.ts": {
+    "file": "assets/RichTextCellDialog-SzD9nvFI.js",
+    "name": "RichTextCellDialog",
+    "src": "field/src/js/input/RichTextCellDialog.ts",
+    "isDynamicEntry": true
+  },
   "field/src/js/plugin-kit-register.ts": {
-    "file": "assets/pluginKit-CStI1vwj.js",
+    "file": "assets/pluginKit-BTicQ835.js",
     "name": "pluginKit",
     "src": "field/src/js/plugin-kit-register.ts",
     "isEntry": true,
     "imports": [
       "_icons-BR8JcQj2-CqR11aHb.js",
       "_directive-Dt008SrX.js",
-      "_pk-input-CF_icEtR-YSIbFemU.js",
-      "_animate-with-class-CsDwYnXL-DpFfZCiB.js",
-      "_form-control.styles-BQdimE5o-1wlcCSTt.js",
-      "_tablemakerPkComponents-CMG3ZekE.js",
-      "_unsafe-html-CeyHfull.js"
+      "_tablemakerPkComponents-vB3uxhMO.js",
+      "_animate-with-class-CsDwYnXL-DpFfZCiB.js"
     ],
     "css": [
       "assets/pluginKit-BVOgxY4N.css"
     ]
   },
   "field/src/js/tablemaker.ts": {
-    "file": "assets/tablemaker-KkGAQn5x.js",
+    "file": "assets/tablemaker-ByY-Q-ae.js",
     "name": "tablemaker",
     "src": "field/src/js/tablemaker.ts",
     "isEntry": true,
     "imports": [
-      "_tablemakerPkComponents-CMG3ZekE.js",
-      "_shared-DFmMwoHw.js"
+      "_tablemakerPkComponents-vB3uxhMO.js",
+      "_shared-3S4XvNhP.js"
     ],
     "dynamicImports": [
       "../../../node_modules/@verbb/plugin-kit-web/dist/components/field/pk-field.js",
       "../../../node_modules/@verbb/plugin-kit-web/dist/components/input/pk-input.js",
       "field/src/js/input/ColumnsSchemaDialog.ts",
-      "../../../node_modules/@verbb/plugin-kit-web/dist/components/dialog/pk-dialog.js"
+      "../../../node_modules/@verbb/plugin-kit-web/dist/components/dialog/pk-dialog.js",
+      "field/src/js/input/RichTextCellDialog.ts"
     ],
     "css": [
-      "assets/tablemaker-CIf7-uMm.css"
+      "assets/tablemaker-CiTdByl7.css"
     ]
   }
 }

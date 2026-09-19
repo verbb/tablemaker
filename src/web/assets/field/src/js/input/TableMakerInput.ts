@@ -6,9 +6,10 @@
 // Field name/instructions come from Craft; only the add-row button label is customisable.
 // “Edit columns” mounts into Craft’s `.heading` row to avoid an empty toolbar band.
 
-import type {
-    PkEditableTable,
-    PkEditableTableRow,
+import {
+    getCustomCellSlotName,
+    type PkEditableTable,
+    type PkEditableTableRow,
 } from '@verbb/plugin-kit-web/components/editable-table/pk-editable-table.js';
 
 import type { ColumnDefinition } from './types.js';
@@ -28,7 +29,9 @@ export class TableMakerInput {
     private readonly settings: TableMakerSettings;
     private readonly hiddenInput: HTMLInputElement | null;
     private schemaDialog: import('./ColumnsSchemaDialog.js').ColumnsSchemaDialog | null = null;
+    private richTextDialog: import('./RichTextCellDialog.js').RichTextCellDialog | null = null;
     private columnsEditorOpen = false;
+    private richTextEditorOpen = false;
 
     private columns: ColumnDefinition[] = [];
     private contentRows: PkEditableTableRow[] = [];
@@ -169,7 +172,7 @@ export class TableMakerInput {
         const table = document.createElement('pk-editable-table') as PkEditableTable;
         table.className = 'tm-content-table';
         table.disabled = this.hiddenInput?.disabled ?? false;
-        table.columns = contentSchemaColumns(this.columns);
+        table.columns = contentSchemaColumns(this.columns, Boolean(this.settings.ckeditorAvailable));
         table.rows = this.contentRows;
         table.allowReorder = true;
         // Kit defaults allowInsert=true; keep explicit for content editing (#20).
@@ -182,10 +185,12 @@ export class TableMakerInput {
             this.contentRows = reconstructContentRows(this.columns, event.detail?.rows ?? []);
             table.rows = this.contentRows;
             this.applyRowBounds(table);
+            this.mountRichTextCells(table);
             this.syncValueBlob();
         }) as EventListener);
 
         this.rowsTable = table;
+        this.mountRichTextCells(table);
 
         return table;
     }
@@ -248,10 +253,90 @@ export class TableMakerInput {
             return;
         }
 
-        this.rowsTable.columns = contentSchemaColumns(this.columns);
+        this.rowsTable.columns = contentSchemaColumns(this.columns, Boolean(this.settings.ckeditorAvailable));
         this.rowsTable.newRowDefaults = contentNewRowDefaults(this.columns);
         this.rowsTable.rows = this.contentRows;
         this.applyRowBounds(this.rowsTable);
+        this.mountRichTextCells(this.rowsTable);
+    }
+
+    /** Project compact cell triggers into Plugin Kit's custom-cell slots. */
+    private mountRichTextCells(table: PkEditableTable): void {
+        table.querySelectorAll('[data-tablemaker-richtext-cell]').forEach((element) => element.remove());
+
+        if (!this.settings.ckeditorAvailable) {
+            return;
+        }
+
+        const richColumns = this.columns.filter((column) => column.type === 'richtext');
+
+        for (const row of this.contentRows) {
+            const rowId = String(row._id ?? '');
+
+            for (const column of richColumns) {
+                const value = String(row[column._id] ?? '');
+                const preview = this.richTextPreview(value);
+                const button = document.createElement('pk-button');
+                button.dataset.tablemakerRichtextCell = '';
+                button.className = 'tm-richtext-cell';
+                button.slot = getCustomCellSlotName(rowId, column._id);
+                button.setAttribute('type', 'button');
+                button.setAttribute('variant', 'transparent');
+                button.setAttribute('size', 'sm');
+                button.toggleAttribute('disabled', this.hiddenInput?.disabled ?? false);
+                button.textContent = preview || Craft.t('tablemaker', 'Add rich text');
+                button.title = preview || Craft.t('tablemaker', 'Add rich text');
+                button.setAttribute('aria-label', column.heading.trim()
+                    ? Craft.t('tablemaker', 'Edit rich text for “{heading}”', { heading: column.heading.trim() })
+                    : Craft.t('tablemaker', 'Edit rich text'));
+                button.addEventListener('click', () => {
+                    void this.editRichTextCell(rowId, column._id);
+                });
+                table.appendChild(button);
+            }
+        }
+    }
+
+    private richTextPreview(html: string): string {
+        const parsed = new DOMParser().parseFromString(html, 'text/html');
+        return String(parsed.body.textContent ?? '').replace(/\s+/g, ' ').trim();
+    }
+
+    private async editRichTextCell(rowId: string, columnId: string): Promise<void> {
+        if (this.hiddenInput?.disabled || this.richTextEditorOpen || !this.settings.ckeditorAvailable) {
+            return;
+        }
+
+        const rowIndex = this.contentRows.findIndex((row) => String(row._id) === rowId);
+        const column = this.columns.find((item) => item._id === columnId);
+
+        if (rowIndex === -1 || !column || !this.rowsTable) {
+            return;
+        }
+
+        this.richTextEditorOpen = true;
+
+        try {
+            if (!this.richTextDialog) {
+                const [{ RichTextCellDialog }] = await Promise.all([
+                    import('./RichTextCellDialog.js'),
+                    import('@verbb/plugin-kit-web/components/dialog/pk-dialog.js'),
+                ]);
+                await customElements.whenDefined('pk-dialog');
+                this.richTextDialog = new RichTextCellDialog();
+            }
+
+            const value = await this.richTextDialog.open(
+                column.heading.trim(),
+                this.contentRows[rowIndex]?.[columnId],
+            );
+
+            if (value !== null) {
+                this.rowsTable.setCellValue(rowIndex, columnId, value);
+            }
+        } finally {
+            this.richTextEditorOpen = false;
+        }
     }
 
     private syncValueBlob(): void {

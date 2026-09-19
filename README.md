@@ -8,6 +8,7 @@ Table Maker is a Craft CMS field that lets editors create structured tables on e
 - Editable tables with typed columns — text, dropdown, date, checkbox, row heading, and more.
 - Edit columns in a modal — reorder, widths, alignment, and options.
 - Limit column types, and min/max rows or columns, per field.
+- Add rich-text cells when Craft's CKEditor plugin is installed and enabled.
 - Paste from a spreadsheet, or insert a row above or below.
 - Optional caption on each table value.
 - Built-in HTML output, or loop columns and rows yourself in Twig.
