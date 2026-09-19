@@ -1,15 +1,15 @@
-import { defineScreenshotScenario } from '@verbb/docs-screenshots/api';
-import { seedTableMakerDocsFixture } from '../.screenshots/tablemaker/fixtures';
+import { defineScreenshotScenario } from '@verbb/craft-screenshots/api';
+import { seedTableMakerDocsFixture } from '../../../support/docs/fixtures';
 import {
     createOpenTableMakerColumnsModalSteps,
     createTableMakerCleanupStep,
-} from '../.screenshots/tablemaker/presets';
+} from '../../../support/docs/presets';
 
 let entryEditRoute = '/admin/entries';
 
 export default defineScreenshotScenario({
     id: 'feature-tour-columns-modal',
-    output: '_screenshots/feature-tour/columns-modal.png',
+    output: 'docs/feature-tour/columns-modal.png',
     route: () => entryEditRoute,
     viewport: {
         width: 1100,

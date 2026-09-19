@@ -12,14 +12,14 @@
         "watch": "vite build --watch",
         "test:frontend": "vitest run",
         "dev:plugin-docs": "npm run docs:dev --prefix docs",
-        "docs:screenshots": "npm --prefix docs run docs:screenshots --"
+        "screenshots": "npm --prefix screenshots run screenshots --"
     },
     "devDependencies": {
         "rollup-plugin-analyzer": "^4.0.0",
         "typescript": "^5.7.3",
-        "vitest": "^5.0.0",
         "vite": "^8.0.10",
-        "vite-plugin-compression": "^0.5.1"
+        "vite-plugin-compression": "^0.5.1",
+        "vitest": "^5.0.0"
     },
     "dependencies": {
         "@verbb/plugin-kit-core": "^2.0.18",

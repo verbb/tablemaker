@@ -2,7 +2,7 @@
  * Seed a Table Maker field + a section/entry (with a demo table) for docs screenshots.
  *
  * Echoes JSON: fieldId, fieldHandle, settingsRoute, entryEditRoute.
- * Note: no opening PHP tag — @verbb/docs-screenshots injects this into a bootstrap.
+ * Note: no opening PHP tag — @verbb/craft-screenshots injects this into a bootstrap.
  *
  * Starter seed: creates the field + an entry pre-filled with a small columns/rows table so
  * the entry-edit screenshot shows a populated editable table. Tune columns/rows here as the

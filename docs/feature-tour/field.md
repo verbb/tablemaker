@@ -6,11 +6,11 @@ Use a Table Maker field when editors need to manage both the columns and the con
 
 Create a Table Maker field under **Settings → Fields**, name it Pricing Table and give it the handle `pricingTable`. Add it to an entry type's field layout, then open an entry that uses that layout.
 
-![Table Maker field with Plan and Price rows and a caption](/_screenshots/feature-tour/usage.png)
+![Table Maker field with Plan and Price rows and a caption](../../screenshots/output/docs/feature-tour/usage.png)
 
 Use **Edit columns** to define the table. Add a Plan column with the **Row heading** type and a Price column with **Single-line text**. A row heading identifies the rest of its row: the generated HTML uses a `<th scope="row">` cell for each plan name.
 
-![Edit columns dialog with heading, width and alignment controls](/_screenshots/feature-tour/columns-modal.png)
+![Edit columns dialog with heading, width and alignment controls](../../screenshots/output/docs/feature-tour/columns-modal.png)
 
 Confirm the column changes, then enter Basic and Pro as plan names and $9 and $29 as their prices. Save the entry and reopen it to check the headings and values. [Rendering Tables](docs:template-guides/rendering-tables) shows how to display the result on the pricing page.
 

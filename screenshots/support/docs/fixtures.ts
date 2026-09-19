@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { ScreenshotSetupContext } from '@verbb/docs-screenshots/types';
+import type { ScreenshotSetupContext } from '@verbb/craft-screenshots/types';
 
 export type TableMakerDocsFixture = {
     fieldId: number;
