@@ -4,6 +4,7 @@ namespace verbb\tablemaker\fields;
 use verbb\tablemaker\helpers\Plugin;
 use verbb\tablemaker\helpers\TableValue;
 use verbb\tablemaker\models\DualAccessMap;
+use verbb\tablemaker\models\RejectedTableData;
 use verbb\tablemaker\models\TableMakerData;
 
 use Craft;
@@ -21,6 +22,12 @@ use GraphQL\Type\Definition\Type;
 
 class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 {
+    public const MAX_REQUEST_COLUMNS = 100;
+    public const MAX_REQUEST_ROWS = 1000;
+    public const MAX_REQUEST_CELLS = 50000;
+
+    private const REJECTED_ERRORS_KEY = '__tableMakerErrors';
+
     // Static Methods
     // =========================================================================
 
@@ -207,16 +214,32 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
+        if (is_array($value) && isset($value[self::REJECTED_ERRORS_KEY]) && is_array($value[self::REJECTED_ERRORS_KEY])) {
+            return new RejectedTableData($value[self::REJECTED_ERRORS_KEY]);
+        }
+
         return TableValue::normalize($value, false);
     }
 
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
+        if (is_string($value)) {
+            $value = Json::decodeIfJson($value);
+        }
+
+        if (is_array($value) && ($errors = $this->_requestSizeErrors($value)) !== []) {
+            return new RejectedTableData($errors);
+        }
+
         return TableValue::normalize($value, true);
     }
 
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
+        if ($value instanceof RejectedTableData) {
+            return [self::REJECTED_ERRORS_KEY => $value->validationErrors()];
+        }
+
         $data = TableValue::normalize($value, true);
 
         return $data?->toStorage() ?? ['columns' => [], 'rows' => []];
@@ -236,6 +259,10 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         $data = TableValue::normalize($value, false);
+
+        if ($data instanceof RejectedTableData) {
+            return false;
+        }
 
         // Craft omits empty fields on an element's first save. Column definitions,
         // blank rows and captions are authored data even without populated cells.
@@ -265,6 +292,15 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public function validateTableData(ElementInterface $element): void
     {
         $value = $element->getFieldValue($this->handle);
+
+        if ($value instanceof RejectedTableData) {
+            foreach ($value->validationErrors() as $error) {
+                $element->addError($this->handle, $error);
+            }
+
+            return;
+        }
+
         $data = TableValue::normalize($value, true) ?? new TableMakerData();
 
         $columnCount = count($data->columns);
@@ -611,6 +647,60 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             'valueBlob' => $valueBlob,
             'componentSettings' => Json::encode($componentSettings, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
         ]);
+    }
+
+
+    // Private Methods
+    // =========================================================================
+
+    private function _requestSizeErrors(array $value): array
+    {
+        $columns = is_array($value['columns'] ?? null) ? $value['columns'] : [];
+        $rows = is_array($value['rows'] ?? null) ? $value['rows'] : [];
+        $columnOrder = is_array($value['columnOrder'] ?? null) ? $value['columnOrder'] : [];
+        $rowOrder = is_array($value['rowOrder'] ?? null) ? $value['rowOrder'] : [];
+        $columnCount = count($columns);
+        $rowCount = count($rows);
+        $errors = [];
+
+        if ($columnCount > self::MAX_REQUEST_COLUMNS || count($columnOrder) > self::MAX_REQUEST_COLUMNS) {
+            $errors[] = Craft::t('tablemaker', 'Table must have at most {count} columns.', [
+                'count' => self::MAX_REQUEST_COLUMNS,
+            ]);
+        }
+
+        if ($rowCount > self::MAX_REQUEST_ROWS || count($rowOrder) > self::MAX_REQUEST_ROWS) {
+            $errors[] = Craft::t('tablemaker', 'Table must have at most {count} rows.', [
+                'count' => self::MAX_REQUEST_ROWS,
+            ]);
+        }
+
+        if ($columnCount > 0 && $rowCount > intdiv(self::MAX_REQUEST_CELLS, $columnCount)) {
+            $errors[] = Craft::t('tablemaker', 'Table must have at most {count} cells.', [
+                'count' => self::MAX_REQUEST_CELLS,
+            ]);
+        }
+
+        if ($rowCount <= self::MAX_REQUEST_ROWS) {
+            $submittedCells = 0;
+
+            foreach ($rows as $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+
+                $submittedCells += count($row);
+
+                if ($submittedCells > self::MAX_REQUEST_CELLS) {
+                    $errors[] = Craft::t('tablemaker', 'Table must have at most {count} submitted cells.', [
+                        'count' => self::MAX_REQUEST_CELLS,
+                    ]);
+                    break;
+                }
+            }
+        }
+
+        return array_values(array_unique($errors));
     }
 
     /**

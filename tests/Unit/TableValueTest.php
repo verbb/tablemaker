@@ -12,6 +12,7 @@ use craft\helpers\StringHelper;
 use verbb\tablemaker\fields\TableMakerField;
 use verbb\tablemaker\helpers\TableValue;
 use verbb\tablemaker\models\DualAccessMap;
+use verbb\tablemaker\models\RejectedTableData;
 use verbb\tablemaker\models\TableMakerData;
 
 describe('DualAccessMap', function() {
@@ -429,6 +430,46 @@ describe('TableValue normalize + storage', function() {
 });
 
 describe('Table Maker Craft lifecycle', function() {
+    it('rejects oversized request shapes before canonical expansion', function() {
+        $field = new TableMakerField(['name' => 'Bounded table', 'handle' => 'boundedTable']);
+        $column = ['heading' => 'Value', 'type' => 'singleline'];
+        $cases = [
+            [
+                [
+                    'columns' => array_fill(0, TableMakerField::MAX_REQUEST_COLUMNS + 1, $column),
+                    'rows' => [],
+                    '__tableMakerErrors' => [],
+                ],
+                'Table must have at most 100 columns.',
+            ],
+            [
+                ['columns' => [$column], 'rows' => array_fill(0, TableMakerField::MAX_REQUEST_ROWS + 1, [])],
+                'Table must have at most 1000 rows.',
+            ],
+            [
+                ['columns' => array_fill(0, 51, $column), 'rows' => array_fill(0, 981, [])],
+                'Table must have at most 50000 cells.',
+            ],
+            [
+                ['columns' => [$column], 'rows' => [[]], 'columnOrder' => array_fill(0, TableMakerField::MAX_REQUEST_COLUMNS + 1, 'col0')],
+                'Table must have at most 100 columns.',
+            ],
+        ];
+
+        foreach ($cases as [$payload, $message]) {
+            $value = $field->normalizeValueFromRequest(json_encode($payload, JSON_THROW_ON_ERROR), null);
+            expect($value)->toBeInstanceOf(RejectedTableData::class)
+                ->and($value->validationErrors())->toContain($message)
+                ->and($field->serializeValue($value, null))->toHaveKey('__tableMakerErrors');
+        }
+
+        $stored = $field->normalizeValue([
+            'columns' => array_fill(0, TableMakerField::MAX_REQUEST_COLUMNS + 1, $column),
+            'rows' => [],
+        ], null);
+        expect($stored->columns)->toHaveCount(TableMakerField::MAX_REQUEST_COLUMNS + 1);
+    });
+
     it('submits required padding through Craft delta updates', function(string $setting) {
         Tests\Support\CpRequestContext::activate('settings/fields');
         $view = Craft::$app->getView();

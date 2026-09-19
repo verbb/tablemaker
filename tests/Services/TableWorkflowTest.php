@@ -228,6 +228,21 @@ it('validates row limits and rejects invalid cells without overwriting saved con
     expect($this->entry->getErrors($handle))->toContain('Table must have at least 2 rows.');
 });
 
+it('rejects sparse oversized request tables without overwriting saved content', function() {
+    $handle = $this->tableField->handle;
+    $columns = array_fill(0, 51, ['heading' => 'Value', 'type' => 'singleline']);
+    $rows = array_fill(0, 981, []);
+    $this->entry->setFieldValueFromRequest($handle, [
+        'columns' => $columns,
+        'rows' => $rows,
+        '__tableMakerErrors' => [],
+    ]);
+
+    expect(Craft::$app->getElements()->saveElement($this->entry))->toBeFalse()
+        ->and($this->entry->getErrors($handle))->toContain('Table must have at most 50000 cells.')
+        ->and(Entry::find()->id($this->entry->id)->status(null)->one()->getFieldValue($handle)->rows['row0']['col0'])->toBe('Basic');
+});
+
 it('executes GraphQL mutations and queries with actual schema permissions', function() {
     $handle = $this->tableField->handle;
     $schema = new GqlSchema([
@@ -251,6 +266,16 @@ it('executes GraphQL mutations and queries with actual schema permissions', func
     $readOnly = new GqlSchema(['name' => 'Read only', 'uid' => craft\helpers\StringHelper::UUID(), 'scope' => ["sections.{$this->section->uid}:read"]]);
     $denied = Craft::$app->getGql()->executeQuery($readOnly, $query, $variables);
     expect($denied)->toHaveKey('errors');
+    expect(Entry::find()->id($this->entry->id)->status(null)->one()->getFieldValue($handle)->caption)->toBe('API pricing');
+
+    $oversized = Craft::$app->getGql()->executeQuery($schema, $query, [
+        'id' => (string)$this->entry->id,
+        'table' => [
+            'columns' => array_fill(0, 51, ['heading' => 'Value', 'type' => 'singleline']),
+            'rows' => array_fill(0, 981, []),
+        ],
+    ], null, true);
+    expect($oversized)->toHaveKey('errors');
     expect(Entry::find()->id($this->entry->id)->status(null)->one()->getFieldValue($handle)->caption)->toBe('API pricing');
 });
 

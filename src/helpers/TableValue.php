@@ -592,7 +592,8 @@ class TableValue
 
         $out = [];
         $index = 0;
-        $reservedKeys = array_keys($columns);
+        $usedKeys = [];
+        $reservedKeys = array_fill_keys(array_map('strval', array_keys($columns)), true);
 
         foreach ($columns as $key => $column) {
             if (!is_array($column)) {
@@ -604,7 +605,7 @@ class TableValue
                 continue;
             }
 
-            $colId = self::prefixedKey($key, 'col', $index, array_keys($out), $reservedKeys);
+            $colId = self::prefixedKey($key, 'col', $index, $usedKeys, $reservedKeys);
             $type = self::normalizeType($column['type'] ?? 'singleline');
 
             $next = [
@@ -620,6 +621,7 @@ class TableValue
             }
 
             $out[$colId] = $next;
+            $usedKeys[$colId] = true;
             $columnKeys[$colId] = $key;
             $index++;
         }
@@ -641,14 +643,15 @@ class TableValue
         $colIds = array_keys($columns);
         $out = [];
         $index = 0;
-        $reservedKeys = array_keys($rows);
+        $usedKeys = [];
+        $reservedKeys = array_fill_keys(array_map('strval', array_keys($rows)), true);
 
         foreach ($rows as $key => $row) {
             if (!is_array($row)) {
                 continue;
             }
 
-            $rowId = self::prefixedKey($key, 'row', $index, array_keys($out), $reservedKeys);
+            $rowId = self::prefixedKey($key, 'row', $index, $usedKeys, $reservedKeys);
 
             // Positional legacy row: [cell0, cell1, …] aligned to column order.
             $positional = $row !== [] && array_is_list($row) && $colIds !== [];
@@ -683,6 +686,7 @@ class TableValue
             }
 
             $out[$rowId] = $cells;
+            $usedKeys[$rowId] = true;
             $index++;
         }
 
@@ -690,14 +694,14 @@ class TableValue
     }
 
     /**
-     * @param list<string|int> $used
-     * @param list<string|int> $reserved Existing identities later in display order.
+     * @param array<string, true> $used
+     * @param array<string, true> $reserved Existing identities later in display order.
      */
     private static function prefixedKey(string|int $key, string $prefix, int $fallbackIndex, array $used, array $reserved): string
     {
         $key = (string)$key;
 
-        if (preg_match('/^' . preg_quote($prefix, '/') . '\d+$/', $key) === 1 && !in_array($key, $used, true)) {
+        if (preg_match('/^' . preg_quote($prefix, '/') . '\d+$/', $key) === 1 && !isset($used[$key])) {
             return $key;
         }
 
@@ -705,7 +709,7 @@ class TableValue
         if (ctype_digit($key) || is_int($key)) {
             $candidate = $prefix . $key;
 
-            if (!in_array($candidate, $used, true) && !in_array($candidate, $reserved, true)) {
+            if (!isset($used[$candidate]) && !isset($reserved[$candidate])) {
                 return $candidate;
             }
         }
@@ -714,14 +718,14 @@ class TableValue
         if (str_starts_with($key, $prefix . $prefix)) {
             $stripped = substr($key, strlen($prefix));
 
-            if (preg_match('/^' . preg_quote($prefix, '/') . '\d+$/', $stripped) === 1 && !in_array($stripped, $used, true) && !in_array($stripped, $reserved, true)) {
+            if (preg_match('/^' . preg_quote($prefix, '/') . '\d+$/', $stripped) === 1 && !isset($used[$stripped]) && !isset($reserved[$stripped])) {
                 return $stripped;
             }
         }
 
         $candidate = $prefix . $fallbackIndex;
 
-        while (in_array($candidate, $used, true) || in_array($candidate, $reserved, true)) {
+        while (isset($used[$candidate]) || isset($reserved[$candidate])) {
             $fallbackIndex++;
             $candidate = $prefix . $fallbackIndex;
         }

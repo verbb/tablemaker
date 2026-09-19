@@ -24,6 +24,7 @@
 - Align documentation filenames with page titles and update internal links.
 
 ### Fixed
+- Fixed a medium-severity denial-of-service vulnerability.
 - Preserve column widths and alignment when their editing controls are hidden.
 - Keep pasted column types within the allowed choices without retyping existing columns.
 - Preserve existing columns and cell values when allowed column types change.
