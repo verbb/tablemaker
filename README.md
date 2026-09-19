@@ -10,7 +10,7 @@ Visit the [Table Maker Plugin page](https://verbb.io/craft-plugins/table-maker) 
 Originally created by the team at [Supercool Ltd](http://www.supercooldesign.co.uk/).
 
 ## Support
-Get in touch with us via the [Table Maker Support page](https://verbb.io/craft-plugins/table-maker/support) or by [creating a Github issue](https://github.com/verbb/table-maker/issues)
+Get in touch with us via the [Table Maker Support page](https://verbb.io/craft-plugins/table-maker/support) or by [creating a Github issue](https://github.com/verbb/tablemaker/issues)
 
 ## Sponsor
 Table Maker is licensed under the MIT license, meaning it will always be free and open source – we love free stuff! If you'd like to show your support to the plugin regardless, [Sponsor](https://github.com/sponsors/verbb) development.
