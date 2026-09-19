@@ -18,6 +18,8 @@ Confirm the column changes, then enter Basic and Pro as plan names and $9 and $2
 
 Enable **Enable Width Column** and **Enable Alignment Column** when editors should control those properties for each column. Width and alignment affect generated table markup; your site's CSS still controls its overall appearance. Turning these controls off preserves the stored widths and alignment.
 
+Use **Edit Columns Button Position** to place the column editor action in the field header or the table's actions header. **Automatic** uses the field header when Craft displays one and the table actions header when the field label is hidden, including label-free Matrix block layouts.
+
 Turn on **Enable Caption** when each table needs a descriptive title, such as “Monthly plans”. You can set its label, instructions and placeholder on the field. The caption appears below the editing grid and is available to Twig and GraphQL. Turning off the input does not remove a stored caption: it still renders, and editors can change it by turning the input back on.
 
 Use **Allowed Column Types** to limit the choices in **Edit columns**. For this pricing example, allow Row heading, Single-line text and Dropdown if editors need a billing-period column. Choose **All** to make every built-in type available. Changing this setting preserves existing columns and their values. An existing column keeps its current type as a choice; new columns and type changes use the allowed choices.

@@ -457,6 +457,25 @@ describe('TableValue normalize + storage', function() {
 });
 
 describe('Table Maker Craft lifecycle', function() {
+    it('normalizes Edit columns button positions', function() {
+        expect(TableMakerField::normalizeEditColumnsPosition('fieldHeader'))->toBe('fieldHeader')
+            ->and(TableMakerField::normalizeEditColumnsPosition('tableHeader'))->toBe('tableHeader')
+            ->and(TableMakerField::normalizeEditColumnsPosition('unsupported'))->toBe('auto');
+    });
+
+    it('passes the Edit columns button position to the field input', function() {
+        Tests\Support\CpRequestContext::activate('entries');
+        $field = new TableMakerField([
+            'name' => 'Positioned table',
+            'handle' => 'positionedTable',
+            'editColumnsPosition' => 'tableHeader',
+        ]);
+
+        $html = $field->getInputHtml(null, null);
+
+        expect($html)->toContain('&quot;editColumnsPosition&quot;:&quot;tableHeader&quot;');
+    });
+
     it('keeps rich text labelled but unavailable when CKEditor is not enabled', function() {
         $settingOptions = array_column(TableMakerField::allColumnTypeSettingOptions(), null, 'value');
 

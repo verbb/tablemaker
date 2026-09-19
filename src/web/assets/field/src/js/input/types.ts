@@ -1,5 +1,7 @@
 import type { DropdownOption } from './options.js';
 
+export type EditColumnsPosition = 'auto' | 'fieldHeader' | 'tableHeader';
+
 export interface TableColumn {
     heading?: string;
     align?: string;
@@ -26,6 +28,8 @@ export interface TableMakerSettings {
     ckeditorAvailable?: boolean;
     enableWidthColumn?: boolean;
     enableAlignmentColumn?: boolean;
+    /** Where the Edit columns action is mounted in the field input. */
+    editColumnsPosition?: EditColumnsPosition;
     /** Custom label for the content table “Add a row” button. */
     addRowLabel?: string;
     minRows?: number | null;

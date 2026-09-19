@@ -3,8 +3,8 @@
 // Option A: content `pk-editable-table` is the field. Column schema lives in a
 // modal (`ColumnsSchemaDialog`) — the content grid only rebuilds when the user
 // hits Done, so typing/reordering in the schema editor is cheap.
-// Field name/instructions come from Craft; only the add-row button label is customisable.
-// “Edit columns” mounts into Craft’s `.heading` row to avoid an empty toolbar band.
+// Field name/instructions come from Craft; the column action location and add-row label are customisable.
+// “Edit columns” can use Craft’s field heading or the table actions header.
 
 import {
     getCustomCellSlotName,
@@ -125,42 +125,84 @@ export class TableMakerInput {
         return field;
     }
 
-    /**
-     * Sit beside the Craft field label (not above the grid). Matrix/block handles live
-     * on the block chrome, so this doesn’t fight “show handles”.
-     */
     private mountEditColumnsAction(): void {
-        const button = this.buildEditColumnsButton();
         const field = this.root.closest('.field');
         const heading = field?.querySelector<HTMLElement>(':scope > .heading');
+        const position = this.settings.editColumnsPosition || 'auto';
+        const useTableHeader = position === 'tableHeader'
+            || (position === 'auto' && !heading);
+        const button = this.buildEditColumnsButton(useTableHeader || !heading);
 
         field?.querySelectorAll('.tm-edit-columns').forEach((el) => el.remove());
+        heading?.classList.remove('tm-field-heading');
 
-        if (heading) {
-            heading.classList.add('tm-field-heading');
-            heading.appendChild(button);
+        if (useTableHeader || !heading) {
+            void this.mountEditColumnsInTableHeader(button);
             return;
         }
 
-        // Fallback when Craft doesn’t render a heading (rare / inline contexts).
+        heading.classList.add('tm-field-heading');
+        heading.appendChild(button);
+    }
+
+    /** Mount after the table has rendered its shadow-DOM actions column. */
+    private async mountEditColumnsInTableHeader(button: HTMLElement): Promise<void> {
+        const table = this.rowsTable;
+
+        if (!table) {
+            this.mountEditColumnsToolbar(button);
+            return;
+        }
+
+        await table.updateComplete;
+
+        if (this.rowsTable !== table || (!button.isConnected && !this.root.isConnected)) {
+            return;
+        }
+
+        const actionsHeader = table.shadowRoot?.querySelector<HTMLElement>('th.actions');
+
+        if (actionsHeader) {
+            actionsHeader.replaceChildren(button);
+            return;
+        }
+
+        this.mountEditColumnsToolbar(button);
+    }
+
+    /** Last-resort placement for hosts that render neither supported header. */
+    private mountEditColumnsToolbar(button: HTMLElement): void {
         const bar = document.createElement('div');
         bar.className = 'tm-toolbar';
         bar.appendChild(button);
         this.root.querySelector('[data-tablemaker-editor]')?.prepend(bar);
     }
 
-    private buildEditColumnsButton(): HTMLElement {
+    private buildEditColumnsButton(compact = false): HTMLElement {
         const edit = document.createElement('pk-button');
         edit.className = 'tm-edit-columns';
         edit.setAttribute('type', 'button');
-        edit.setAttribute('size', 'xs');
+        edit.setAttribute('aria-label', Craft.t('tablemaker', 'Edit columns'));
         edit.toggleAttribute('disabled', this.hiddenInput?.disabled ?? false);
 
-        const gear = document.createElement('pk-icon');
-        gear.setAttribute('slot', 'start');
-        gear.setAttribute('icon', 'gear');
-        edit.appendChild(gear);
-        edit.appendChild(document.createTextNode(Craft.t('tablemaker', 'Edit columns')));
+        if (compact) {
+            edit.setAttribute('size', 'xxs');
+
+            const gear = document.createElement('pk-icon');
+            gear.setAttribute('slot', 'start');
+            gear.setAttribute('icon', 'gear');
+            edit.appendChild(gear);
+            edit.appendChild(document.createTextNode(Craft.t('tablemaker', 'Columns')));
+        } else {
+            edit.setAttribute('size', 'xs');
+
+            const gear = document.createElement('pk-icon');
+            gear.setAttribute('slot', 'start');
+            gear.setAttribute('icon', 'gear');
+            edit.appendChild(gear);
+            edit.appendChild(document.createTextNode(Craft.t('tablemaker', 'Edit columns')));
+        }
+
         edit.addEventListener('click', () => {
             void this.openColumnsEditor();
         });

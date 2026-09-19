@@ -26,6 +26,10 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public const MAX_REQUEST_ROWS = 1000;
     public const MAX_REQUEST_CELLS = 50000;
 
+    public const EDIT_COLUMNS_POSITION_AUTO = 'auto';
+    public const EDIT_COLUMNS_POSITION_FIELD_HEADER = 'fieldHeader';
+    public const EDIT_COLUMNS_POSITION_TABLE_HEADER = 'tableHeader';
+
     private const REJECTED_ERRORS_KEY = '__tableMakerErrors';
 
     // Static Methods
@@ -154,11 +158,21 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         return $plugins->isPluginInstalled('ckeditor') && $plugins->isPluginEnabled('ckeditor');
     }
 
+    public static function normalizeEditColumnsPosition(mixed $value): string
+    {
+        return in_array($value, [
+            self::EDIT_COLUMNS_POSITION_AUTO,
+            self::EDIT_COLUMNS_POSITION_FIELD_HEADER,
+            self::EDIT_COLUMNS_POSITION_TABLE_HEADER,
+        ], true) ? $value : self::EDIT_COLUMNS_POSITION_AUTO;
+    }
+
     // Properties
     // =========================================================================
 
     public bool $enableWidthColumn = true;
     public bool $enableAlignmentColumn = true;
+    public string $editColumnsPosition = self::EDIT_COLUMNS_POSITION_AUTO;
     public ?string $rowsAddRowLabel = null;
 
     /**
@@ -215,6 +229,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public function beforeSave(bool $isNew): bool
     {
         $this->allowedColumnTypes = self::normalizeAllowedColumnTypesSetting($this->allowedColumnTypes);
+        $this->editColumnsPosition = self::normalizeEditColumnsPosition($this->editColumnsPosition);
 
         return parent::beforeSave($isNew);
     }
@@ -691,6 +706,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             'ckeditorAvailable' => $ckeditorAvailable,
             'enableWidthColumn' => $this->enableWidthColumn,
             'enableAlignmentColumn' => $this->enableAlignmentColumn,
+            'editColumnsPosition' => self::normalizeEditColumnsPosition($this->editColumnsPosition),
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'minColumns' => $this->minColumns,

@@ -14,6 +14,18 @@
     on: settings.enableAlignmentColumn,
 }) }}
 
+{{ forms.selectField({
+    label: 'Edit Columns Button Position' | t('tablemaker'),
+    instructions: 'Choose where the button that opens the column editor is shown.' | t('tablemaker'),
+    name: 'editColumnsPosition',
+    value: field.editColumnsPosition,
+    options: [
+        { label: 'Automatic' | t('tablemaker'), value: 'auto' },
+        { label: 'Field header' | t('tablemaker'), value: 'fieldHeader' },
+        { label: 'Table actions header' | t('tablemaker'), value: 'tableHeader' },
+    ],
+}) }}
+
 {{ forms.lightswitchField({
     label: 'Enable Caption' | t('tablemaker'),
     instructions: 'Whether editors can set a caption for each table value.' | t('tablemaker'),
