@@ -1,80 +1,45 @@
 # Changelog
 
-## Unreleased
+## 5.1.0 - 2026-09-
 
 ### Added
-- Add an optional **Rich text** column type when Craft's CKEditor plugin is installed and enabled, with a raw-HTML fallback for existing cells when CKEditor is unavailable ([#69](https://github.com/verbb/tablemaker/issues/69)).
-- Add a field setting for modal or single-cell inline rich-text editing, with modal editing as the default.
+- Add an optional **Rich text** column type when Craft's CKEditor plugin is installed and enabled, with modal or single-cell inline editing, formatted previews, and a raw-HTML fallback when CKEditor is unavailable ([#69](https://github.com/verbb/tablemaker/issues/69)).
 - Add **Row heading** column type (Craft Table parity): editable in the CP, rendered as `<th scope="row">` in `.table` HTML ([#6](https://github.com/verbb/tablemaker/issues/6)).
 - Add optional per-value table **caption** field ([#60](https://github.com/verbb/tablemaker/issues/60)).
-- Add GraphQL mutation input for Table Maker values (`columns` + `rows` + optional `caption`) ([#33](https://github.com/verbb/tablemaker/issues/33)).
+- Add GraphQL mutation input for Table Maker values (`columns` + `rows` + optional `caption`) and expose column options in queries ([#33](https://github.com/verbb/tablemaker/issues/33)).
 - Paste spreadsheet TSV into the content grid from the focused cell; rows expand within max-row limits ([#7](https://github.com/verbb/tablemaker/issues/7)).
 - Insert row above/below from the row actions menu ([#20](https://github.com/verbb/tablemaker/issues/20)).
+- Confirm before deleting a column in the Edit columns dialog ([#58](https://github.com/verbb/tablemaker/issues/58)).
 - Add field setting to restrict which column types editors can choose, with an “All” (`*`) default ([#53](https://github.com/verbb/tablemaker/issues/53)).
 - Add field settings for min/max rows and min/max columns ([#38](https://github.com/verbb/tablemaker/issues/38)).
 - Add a field setting for placing the Configure button in the field header or the table actions header, with automatic placement for fields without labels.
-- Confirm before deleting a column in the Edit columns dialog ([#58](https://github.com/verbb/tablemaker/issues/58)).
 - Allow passing an attributes array to `.table` HTML output ([#4](https://github.com/verbb/tablemaker/issues/4)).
 
 ### Changed
-- Disable the optional width and alignment columns by default for new fields.
-- Show formatted, inert HTML previews for rich-text cells before editing, with a fade when longer content is clipped.
-- Lazy-load the column configuration dialog and update Plugin Kit and lodash dependencies to their patched releases.
 - Now requires Craft CMS 5.6+.
-- Public Twig access to `columns` / `rows` supports both `colN`/`rowN` keys and legacy positional indexes (`columns[loop.index0]`).
-- Rebuild the field input UI on [Plugin Kit](https://docs.verbb.io/plugin-kit/web/) (web components).
-- The field input now moves the Column table in a modal for a leaner UI.
-- Rewrite the PHP value layer: normalize/serialize store pure `{columns, rows}` with stable `colN`/`rowN` keys; `.table` HTML is lazy, encoded, and never persisted.
-- Clarify table setup, column choices and required template changes in the documentation, and document GraphQL table, column, and option types.
-- Align documentation filenames with page titles and update internal links.
+- Rebuild the field input UI with [Plugin Kit](https://docs.verbb.io/plugin-kit/web/) web components and move column configuration into a modal.
+- Change the PHP value and storage layer to use stable `colN`/`rowN` keys, retain legacy positional access, and generate `.table` HTML lazily instead of persisting it.
+- Disable the optional width and alignment columns by default for new fields.
+- Expand the documentation for table setup, column choices, template changes, GraphQL, and upgrading from Table Maker 5.0.
 
 ### Fixed
 - Fixed a medium-severity denial-of-service vulnerability.
-- Load rich-text cell editors through CKEditor’s supported Craft 5 module API.
-- Preserve active inline rich-text edits when saving with the keyboard shortcut.
-- Preserve column widths and alignment when their editing controls are hidden.
-- Keep pasted column types within the allowed choices without retyping existing columns.
-- Preserve existing columns and cell values when allowed column types change.
-- Prevent unchanged decimal cells from creating a draft when an entry opens.
-- Preserve date and time cells across skipped local dates and daylight-saving transitions.
-- Apply nested PHP edits to column settings and newly appended rows.
-- Keep copied table row values independent when edited through PHP.
+- Fix headings and cells not being HTML-encoded in `.table` output.
+- Fix GraphQL column type registry lookup.
+- Preserve large numbers and precise decimals through saves, HTML, GraphQL, and search output, and reject invalid number cells.
 - Prevent invalid ISO calendar dates from silently changing to another day.
-- Keep existing rows when PHP integrations append after deletion or construct reordered numeric collections.
-- Preserve large numbers and precise decimals through saves, HTML, GraphQL and search output, and reject invalid number cells.
-- Preserve existing row and column keys when inserting new items before them.
-- Save automatically added rows and columns when minimum limits increase on existing tables.
-- Keep cells aligned with their columns when empty column definitions are omitted.
-- Preserve dates pasted in the Control Panel's date format and show normalized pasted values immediately.
-- Apply dropdown defaults to rows added automatically by the minimum row setting.
-- Preserve literal shortcodes, backslashes and Unicode text when upgrading and saving tables.
+- Preserve column widths and alignment when their editing controls are hidden.
 - Preserve multiline whitespace and exact dropdown values when editing and saving tables.
-- Preserve AM/PM times when pasting spreadsheet cells.
-- Prevent duplicate column editors when Configure is activated repeatedly while loading.
-- Preserve row and column order when saving tables to JSON database columns.
-- Fix saving text cells on Craft 5.6–5.8.
-- Preserve date and time values across site time zones and legacy data upgrades.
-- Preserve dropdown selections whose values contain literal emoji shortcodes.
-- Reject a maximum column count of zero, which prevented tables from being saved.
-- Disable table editing controls when viewing read-only fields and revisions.
-- Use an allowed column type when creating or padding columns in restricted fields.
-- Preserve table columns, blank rows and captions when saving an entry for the first time.
-- Fix cell values being lost when saving newly added columns or loading tables with legacy column identifiers.
-- Fix opening an entry with a Table Maker field immediately creating an unsaved provisional draft.
-- Preserve the canonical empty alignment and options defaults across database round-trips.
-- Fix `.table` HTML staying stale after in-request mutation of columns/rows/caption.
-- Fix `.table` output HTML-encoding headings/cells.
-- Fix GraphQL column type registry lookup; expose column `options`; resolve `table` lazily.
-- Fix CP input re-prefixing already-canonical `colN` keys (`colcol0`).
 - Fix cloning / Neo block duplicate saves failing with undefined column keys when dropdown options were missing ([#61](https://github.com/verbb/tablemaker/issues/61)).
 - Fix Date/Time cells wiping or showing invalid empty values when editing columns; store `Y-m-d` / `H:i` for CP round-trip ([#54](https://github.com/verbb/tablemaker/issues/54)).
 
 ### Removed
-- Removed Column Label field setting.
-- Removed Column Instructions field setting.
-- Removed Add Column Label field setting.
-- Removed Row Label field setting (use field label instead).
-- Removed Row Instructions field setting (use field label instructions).
+- Remove the Column Label, Column Instructions, Add Column Label, Row Label, and Row Instructions field settings; use the field label and instructions for row context instead.
+
+## 5.0.10 - 2026-08-20
+
+### Fixed
+- Fix Date column values becoming invalid when changing column width or alignment. #68.
 
 ## 5.0.9 - 2026-04-29
 
