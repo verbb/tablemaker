@@ -1,6 +1,12 @@
-interface CraftCkeditorInstance {
+export interface CraftCkeditorInstance {
     getData(): string;
     destroy(): Promise<unknown>;
+    model: {
+        document: {
+            on(event: 'change:data', callback: () => void): void;
+            off(event: 'change:data', callback: () => void): void;
+        };
+    };
     editing: {
         view: {
             focus(): void;
@@ -12,6 +18,61 @@ type CraftCkeditorCreate = (
     source: HTMLElement,
     config: Record<string, unknown>,
 ) => Promise<CraftCkeditorInstance>;
+
+type CraftInlineCkeditorCreate = (
+    source: HTMLElement,
+    config: Record<string, unknown>,
+) => Promise<CraftCkeditorInstance>;
+
+type CkeditorModule = Record<string, unknown>;
+type CkeditorModuleImporter = (specifier: string) => Promise<CkeditorModule>;
+
+export interface CraftCkeditorRuntime {
+    create: CraftCkeditorCreate;
+    createInline: CraftInlineCkeditorCreate;
+    plugins: unknown[];
+}
+
+const importCkeditorModule: CkeditorModuleImporter = (specifier) => {
+    return import(/* @vite-ignore */ specifier) as Promise<CkeditorModule>;
+};
+
+/** Resolve CKEditor through the import map registered by Craft's CKEditor plugin. */
+export const loadCraftCkeditor = async (
+    importer: CkeditorModuleImporter = importCkeditorModule,
+): Promise<CraftCkeditorRuntime> => {
+    const [craftModule, coreModule] = await Promise.all([
+        importer('@craftcms/ckeditor'),
+        importer('ckeditor5'),
+    ]);
+    const create = craftModule.create;
+    const InlineEditor = coreModule.InlineEditor as { create?: CraftInlineCkeditorCreate } | undefined;
+    const plugins = [
+        coreModule.Essentials,
+        coreModule.Paragraph,
+        coreModule.Bold,
+        coreModule.Italic,
+        coreModule.AutoLink,
+        coreModule.LinkEditing,
+        craftModule.CraftLink,
+        coreModule.List,
+        coreModule.ListProperties,
+    ];
+
+    if (typeof create !== 'function' || typeof InlineEditor?.create !== 'function'
+        || plugins.some((plugin) => typeof plugin !== 'function')) {
+        throw new Error('CKEditor control-panel modules are unavailable.');
+    }
+
+    return {
+        create: create as CraftCkeditorCreate,
+        createInline: (source, config) => InlineEditor.create!(source, {
+            ...config,
+            licenseKey: 'GPL',
+        }),
+        plugins,
+    };
+};
 
 /**
  * One on-demand CKEditor surface for a rich-text cell. Keeping it outside the
@@ -95,17 +156,12 @@ export class RichTextCellDialog {
         token: number,
     ): Promise<void> {
         try {
-            const create = (window as typeof window & {
-                CKEditor5?: { craftcms?: { create?: CraftCkeditorCreate } };
-            }).CKEditor5?.craftcms?.create;
-
-            if (!create) {
-                throw new Error('CKEditor control-panel API is unavailable.');
-            }
+            const { create, plugins } = await loadCraftCkeditor();
 
             const editor = await create(source, {
                 accessibleFieldName: Craft.t('tablemaker', 'Rich text cell'),
                 linkOptions: [],
+                plugins,
                 toolbar: {
                     items: [
                         'bold',

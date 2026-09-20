@@ -457,10 +457,23 @@ describe('TableValue normalize + storage', function() {
 });
 
 describe('Table Maker Craft lifecycle', function() {
+    it('disables optional column layout controls by default', function() {
+        $field = new TableMakerField();
+
+        expect($field->enableWidthColumn)->toBeFalse()
+            ->and($field->enableAlignmentColumn)->toBeFalse();
+    });
+
     it('normalizes Edit columns button positions', function() {
         expect(TableMakerField::normalizeEditColumnsPosition('fieldHeader'))->toBe('fieldHeader')
             ->and(TableMakerField::normalizeEditColumnsPosition('tableHeader'))->toBe('tableHeader')
             ->and(TableMakerField::normalizeEditColumnsPosition('unsupported'))->toBe('auto');
+    });
+
+    it('normalizes rich text editing modes', function() {
+        expect(TableMakerField::normalizeRichTextEditingMode('inline'))->toBe('inline')
+            ->and(TableMakerField::normalizeRichTextEditingMode('modal'))->toBe('modal')
+            ->and(TableMakerField::normalizeRichTextEditingMode('unsupported'))->toBe('modal');
     });
 
     it('passes the Edit columns button position to the field input', function() {
@@ -474,6 +487,19 @@ describe('Table Maker Craft lifecycle', function() {
         $html = $field->getInputHtml(null, null);
 
         expect($html)->toContain('&quot;editColumnsPosition&quot;:&quot;tableHeader&quot;');
+    });
+
+    it('passes the rich text editing mode to the field input', function() {
+        Tests\Support\CpRequestContext::activate('entries');
+        $field = new TableMakerField([
+            'name' => 'Inline rich table',
+            'handle' => 'inlineRichTable',
+            'richTextEditingMode' => 'inline',
+        ]);
+
+        $html = $field->getInputHtml(null, null);
+
+        expect($html)->toContain('&quot;richTextEditingMode&quot;:&quot;inline&quot;');
     });
 
     it('keeps rich text labelled but unavailable when CKEditor is not enabled', function() {

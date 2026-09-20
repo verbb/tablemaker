@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ColumnsSchemaDialog } from './ColumnsSchemaDialog.js';
+import { loadCraftCkeditor } from './RichTextCellDialog.js';
 import { defaultSelectValue, normalizeDropdownOptions } from './options.js';
 import {
     ensurePrefixedKey,
@@ -52,6 +53,40 @@ describe('table editor normalization', () => {
 
         expect(contentSchemaColumns(columns, true)[0].type).toBe('custom');
         expect(contentSchemaColumns(columns, false)[0].type).toBe('textarea');
+    });
+
+    it('loads the supported Craft CKEditor modules and toolbar plugins', async () => {
+        const create = vi.fn();
+        const createInline = vi.fn();
+        const plugin = () => undefined;
+        const importer = vi.fn(async (specifier: string) => specifier === '@craftcms/ckeditor'
+            ? { create, CraftLink: plugin }
+            : {
+                Essentials: plugin,
+                Paragraph: plugin,
+                Bold: plugin,
+                Italic: plugin,
+                AutoLink: plugin,
+                LinkEditing: plugin,
+                List: plugin,
+                ListProperties: plugin,
+                InlineEditor: { create: createInline },
+            });
+
+        const runtime = await loadCraftCkeditor(importer);
+
+        expect(importer).toHaveBeenCalledWith('@craftcms/ckeditor');
+        expect(importer).toHaveBeenCalledWith('ckeditor5');
+        expect(runtime.create).toBe(create);
+        expect(typeof runtime.createInline).toBe('function');
+        expect(runtime.plugins).toHaveLength(9);
+
+        const source = {} as HTMLElement;
+        await runtime.createInline(source, { toolbar: ['bold'] });
+        expect(createInline).toHaveBeenCalledWith(source, {
+            toolbar: ['bold'],
+            licenseKey: 'GPL',
+        });
     });
     it('normalizes Craft maps and honours an explicit dropdown default', () => {
         expect(normalizeDropdownOptions({ basic: 'Basic', pro: 'Pro' })).toEqual([

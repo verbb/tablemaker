@@ -19,7 +19,7 @@ composer require verbb/tablemaker && php craft plugin/install tablemaker
 
 ## Create and Display a Table
 
-Create a Table Maker field with the handle `pricingTable` and add it to an entry type's field layout. Open an entry, use **Edit columns** to add Plan and Price columns, and enter two rows with recognisable values. Save the entry.
+Create a Table Maker field with the handle `pricingTable` and add it to an entry type's field layout. Open an entry, use **Configure** to add Plan and Price columns, and enter two rows with recognisable values. Save the entry.
 
 In its Twig template, render the table:
 

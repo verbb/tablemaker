@@ -5,7 +5,7 @@
     display: block;
 }
 
-/* Craft field label row — keep “Edit columns” on the same line as the field name. */
+/* Craft field label row — keep “Configure” on the same line as the field name. */
 .field > .heading.tm-field-heading {
     display: flex;
     align-items: center;
@@ -32,13 +32,103 @@
 }
 
 .tm-richtext-cell {
+    box-sizing: border-box;
     display: block;
     width: 100%;
     max-width: 100%;
-    overflow: hidden;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
     text-align: left;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    cursor: pointer;
+    appearance: none;
+}
+
+.tm-richtext-cell:disabled {
+    cursor: default;
+    opacity: 0.65;
+}
+
+.tm-richtext-cell:hover,
+.tm-richtext-cell:active,
+.tm-richtext-cell:focus {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    box-shadow: none;
+}
+
+.tm-richtext-preview {
+    box-sizing: border-box;
+    position: relative;
+    width: 100%;
+    min-height: 2.25rem;
+    max-height: 8rem;
+    padding: var(--pk-spacing-2, 0.5rem) var(--pk-spacing-3, 0.75rem);
+    overflow: hidden;
+    line-height: 1.4;
+    text-align: left;
+    white-space: normal;
+}
+
+.tm-richtext-preview.is-truncated::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(to bottom, rgb(255 255 255 / 0%), var(--white, #fff));
+    content: '';
+    pointer-events: none;
+}
+
+.tm-richtext-preview > :first-child {
+    margin-top: 0;
+}
+
+.tm-richtext-preview > :last-child {
+    margin-bottom: 0;
+}
+
+.tm-richtext-preview p {
+    margin: 0 0 var(--pk-spacing-1, 0.25rem);
+}
+
+.tm-richtext-preview ul,
+.tm-richtext-preview ol {
+    margin: var(--pk-spacing-1, 0.25rem) 0;
+    padding-inline-start: 1.5rem;
+}
+
+.tm-richtext-preview-link {
+    color: var(--link-color, #0b69a3);
+    text-decoration: underline;
+}
+
+.tm-richtext-preview.is-empty {
+    color: var(--pk-input-placeholder-color, var(--pk-color-gray-400, #7b8793));
+    font-style: italic;
+}
+
+.tm-richtext-cell:focus-visible {
+    outline: none;
+}
+
+.tm-richtext-cell:focus-visible .tm-richtext-preview {
+    outline: 2px solid var(--focus-ring-color, #0d78f2);
+    outline-offset: 1px;
+}
+
+/* Opt-in inline editing deliberately lets the active row grow; only one cell
+   receives an editor instance at a time. */
+.tm-richtext-inline-source,
+.tm-richtext-inline-source.ck-editor__editable_inline {
+    min-height: 5rem;
+    padding: var(--pk-spacing-2, 0.5rem);
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 .tm-richtext-dialog {

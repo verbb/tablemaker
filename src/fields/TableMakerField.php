@@ -29,6 +29,8 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public const EDIT_COLUMNS_POSITION_AUTO = 'auto';
     public const EDIT_COLUMNS_POSITION_FIELD_HEADER = 'fieldHeader';
     public const EDIT_COLUMNS_POSITION_TABLE_HEADER = 'tableHeader';
+    public const RICH_TEXT_EDITING_MODE_MODAL = 'modal';
+    public const RICH_TEXT_EDITING_MODE_INLINE = 'inline';
 
     private const REJECTED_ERRORS_KEY = '__tableMakerErrors';
 
@@ -167,12 +169,21 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         ], true) ? $value : self::EDIT_COLUMNS_POSITION_AUTO;
     }
 
+    public static function normalizeRichTextEditingMode(mixed $value): string
+    {
+        return in_array($value, [
+            self::RICH_TEXT_EDITING_MODE_MODAL,
+            self::RICH_TEXT_EDITING_MODE_INLINE,
+        ], true) ? $value : self::RICH_TEXT_EDITING_MODE_MODAL;
+    }
+
     // Properties
     // =========================================================================
 
-    public bool $enableWidthColumn = true;
-    public bool $enableAlignmentColumn = true;
+    public bool $enableWidthColumn = false;
+    public bool $enableAlignmentColumn = false;
     public string $editColumnsPosition = self::EDIT_COLUMNS_POSITION_AUTO;
+    public string $richTextEditingMode = self::RICH_TEXT_EDITING_MODE_MODAL;
     public ?string $rowsAddRowLabel = null;
 
     /**
@@ -230,6 +241,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     {
         $this->allowedColumnTypes = self::normalizeAllowedColumnTypesSetting($this->allowedColumnTypes);
         $this->editColumnsPosition = self::normalizeEditColumnsPosition($this->editColumnsPosition);
+        $this->richTextEditingMode = self::normalizeRichTextEditingMode($this->richTextEditingMode);
 
         return parent::beforeSave($isNew);
     }
@@ -704,6 +716,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             'typeOptions' => $typeOptions,
             'typeLabels' => self::allColumnTypeLabels(),
             'ckeditorAvailable' => $ckeditorAvailable,
+            'richTextEditingMode' => self::normalizeRichTextEditingMode($this->richTextEditingMode),
             'enableWidthColumn' => $this->enableWidthColumn,
             'enableAlignmentColumn' => $this->enableAlignmentColumn,
             'editColumnsPosition' => self::normalizeEditColumnsPosition($this->editColumnsPosition),

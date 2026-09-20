@@ -4,7 +4,7 @@
 // modal (`ColumnsSchemaDialog`) — the content grid only rebuilds when the user
 // hits Done, so typing/reordering in the schema editor is cheap.
 // Field name/instructions come from Craft; the column action location and add-row label are customisable.
-// “Edit columns” can use Craft’s field heading or the table actions header.
+// “Configure” can use Craft’s field heading or the table actions header.
 
 import {
     getCustomCellSlotName,
@@ -32,12 +32,64 @@ export class TableMakerInput {
     private richTextDialog: import('./RichTextCellDialog.js').RichTextCellDialog | null = null;
     private columnsEditorOpen = false;
     private richTextEditorOpen = false;
+    private inlineRichTextEditor: import('./RichTextCellDialog.js').CraftCkeditorInstance | null = null;
+    private inlineRichTextHost: HTMLElement | null = null;
+    private inlineRichTextCell: { rowId: string; columnId: string } | null = null;
+    private inlineRichTextForm: HTMLFormElement | null = null;
+    private inlineRichTextOpening = false;
+    private inlineRichTextClosing: Promise<void> | null = null;
+    private inlineRichTextSyncTimer: number | null = null;
+    private richTextPreviewObserver: ResizeObserver | null = null;
 
     private columns: ColumnDefinition[] = [];
     private contentRows: PkEditableTableRow[] = [];
     private caption = '';
     private rowsTable: PkEditableTable | null = null;
     private captionInput: (HTMLElement & { value: string }) | null = null;
+
+    private readonly handleInlineRichTextPointerDown = (event: PointerEvent): void => {
+        if (!this.isInlineRichTextEventInside(event)) {
+            void this.closeInlineRichTextEditor(true);
+        }
+    };
+
+    private readonly handleInlineRichTextFocusIn = (event: FocusEvent): void => {
+        if (!this.isInlineRichTextEventInside(event)) {
+            void this.closeInlineRichTextEditor(true);
+        }
+    };
+
+    private readonly handleInlineRichTextSubmit = (): void => {
+        void this.closeInlineRichTextEditor(true);
+    };
+
+    private readonly handleInlineRichTextKeyDown = (event: KeyboardEvent): void => {
+        if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+            this.commitInlineRichTextValue();
+        }
+    };
+
+    private readonly handleInlineRichTextChange = (): void => {
+        if (this.inlineRichTextSyncTimer !== null) {
+            window.clearTimeout(this.inlineRichTextSyncTimer);
+        }
+
+        // Keep the submitted value reasonably current without serializing the
+        // entire table for every CKEditor model change.
+        this.inlineRichTextSyncTimer = window.setTimeout(() => {
+            this.inlineRichTextSyncTimer = null;
+            this.commitInlineRichTextValue();
+        }, 300);
+    };
+
+    private isInlineRichTextEventInside(event: Event): boolean {
+        const path = event.composedPath();
+        const insideEditor = this.inlineRichTextHost && path.includes(this.inlineRichTextHost);
+        const insideBalloon = path.some((target) => target instanceof Element
+            && Boolean(target.closest('.ck-balloon-panel')));
+
+        return Boolean(insideEditor || insideBalloon);
+    }
 
     constructor(root: HTMLElement) {
         this.root = root;
@@ -163,6 +215,7 @@ export class TableMakerInput {
         const actionsHeader = table.shadowRoot?.querySelector<HTMLElement>('th.actions');
 
         if (actionsHeader) {
+            actionsHeader.style.textAlign = 'right';
             actionsHeader.replaceChildren(button);
             return;
         }
@@ -182,17 +235,12 @@ export class TableMakerInput {
         const edit = document.createElement('pk-button');
         edit.className = 'tm-edit-columns';
         edit.setAttribute('type', 'button');
-        edit.setAttribute('aria-label', Craft.t('tablemaker', 'Edit columns'));
+        edit.setAttribute('aria-label', Craft.t('tablemaker', 'Configure'));
         edit.toggleAttribute('disabled', this.hiddenInput?.disabled ?? false);
 
         if (compact) {
             edit.setAttribute('size', 'xxs');
-
-            const gear = document.createElement('pk-icon');
-            gear.setAttribute('slot', 'start');
-            gear.setAttribute('icon', 'gear');
-            edit.appendChild(gear);
-            edit.appendChild(document.createTextNode(Craft.t('tablemaker', 'Columns')));
+            edit.appendChild(document.createTextNode(Craft.t('tablemaker', 'Configure')));
         } else {
             edit.setAttribute('size', 'xs');
 
@@ -200,7 +248,7 @@ export class TableMakerInput {
             gear.setAttribute('slot', 'start');
             gear.setAttribute('icon', 'gear');
             edit.appendChild(gear);
-            edit.appendChild(document.createTextNode(Craft.t('tablemaker', 'Edit columns')));
+            edit.appendChild(document.createTextNode(Craft.t('tablemaker', 'Configure')));
         }
 
         edit.addEventListener('click', () => {
@@ -304,6 +352,11 @@ export class TableMakerInput {
 
     /** Project compact cell triggers into Plugin Kit's custom-cell slots. */
     private mountRichTextCells(table: PkEditableTable): void {
+        if (this.inlineRichTextEditor || this.inlineRichTextOpening) {
+            return;
+        }
+
+        this.richTextPreviewObserver?.disconnect();
         table.querySelectorAll('[data-tablemaker-richtext-cell]').forEach((element) => element.remove());
 
         if (!this.settings.ckeditorAvailable) {
@@ -318,19 +371,29 @@ export class TableMakerInput {
             for (const column of richColumns) {
                 const value = String(row[column._id] ?? '');
                 const preview = this.richTextPreview(value);
-                const button = document.createElement('pk-button');
+                const emptyLabel = Craft.t('tablemaker', 'Add rich text');
+                const button = document.createElement('button');
                 button.dataset.tablemakerRichtextCell = '';
                 button.className = 'tm-richtext-cell';
                 button.slot = getCustomCellSlotName(rowId, column._id);
-                button.setAttribute('type', 'button');
-                button.setAttribute('variant', 'transparent');
-                button.setAttribute('size', 'sm');
+                button.type = 'button';
                 button.toggleAttribute('disabled', this.hiddenInput?.disabled ?? false);
-                button.textContent = preview || Craft.t('tablemaker', 'Add rich text');
-                button.title = preview || Craft.t('tablemaker', 'Add rich text');
                 button.setAttribute('aria-label', column.heading.trim()
                     ? Craft.t('tablemaker', 'Edit rich text for “{heading}”', { heading: column.heading.trim() })
                     : Craft.t('tablemaker', 'Edit rich text'));
+
+                const previewElement = document.createElement('div');
+                previewElement.className = 'tm-richtext-preview';
+
+                if (preview.text) {
+                    previewElement.appendChild(preview.content);
+                } else {
+                    previewElement.classList.add('is-empty');
+                    previewElement.textContent = emptyLabel;
+                }
+
+                button.appendChild(previewElement);
+                this.observeRichTextPreview(previewElement);
                 button.addEventListener('click', () => {
                     void this.editRichTextCell(rowId, column._id);
                 });
@@ -339,13 +402,81 @@ export class TableMakerInput {
         }
     }
 
-    private richTextPreview(html: string): string {
+    /** Only fade previews whose content is actually clipped by the height limit. */
+    private observeRichTextPreview(preview: HTMLElement): void {
+        const updateTruncation = (): void => {
+            preview.classList.toggle('is-truncated', preview.scrollHeight > preview.clientHeight + 1);
+        };
+
+        if (typeof ResizeObserver === 'undefined') {
+            requestAnimationFrame(updateTruncation);
+            return;
+        }
+
+        this.richTextPreviewObserver ??= new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const element = entry.target as HTMLElement;
+                element.classList.toggle('is-truncated', element.scrollHeight > element.clientHeight + 1);
+            }
+        });
+        this.richTextPreviewObserver.observe(preview);
+    }
+
+    /** Build a small, inert preview matching the server-side rich-text vocabulary. */
+    private richTextPreview(html: string): { content: DocumentFragment; text: string } {
         const parsed = new DOMParser().parseFromString(html, 'text/html');
-        return String(parsed.body.textContent ?? '').replace(/\s+/g, ' ').trim();
+        const content = document.createDocumentFragment();
+        const allowedTags = new Set(['p', 'br', 'strong', 'b', 'em', 'i', 'a', 'ul', 'ol', 'li']);
+        const blockedTags = new Set(['script', 'style', 'iframe', 'object', 'embed', 'svg', 'math', 'form']);
+
+        const appendPreviewNode = (source: Node, parent: Node): void => {
+            if (source.nodeType === Node.TEXT_NODE) {
+                parent.appendChild(document.createTextNode(source.textContent ?? ''));
+                return;
+            }
+
+            if (source.nodeType !== Node.ELEMENT_NODE) {
+                return;
+            }
+
+            const sourceElement = source as Element;
+            const tag = sourceElement.localName.toLowerCase();
+
+            if (blockedTags.has(tag)) {
+                return;
+            }
+
+            if (!allowedTags.has(tag)) {
+                sourceElement.childNodes.forEach((child) => appendPreviewNode(child, parent));
+                return;
+            }
+
+            // A live link nested inside the cell's button would be invalid and
+            // distracting, so preserve its visual treatment with an inert span.
+            const previewElement = document.createElement(tag === 'a' ? 'span' : tag);
+            if (tag === 'a') {
+                previewElement.className = 'tm-richtext-preview-link';
+            }
+
+            sourceElement.childNodes.forEach((child) => appendPreviewNode(child, previewElement));
+            parent.appendChild(previewElement);
+        };
+
+        parsed.body.childNodes.forEach((child) => appendPreviewNode(child, content));
+
+        return {
+            content,
+            text: String(parsed.body.textContent ?? '').replace(/\s+/g, ' ').trim(),
+        };
     }
 
     private async editRichTextCell(rowId: string, columnId: string): Promise<void> {
         if (this.hiddenInput?.disabled || this.richTextEditorOpen || !this.settings.ckeditorAvailable) {
+            return;
+        }
+
+        if (this.settings.richTextEditingMode === 'inline') {
+            await this.editRichTextCellInline(rowId, columnId);
             return;
         }
 
@@ -379,6 +510,175 @@ export class TableMakerInput {
         } finally {
             this.richTextEditorOpen = false;
         }
+    }
+
+    private async editRichTextCellInline(rowId: string, columnId: string): Promise<void> {
+        if (this.inlineRichTextOpening) {
+            return;
+        }
+
+        this.inlineRichTextOpening = true;
+
+        try {
+            await this.closeInlineRichTextEditor(true);
+
+            const rowIndex = this.contentRows.findIndex((row) => String(row._id) === rowId);
+            const column = this.columns.find((item) => item._id === columnId);
+            const table = this.rowsTable;
+
+            if (rowIndex === -1 || !column || !table) {
+                return;
+            }
+
+            // Rebuild previews after a previous inline editor committed; the
+            // activation target is identified by row/column rather than DOM identity.
+            table.rows = this.contentRows;
+            this.inlineRichTextOpening = false;
+            this.mountRichTextCells(table);
+            this.inlineRichTextOpening = true;
+
+            const slot = getCustomCellSlotName(rowId, columnId);
+            const trigger = Array.from(table.querySelectorAll<HTMLElement>('[data-tablemaker-richtext-cell]'))
+                .find((element) => element.slot === slot);
+
+            if (!trigger) {
+                return;
+            }
+
+            const source = document.createElement('div');
+            source.dataset.tablemakerRichtextCell = '';
+            source.className = 'tm-richtext-inline-source';
+            source.slot = slot;
+            source.innerHTML = String(this.contentRows[rowIndex]?.[columnId] ?? '');
+            trigger.replaceWith(source);
+
+            this.inlineRichTextHost = source;
+            this.inlineRichTextCell = { rowId, columnId };
+
+            const { loadCraftCkeditor } = await import('./RichTextCellDialog.js');
+            const { createInline, plugins } = await loadCraftCkeditor();
+            const editor = await createInline(source, {
+                accessibleFieldName: column.heading.trim()
+                    ? Craft.t('tablemaker', 'Edit rich text for “{heading}”', { heading: column.heading.trim() })
+                    : Craft.t('tablemaker', 'Edit rich text'),
+                linkOptions: [],
+                plugins,
+                toolbar: {
+                    items: [
+                        'bold',
+                        'italic',
+                        'link',
+                        '|',
+                        'bulletedList',
+                        'numberedList',
+                        '|',
+                        'undo',
+                        'redo',
+                    ],
+                },
+                ui: {
+                    viewportOffset: { top: 44 },
+                    poweredBy: { position: 'outside', label: '' },
+                },
+            });
+
+            if (this.inlineRichTextHost !== source || !source.isConnected) {
+                await editor.destroy();
+                return;
+            }
+
+            this.inlineRichTextEditor = editor;
+            this.inlineRichTextForm = this.root.closest('form');
+            editor.model.document.on('change:data', this.handleInlineRichTextChange);
+            document.addEventListener('pointerdown', this.handleInlineRichTextPointerDown, true);
+            document.addEventListener('focusin', this.handleInlineRichTextFocusIn, true);
+            window.addEventListener('keydown', this.handleInlineRichTextKeyDown, true);
+            this.inlineRichTextForm?.addEventListener('submit', this.handleInlineRichTextSubmit, true);
+            editor.editing.view.focus();
+        } catch (exception) {
+            console.error(exception);
+            this.inlineRichTextHost?.remove();
+            this.inlineRichTextHost = null;
+            this.inlineRichTextCell = null;
+        } finally {
+            this.inlineRichTextOpening = false;
+
+            if (!this.inlineRichTextEditor && this.rowsTable) {
+                this.mountRichTextCells(this.rowsTable);
+            }
+        }
+    }
+
+    /** Flush the live editor into the hidden field before Craft serializes the form. */
+    private commitInlineRichTextValue(): void {
+        const editor = this.inlineRichTextEditor;
+        const cell = this.inlineRichTextCell;
+
+        if (!editor || !cell) {
+            return;
+        }
+
+        const rowIndex = this.contentRows.findIndex((row) => String(row._id) === cell.rowId);
+        const value = editor.getData();
+
+        if (rowIndex !== -1 && this.contentRows[rowIndex][cell.columnId] !== value) {
+            this.contentRows[rowIndex][cell.columnId] = value;
+            this.syncValueBlob();
+        }
+    }
+
+    /** Commit immediately so a Save click sees the value before async editor teardown. */
+    private closeInlineRichTextEditor(commit: boolean): Promise<void> {
+        if (this.inlineRichTextClosing) {
+            return this.inlineRichTextClosing;
+        }
+
+        const editor = this.inlineRichTextEditor;
+        const host = this.inlineRichTextHost;
+        if (!editor) {
+            return Promise.resolve();
+        }
+
+        if (commit) {
+            this.commitInlineRichTextValue();
+        }
+
+        if (this.inlineRichTextSyncTimer !== null) {
+            window.clearTimeout(this.inlineRichTextSyncTimer);
+            this.inlineRichTextSyncTimer = null;
+        }
+
+        editor.model.document.off('change:data', this.handleInlineRichTextChange);
+        document.removeEventListener('pointerdown', this.handleInlineRichTextPointerDown, true);
+        document.removeEventListener('focusin', this.handleInlineRichTextFocusIn, true);
+        window.removeEventListener('keydown', this.handleInlineRichTextKeyDown, true);
+        this.inlineRichTextForm?.removeEventListener('submit', this.handleInlineRichTextSubmit, true);
+        this.inlineRichTextEditor = null;
+        this.inlineRichTextHost = null;
+        this.inlineRichTextCell = null;
+        this.inlineRichTextForm = null;
+
+        const closing = (async(): Promise<void> => {
+            try {
+                await editor.destroy();
+            } finally {
+                host?.remove();
+
+                if (!this.inlineRichTextOpening && this.rowsTable) {
+                    this.rowsTable.rows = this.contentRows;
+                    this.mountRichTextCells(this.rowsTable);
+                }
+            }
+        })();
+
+        this.inlineRichTextClosing = closing;
+        void closing.finally(() => {
+            if (this.inlineRichTextClosing === closing) {
+                this.inlineRichTextClosing = null;
+            }
+        });
+
+        return closing;
     }
 
     private syncValueBlob(): void {

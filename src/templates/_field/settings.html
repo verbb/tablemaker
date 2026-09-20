@@ -15,7 +15,7 @@
 }) }}
 
 {{ forms.selectField({
-    label: 'Edit Columns Button Position' | t('tablemaker'),
+    label: 'Configure Button Position' | t('tablemaker'),
     instructions: 'Choose where the button that opens the column editor is shown.' | t('tablemaker'),
     name: 'editColumnsPosition',
     value: field.editColumnsPosition,
@@ -23,6 +23,17 @@
         { label: 'Automatic' | t('tablemaker'), value: 'auto' },
         { label: 'Field header' | t('tablemaker'), value: 'fieldHeader' },
         { label: 'Table actions header' | t('tablemaker'), value: 'tableHeader' },
+    ],
+}) }}
+
+{{ forms.selectField({
+    label: 'Rich Text Editing Mode' | t('tablemaker'),
+    instructions: 'Choose how rich-text cells are edited. Inline editing is best suited to tables with only a few columns.' | t('tablemaker'),
+    name: 'richTextEditingMode',
+    value: field.richTextEditingMode,
+    options: [
+        { label: 'Modal (recommended)' | t('tablemaker'), value: 'modal' },
+        { label: 'Inline' | t('tablemaker'), value: 'inline' },
     ],
 }) }}
 

@@ -4,6 +4,7 @@
 
 ### Added
 - Add an optional **Rich text** column type when Craft's CKEditor plugin is installed and enabled, with a raw-HTML fallback for existing cells when CKEditor is unavailable ([#69](https://github.com/verbb/tablemaker/issues/69)).
+- Add a field setting for modal or single-cell inline rich-text editing, with modal editing as the default.
 - Add **Row heading** column type (Craft Table parity): editable in the CP, rendered as `<th scope="row">` in `.table` HTML ([#6](https://github.com/verbb/tablemaker/issues/6)).
 - Add optional per-value table **caption** field ([#60](https://github.com/verbb/tablemaker/issues/60)).
 - Add GraphQL mutation input for Table Maker values (`columns` + `rows` + optional `caption`) ([#33](https://github.com/verbb/tablemaker/issues/33)).
@@ -11,11 +12,13 @@
 - Insert row above/below from the row actions menu ([#20](https://github.com/verbb/tablemaker/issues/20)).
 - Add field setting to restrict which column types editors can choose, with an “All” (`*`) default ([#53](https://github.com/verbb/tablemaker/issues/53)).
 - Add field settings for min/max rows and min/max columns ([#38](https://github.com/verbb/tablemaker/issues/38)).
-- Add a field setting for placing the Edit columns button in the field header or the table actions header, with automatic placement for fields without labels.
+- Add a field setting for placing the Configure button in the field header or the table actions header, with automatic placement for fields without labels.
 - Confirm before deleting a column in the Edit columns dialog ([#58](https://github.com/verbb/tablemaker/issues/58)).
 - Allow passing an attributes array to `.table` HTML output ([#4](https://github.com/verbb/tablemaker/issues/4)).
 
 ### Changed
+- Disable the optional width and alignment columns by default for new fields.
+- Show formatted, inert HTML previews for rich-text cells before editing, with a fade when longer content is clipped.
 - Lazy-load the column configuration dialog and update Plugin Kit and lodash dependencies to their patched releases.
 - Now requires Craft CMS 5.6+.
 - Public Twig access to `columns` / `rows` supports both `colN`/`rowN` keys and legacy positional indexes (`columns[loop.index0]`).
@@ -27,6 +30,8 @@
 
 ### Fixed
 - Fixed a medium-severity denial-of-service vulnerability.
+- Load rich-text cell editors through CKEditor’s supported Craft 5 module API.
+- Preserve active inline rich-text edits when saving with the keyboard shortcut.
 - Preserve column widths and alignment when their editing controls are hidden.
 - Keep pasted column types within the allowed choices without retyping existing columns.
 - Preserve existing columns and cell values when allowed column types change.
@@ -45,7 +50,7 @@
 - Preserve literal shortcodes, backslashes and Unicode text when upgrading and saving tables.
 - Preserve multiline whitespace and exact dropdown values when editing and saving tables.
 - Preserve AM/PM times when pasting spreadsheet cells.
-- Prevent duplicate column editors when Edit columns is activated repeatedly while loading.
+- Prevent duplicate column editors when Configure is activated repeatedly while loading.
 - Preserve row and column order when saving tables to JSON database columns.
 - Fix saving text cells on Craft 5.6–5.8.
 - Preserve date and time values across site time zones and legacy data upgrades.

@@ -1,6 +1,7 @@
 import type { DropdownOption } from './options.js';
 
 export type EditColumnsPosition = 'auto' | 'fieldHeader' | 'tableHeader';
+export type RichTextEditingMode = 'modal' | 'inline';
 
 export interface TableColumn {
     heading?: string;
@@ -26,9 +27,11 @@ export interface TableMakerSettings {
     typeLabels?: Record<string, string>;
     /** Whether the installed and enabled CKEditor plugin can edit rich-text cells. */
     ckeditorAvailable?: boolean;
+    /** Whether rich-text cells use a focused dialog or an in-place editor. */
+    richTextEditingMode?: RichTextEditingMode;
     enableWidthColumn?: boolean;
     enableAlignmentColumn?: boolean;
-    /** Where the Edit columns action is mounted in the field input. */
+    /** Where the Configure action is mounted in the field input. */
     editColumnsPosition?: EditColumnsPosition;
     /** Custom label for the content table “Add a row” button. */
     addRowLabel?: string;

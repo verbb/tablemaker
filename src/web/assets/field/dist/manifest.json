@@ -65,6 +65,10 @@
       "_form-control.styles-BQdimE5o-1wlcCSTt.js"
     ]
   },
+  "_preload-helper-uBIymjUX.js": {
+    "file": "assets/preload-helper-uBIymjUX.js",
+    "name": "preload-helper"
+  },
   "_shared-3S4XvNhP.js": {
     "file": "assets/shared-3S4XvNhP.js",
     "name": "shared"
@@ -98,10 +102,13 @@
     ]
   },
   "field/src/js/input/RichTextCellDialog.ts": {
-    "file": "assets/RichTextCellDialog-SzD9nvFI.js",
+    "file": "assets/RichTextCellDialog-B4iO3MZo.js",
     "name": "RichTextCellDialog",
     "src": "field/src/js/input/RichTextCellDialog.ts",
-    "isDynamicEntry": true
+    "isDynamicEntry": true,
+    "imports": [
+      "_preload-helper-uBIymjUX.js"
+    ]
   },
   "field/src/js/plugin-kit-register.ts": {
     "file": "assets/pluginKit-BTicQ835.js",
@@ -119,12 +126,13 @@
     ]
   },
   "field/src/js/tablemaker.ts": {
-    "file": "assets/tablemaker-C-VeecZn.js",
+    "file": "assets/tablemaker-CgMoUQBo.js",
     "name": "tablemaker",
     "src": "field/src/js/tablemaker.ts",
     "isEntry": true,
     "imports": [
       "_tablemakerPkComponents-vB3uxhMO.js",
+      "_preload-helper-uBIymjUX.js",
       "_shared-3S4XvNhP.js"
     ],
     "dynamicImports": [
@@ -135,7 +143,7 @@
       "field/src/js/input/RichTextCellDialog.ts"
     ],
     "css": [
-      "assets/tablemaker-CiTdByl7.css"
+      "assets/tablemaker-B5RqKfwH.css"
     ]
   }
 }

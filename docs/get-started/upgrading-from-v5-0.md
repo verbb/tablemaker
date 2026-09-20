@@ -43,4 +43,4 @@ The Column Label, Column Instructions, Add Column Label, Row Label and Row Instr
 
 Existing positional column and row arrays are normalised when read, preserving literal text such as `:smile:`. Saving writes the canonical keyed structure with `columnOrder` and `rowOrder` lists to preserve display order in JSON database columns. No separate content conversion command is needed. Check tables with dropdown options, reordered columns, dates and times before deploying the update.
 
-Editors configure columns in **Edit columns**, then choose **Done** to apply the schema changes or **Cancel** to discard them. Save the entry to persist the table. [Field](docs:feature-tour/field) explains the available controls and settings.
+Editors configure columns with **Configure**, then choose **Done** to apply the schema changes or **Cancel** to discard them. Save the entry to persist the table. [Field](docs:feature-tour/field) explains the available controls and settings.
