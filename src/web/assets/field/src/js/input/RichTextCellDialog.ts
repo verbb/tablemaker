@@ -1,3 +1,5 @@
+import type { RichTextLinkOption } from './types.js';
+
 export interface CraftCkeditorInstance {
     getData(): string;
     destroy(): Promise<unknown>;
@@ -40,6 +42,34 @@ export interface CraftCkeditorRuntime {
     plugins: unknown[];
 }
 
+export interface RichTextEditorSettings {
+    elementSiteId?: number | null;
+    richTextLinkOptions?: RichTextLinkOption[];
+}
+
+/** Shared safe CKEditor surface for both modal and inline rich-text cells. */
+export const richTextEditorConfig = (settings: RichTextEditorSettings): Record<string, unknown> => ({
+    elementSiteId: settings.elementSiteId ?? undefined,
+    linkOptions: settings.richTextLinkOptions ?? [],
+    toolbar: {
+        items: [
+            'bold',
+            'italic',
+            'link',
+            '|',
+            'bulletedList',
+            'numberedList',
+            '|',
+            'undo',
+            'redo',
+        ],
+    },
+    ui: {
+        viewportOffset: { top: 44 },
+        poweredBy: { position: 'outside', label: '' },
+    },
+});
+
 /** Keep CKEditor's detached balloons in the same native-dialog top layer as the editor. */
 export const attachCkeditorUiToDialog = (
     editor: CraftCkeditorInstance,
@@ -53,22 +83,24 @@ export const attachCkeditorUiToDialog = (
         // into the dialog's light DOM where CKEditor's global styles still apply.
         dialog.appendChild(container);
 
-        // The light-DOM node is rendered through the dialog body's slot. Plugin Kit's
-        // transformed native panel therefore becomes its containing block, while
-        // CKEditor writes viewport-based top/left coordinates to each balloon. Move
-        // the zero-size container back to the viewport origin so those coordinates
-        // remain correct instead of being offset below/right of the visible editor.
-        const panel = dialog.shadowRoot?.querySelector('dialog');
+        // The light-DOM node is rendered through the dialog body's slot, which gives
+        // it a layout origin controlled by Plugin Kit's native-dialog internals.
+        // CKEditor writes document-based top/left coordinates to its balloons, so
+        // measure the container's real origin after reparenting and move it back to
+        // the document origin. This remains correct on deeply scrolled entry pages
+        // and does not depend on the dialog's internal positioning implementation.
+        container.style.position = 'absolute';
+        container.style.left = '0';
+        container.style.top = '0';
+        container.style.width = '0';
+        container.style.height = '0';
+        container.style.overflow = 'visible';
 
-        if (panel) {
-            const rect = panel.getBoundingClientRect();
-            container.style.position = 'absolute';
-            container.style.left = `${-rect.left}px`;
-            container.style.top = `${-rect.top}px`;
-            container.style.width = '0';
-            container.style.height = '0';
-            container.style.overflow = 'visible';
-        }
+        const rect = container.getBoundingClientRect();
+        const scrollX = typeof window === 'undefined' ? 0 : window.scrollX;
+        const scrollY = typeof window === 'undefined' ? 0 : window.scrollY;
+        container.style.left = `${-scrollX - rect.left}px`;
+        container.style.top = `${-scrollY - rect.top}px`;
     }
 };
 
@@ -123,6 +155,9 @@ export class RichTextCellDialog {
     private editor: CraftCkeditorInstance | null = null;
     private resolvePromise: ((value: string | null) => void) | null = null;
     private mountToken = 0;
+
+    constructor(private readonly settings: RichTextEditorSettings = {}) {
+    }
 
     open(columnHeading: string, value: unknown): Promise<string | null> {
         this.close(null);
@@ -198,26 +233,9 @@ export class RichTextCellDialog {
             const { create, plugins } = await loadCraftCkeditor();
 
             const editor = await create(source, {
+                ...richTextEditorConfig(this.settings),
                 accessibleFieldName: Craft.t('tablemaker', 'Rich text cell'),
-                linkOptions: [],
                 plugins,
-                toolbar: {
-                    items: [
-                        'bold',
-                        'italic',
-                        'link',
-                        '|',
-                        'bulletedList',
-                        'numberedList',
-                        '|',
-                        'undo',
-                        'redo',
-                    ],
-                },
-                ui: {
-                    viewportOffset: { top: 44 },
-                    poweredBy: { position: 'outside', label: '' },
-                },
             });
 
             if (token !== this.mountToken || !this.dialog) {

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ColumnsSchemaDialog } from './ColumnsSchemaDialog.js';
-import { attachCkeditorUiToDialog, loadCraftCkeditor } from './RichTextCellDialog.js';
+import { attachCkeditorUiToDialog, loadCraftCkeditor, richTextEditorConfig } from './RichTextCellDialog.js';
 import { defaultSelectValue, normalizeDropdownOptions } from './options.js';
 import {
     ensurePrefixedKey,
@@ -90,27 +90,44 @@ describe('table editor normalization', () => {
     });
 
     it('keeps detached CKEditor UI inside the modal dialog top layer', () => {
-        const container = { style: {} } as HTMLElement;
-        const appendChild = vi.fn();
-        const querySelector = vi.fn(() => ({
+        vi.stubGlobal('window', { scrollX: 30, scrollY: 200 });
+        const container = {
+            style: {},
             getBoundingClientRect: () => ({ left: 120, top: 80 }),
-        }));
+        } as unknown as HTMLElement;
+        const appendChild = vi.fn();
         const editor = {
             ui: { view: { body: { bodyCollectionContainer: container } } },
         } as unknown as Parameters<typeof attachCkeditorUiToDialog>[0];
-        const dialog = { appendChild, shadowRoot: { querySelector } } as unknown as HTMLElement;
+        const dialog = { appendChild } as unknown as HTMLElement;
 
         attachCkeditorUiToDialog(editor, dialog);
 
         expect(appendChild).toHaveBeenCalledWith(container);
-        expect(querySelector).toHaveBeenCalledWith('dialog');
         expect(container.style).toMatchObject({
             position: 'absolute',
-            left: '-120px',
-            top: '-80px',
+            left: '-150px',
+            top: '-280px',
             width: '0',
             height: '0',
             overflow: 'visible',
+        });
+    });
+
+    it('passes Craft element link options to both rich text editor modes', () => {
+        const linkOptions = [{
+            label: 'Entry',
+            elementType: 'craft\\elements\\Entry',
+            refHandle: 'entry',
+            sources: ['*', 'section:news'],
+            criteria: { uri: ':notempty:' },
+        }];
+        const config = richTextEditorConfig({ elementSiteId: 2, richTextLinkOptions: linkOptions });
+
+        expect(config).toMatchObject({
+            elementSiteId: 2,
+            linkOptions,
+            toolbar: { items: expect.arrayContaining(['link']) },
         });
     });
 
