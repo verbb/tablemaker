@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.1.0 - 2026-09-
+## 5.1.0 - 2026-09-29
 
 ### Added
 - Add an optional **Rich text** column type when Craft's CKEditor plugin is installed and enabled, with modal or single-cell inline editing, formatted previews, and a raw-HTML fallback when CKEditor is unavailable ([#69](https://github.com/verbb/tablemaker/issues/69)).
