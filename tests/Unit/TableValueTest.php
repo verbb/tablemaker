@@ -476,6 +476,14 @@ describe('Table Maker Craft lifecycle', function() {
             ->and(TableMakerField::normalizeRichTextEditingMode('unsupported'))->toBe('modal');
     });
 
+    it('requires CKEditor 5 for rich text editing', function() {
+        $method = new ReflectionMethod(TableMakerField::class, '_isSupportedCkeditorVersion');
+
+        expect($method->invoke(null, '4.11.1'))->toBeFalse()
+            ->and($method->invoke(null, '5.0.0'))->toBeTrue()
+            ->and($method->invoke(null, '5.8.0'))->toBeTrue();
+    });
+
     it('passes the Edit columns button position to the field input', function() {
         Tests\Support\CpRequestContext::activate('entries');
         $field = new TableMakerField([

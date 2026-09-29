@@ -12,7 +12,7 @@ Authors can add and label columns and rows directly in the field, making the for
 - Restrict available column types and set minimum or maximum row and column counts.
 - Add, remove or insert rows so the table matches the available information.
 - Paste spreadsheet data from the focused cell and let the table expand within its configured limits.
-- Enable formatted cells with modal or inline editing when Craft's CKEditor plugin is available.
+- Enable formatted cells with modal or inline editing when CKEditor 5.0 or later is installed and enabled.
 - Store an optional table caption and identify row headings for more meaningful HTML.
 - Keep column settings, rows and cells available to Twig, GraphQL queries and GraphQL mutations.
 - Use the built-in HTML output or build accessible, project-specific markup from the stored table value.

@@ -32,6 +32,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public const RICH_TEXT_EDITING_MODE_MODAL = 'modal';
     public const RICH_TEXT_EDITING_MODE_INLINE = 'inline';
 
+    private const MIN_CKEDITOR_VERSION = '5.0.0';
     private const REJECTED_ERRORS_KEY = '__tableMakerErrors';
 
     // Static Methods
@@ -157,7 +158,14 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 
         $plugins = Craft::$app->getPlugins();
 
-        return $plugins->isPluginInstalled('ckeditor') && $plugins->isPluginEnabled('ckeditor');
+        if (!$plugins->isPluginInstalled('ckeditor') || !$plugins->isPluginEnabled('ckeditor')) {
+            return false;
+        }
+
+        $ckeditor = $plugins->getPlugin('ckeditor');
+
+        // CKEditor 5.0 introduced the import-map modules used by both editors.
+        return $ckeditor !== null && self::_isSupportedCkeditorVersion($ckeditor->getVersion());
     }
 
     public static function normalizeEditColumnsPosition(mixed $value): string
@@ -741,6 +749,11 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 
     // Private Methods
     // =========================================================================
+
+    private static function _isSupportedCkeditorVersion(string $version): bool
+    {
+        return version_compare($version, self::MIN_CKEDITOR_VERSION, '>=');
+    }
 
     private function _requestSizeErrors(array $value): array
     {

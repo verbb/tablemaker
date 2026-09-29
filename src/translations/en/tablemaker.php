@@ -21,7 +21,7 @@ return [
   'The caption field placeholder text.' => 'The caption field placeholder text.',
   'Whether editors can set a caption for each table value.' => 'Whether editors can set a caption for each table value.',
   'Center' => 'Center',
-  'Select which column types editors can pick when editing columns. Rich text requires the CKEditor plugin to be installed and enabled.' => 'Select which column types editors can pick when editing columns. Rich text requires the CKEditor plugin to be installed and enabled.',
+  'Select which column types editors can pick when editing columns. Rich text requires CKEditor 5.0 or later to be installed and enabled.' => 'Select which column types editors can pick when editing columns. Rich text requires CKEditor 5.0 or later to be installed and enabled.',
   'Choose where the button that opens the column editor is shown.' => 'Choose where the button that opens the column editor is shown.',
   'Choose how rich-text cells are edited. Inline editing is best suited to tables with only a few columns.' => 'Choose how rich-text cells are edited. Inline editing is best suited to tables with only a few columns.',
   'Click a column header to configure it. Native table headers below still label the grid.' => 'Click a column header to configure it. Native table headers below still label the grid.',

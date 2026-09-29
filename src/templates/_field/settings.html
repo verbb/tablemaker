@@ -77,7 +77,7 @@
 {% endif %}
 {{ forms.checkboxSelectField({
     label: 'Allowed Column Types' | t('tablemaker'),
-    instructions: 'Select which column types editors can pick when editing columns. Rich text requires the CKEditor plugin to be installed and enabled.' | t('tablemaker'),
+    instructions: 'Select which column types editors can pick when editing columns. Rich text requires CKEditor 5.0 or later to be installed and enabled.' | t('tablemaker'),
     name: 'allowedColumnTypes',
     options: allColumnTypeOptions,
     values: allowedValues,
