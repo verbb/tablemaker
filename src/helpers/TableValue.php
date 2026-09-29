@@ -140,7 +140,13 @@ class TableValue
      * @param array<string, array<string, mixed>> $rows
      * @param array<string, mixed> $attributes Attributes for the root `<table>` only (#4).
      */
-    public static function renderHtml(array $columns, array $rows, array $attributes = [], string $caption = ''): string
+    public static function renderHtml(
+        array $columns,
+        array $rows,
+        array $attributes = [],
+        string $caption = '',
+        ?int $siteId = null,
+    ): string
     {
         $caption = self::normalizeCaption($caption);
         $inner = '';
@@ -175,7 +181,7 @@ class TableValue
                 $alignAttr = $align !== ''
                     ? ' align="' . $align . '" style="text-align: ' . $align . ';"'
                     : '';
-                $cellHtml = self::renderCellHtml($type, $row[$colId] ?? null);
+                $cellHtml = self::renderCellHtml($type, $row[$colId] ?? null, $siteId);
 
                 // Craft Table “Row heading” parity — body cell as <th scope="row"> (#6).
                 if ($type === 'heading') {
@@ -795,7 +801,7 @@ class TableValue
         return $out;
     }
 
-    private static function renderCellHtml(string $type, mixed $value): string
+    private static function renderCellHtml(string $type, mixed $value, ?int $siteId = null): string
     {
         if ($value === null || $value === '') {
             return '';
@@ -817,7 +823,14 @@ class TableValue
         }
 
         if ($type === 'richtext') {
-            return self::sanitizeRichText($string);
+            $html = self::sanitizeRichText($string);
+
+            // CraftLink stores a stable reference fragment beside the current URL.
+            // Resolve it only for rendered output; raw cell data must retain the tag
+            // so later URI changes can still be reflected.
+            return $siteId !== null
+                ? Craft::$app->getElements()->parseRefs($html, $siteId)
+                : $html;
         }
 
         return Html::encode($string);

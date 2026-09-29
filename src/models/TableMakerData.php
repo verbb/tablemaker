@@ -29,6 +29,8 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
     public DualAccessMap $rows;
     /** Optional per-value table caption (#60). */
     public string $caption = '';
+    /** Owning element site used to resolve Craft reference tags at render time. */
+    public ?int $siteId = null;
 
 
     // Public Methods
@@ -56,6 +58,7 @@ class TableMakerData implements ArrayAccess, IteratorAggregate, Countable
             $this->_rowsAsStorage(),
             $attrs,
             $this->caption,
+            $this->siteId,
         ));
     }
 

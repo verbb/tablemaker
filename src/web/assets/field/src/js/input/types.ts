@@ -3,6 +3,14 @@ import type { DropdownOption } from './options.js';
 export type EditColumnsPosition = 'auto' | 'fieldHeader' | 'tableHeader';
 export type RichTextEditingMode = 'modal' | 'inline';
 
+export interface RichTextLinkOption {
+    label: string;
+    elementType: string;
+    refHandle: string;
+    sources?: string[];
+    criteria?: Record<string, unknown>;
+}
+
 export interface TableColumn {
     heading?: string;
     align?: string;
@@ -29,6 +37,10 @@ export interface TableMakerSettings {
     ckeditorAvailable?: boolean;
     /** Whether rich-text cells use a focused dialog or an in-place editor. */
     richTextEditingMode?: RichTextEditingMode;
+    /** Craft element selectors offered by the rich-text link control. */
+    richTextLinkOptions?: RichTextLinkOption[];
+    /** Site used by Craft element selectors and reference tags. */
+    elementSiteId?: number | null;
     enableWidthColumn?: boolean;
     enableAlignmentColumn?: boolean;
     /** Where the Configure action is mounted in the field input. */

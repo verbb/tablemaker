@@ -37,6 +37,17 @@
     ],
 }) }}
 
+{% if ckeditorAvailable %}
+    {{ forms.checkboxSelectField({
+        label: 'Rich Text Link Types' | t('tablemaker'),
+        instructions: 'Choose which Craft elements can be selected when adding links. Standard URL links are always available.' | t('tablemaker'),
+        name: 'richTextLinkTypes',
+        options: allRichTextLinkTypeOptions,
+        values: settings.richTextLinkTypes ?? '*',
+        showAllOption: true,
+    }) }}
+{% endif %}
+
 {{ forms.lightswitchField({
     label: 'Enable Caption' | t('tablemaker'),
     instructions: 'Whether editors can set a caption for each table value.' | t('tablemaker'),

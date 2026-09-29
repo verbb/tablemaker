@@ -476,6 +476,25 @@ describe('Table Maker Craft lifecycle', function() {
             ->and(TableMakerField::normalizeRichTextEditingMode('unsupported'))->toBe('modal');
     });
 
+    it('normalizes rich text element link settings without conflating none with all', function() {
+        expect(TableMakerField::normalizeRichTextLinkTypesSetting(null))->toBe('*')
+            ->and(TableMakerField::normalizeRichTextLinkTypesSetting(['entry', 'category', 'asset']))->toBe('*')
+            ->and(TableMakerField::normalizeRichTextLinkTypesSetting(['entry', 'unsupported']))->toBe(['entry'])
+            ->and(TableMakerField::normalizeRichTextLinkTypesSetting([]))->toBe([]);
+    });
+
+    it('carries the owning site alongside raw rich text references', function() {
+        $field = new TableMakerField(['name' => 'Links', 'handle' => 'links']);
+        $owner = new GlobalSet(['siteId' => 42]);
+        $value = $field->normalizeValue([
+            'columns' => [['heading' => 'Copy', 'type' => 'richtext']],
+            'rows' => [['<p><a href="https://example.test#entry:123@42">Entry</a></p>']],
+        ], $owner);
+
+        expect($value->siteId)->toBe(42)
+            ->and($value->rows['row0']['col0'])->toContain('#entry:123@42');
+    });
+
     it('requires CKEditor 5 for rich text editing', function() {
         $method = new ReflectionMethod(TableMakerField::class, '_isSupportedCkeditorVersion');
 

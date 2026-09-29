@@ -11,8 +11,13 @@ use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\elements\Asset;
+use craft\elements\Category;
+use craft\elements\Entry;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\Json;
+use craft\models\Section;
+use craft\services\ElementSources;
 
 use yii\db\Schema;
 
@@ -185,6 +190,40 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         ], true) ? $value : self::RICH_TEXT_EDITING_MODE_MODAL;
     }
 
+    /** Canonical storage for enabled Craft element link types. */
+    public static function normalizeRichTextLinkTypesSetting(mixed $value): string|array
+    {
+        $all = array_keys(self::allRichTextLinkTypeOptions());
+
+        // The setting did not exist before 5.1.x, so missing values inherit the
+        // complete set while an explicitly empty checkbox list disables them all.
+        if ($value === null || $value === '' || $value === '*') {
+            return '*';
+        }
+
+        if (!is_array($value)) {
+            return '*';
+        }
+
+        if (in_array('*', $value, true)) {
+            return '*';
+        }
+
+        $filtered = array_values(array_intersect($all, $value));
+
+        return count($filtered) === count($all) ? '*' : $filtered;
+    }
+
+    /** Craft element types that can be selected from CKEditor's link UI. */
+    public static function allRichTextLinkTypeOptions(): array
+    {
+        return [
+            'entry' => Entry::pluralDisplayName(),
+            'category' => Category::pluralDisplayName(),
+            'asset' => Asset::pluralDisplayName(),
+        ];
+    }
+
     // Properties
     // =========================================================================
 
@@ -192,6 +231,8 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public bool $enableAlignmentColumn = false;
     public string $editColumnsPosition = self::EDIT_COLUMNS_POSITION_AUTO;
     public string $richTextEditingMode = self::RICH_TEXT_EDITING_MODE_MODAL;
+    /** Craft element types offered alongside the standard URL link input. */
+    public mixed $richTextLinkTypes = '*';
     public ?string $rowsAddRowLabel = null;
 
     /**
@@ -250,6 +291,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         $this->allowedColumnTypes = self::normalizeAllowedColumnTypesSetting($this->allowedColumnTypes);
         $this->editColumnsPosition = self::normalizeEditColumnsPosition($this->editColumnsPosition);
         $this->richTextEditingMode = self::normalizeRichTextEditingMode($this->richTextEditingMode);
+        $this->richTextLinkTypes = self::normalizeRichTextLinkTypesSetting($this->richTextLinkTypes);
 
         return parent::beforeSave($isNew);
     }
@@ -299,7 +341,12 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             return new RejectedTableData($value[self::REJECTED_ERRORS_KEY]);
         }
 
-        return TableValue::normalize($value, false);
+        $data = TableValue::normalize($value, false);
+        if ($data) {
+            $data->siteId = $element?->siteId;
+        }
+
+        return $data;
     }
 
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
@@ -312,7 +359,12 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             return new RejectedTableData($errors);
         }
 
-        return TableValue::normalize($value, true);
+        $data = TableValue::normalize($value, true);
+        if ($data) {
+            $data->siteId = $element?->siteId;
+        }
+
+        return $data;
     }
 
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
@@ -334,7 +386,11 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         $data = TableValue::normalize($from->getFieldValue($this->handle), false) ?? new TableMakerData();
-        $to->setFieldValue($this->handle, TableValue::normalize($data->toStorage(), false));
+        $copy = TableValue::normalize($data->toStorage(), false);
+        if ($copy) {
+            $copy->siteId = $to->siteId;
+        }
+        $to->setFieldValue($this->handle, $copy);
     }
 
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
@@ -448,6 +504,8 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             'field' => $this,
             'settings' => $this->getSettings(),
             'allColumnTypeOptions' => self::allColumnTypeSettingOptions(),
+            'allRichTextLinkTypeOptions' => self::allRichTextLinkTypeOptions(),
+            'ckeditorAvailable' => self::isCkeditorAvailable(),
             'unavailableAllowedColumnTypes' => $unavailableAllowedColumnTypes,
         ]);
     }
@@ -623,6 +681,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         }
 
         $data = TableValue::normalize($value, false) ?? new TableMakerData();
+        $data->siteId = $element?->siteId;
         $columns = $data->columnsArray();
         $rows = $data->rowsArray();
         $caption = $data->caption;
@@ -725,6 +784,8 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             'typeLabels' => self::allColumnTypeLabels(),
             'ckeditorAvailable' => $ckeditorAvailable,
             'richTextEditingMode' => self::normalizeRichTextEditingMode($this->richTextEditingMode),
+            'richTextLinkOptions' => $ckeditorAvailable ? $this->_richTextLinkOptions($element) : [],
+            'elementSiteId' => $element?->siteId,
             'enableWidthColumn' => $this->enableWidthColumn,
             'enableAlignmentColumn' => $this->enableAlignmentColumn,
             'editColumnsPosition' => self::normalizeEditColumnsPosition($this->editColumnsPosition),
@@ -753,6 +814,129 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     private static function _isSupportedCkeditorVersion(string $version): bool
     {
         return version_compare($version, self::MIN_CKEDITOR_VERSION, '>=');
+    }
+
+    /**
+     * Build the documented CraftLink option shape without depending on a separate
+     * CKEditor field instance. Sources stay permission- and URL-aware so the
+     * element selector only offers valid link targets.
+     */
+    private function _richTextLinkOptions(?ElementInterface $element): array
+    {
+        $setting = self::normalizeRichTextLinkTypesSetting($this->richTextLinkTypes);
+        $enabled = $setting === '*' ? array_keys(self::allRichTextLinkTypeOptions()) : $setting;
+        $options = [];
+
+        if (in_array('entry', $enabled, true)) {
+            $sources = $this->_richTextEntrySources($element);
+            if ($sources !== []) {
+                $options[] = [
+                    'label' => Entry::displayName(),
+                    'elementType' => Entry::class,
+                    'refHandle' => Entry::refHandle(),
+                    'sources' => $sources,
+                    'criteria' => ['uri' => ':notempty:'],
+                ];
+            }
+        }
+
+        if (in_array('category', $enabled, true) && $element) {
+            $sources = [];
+            foreach (Craft::$app->getCategories()->getAllGroups() as $group) {
+                $siteSettings = $group->getSiteSettings();
+                if (isset($siteSettings[$element->siteId]) && $siteSettings[$element->siteId]->hasUrls) {
+                    $sources[] = "group:$group->uid";
+                }
+            }
+            $sources = array_merge($sources, $this->_customElementSources(Category::class));
+
+            if ($sources !== []) {
+                $options[] = [
+                    'label' => Category::displayName(),
+                    'elementType' => Category::class,
+                    'refHandle' => Category::refHandle(),
+                    'sources' => array_values(array_unique($sources)),
+                    'criteria' => ['uri' => ':notempty:'],
+                ];
+            }
+        }
+
+        if (in_array('asset', $enabled, true)) {
+            $sources = [];
+            foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
+                if (
+                    Craft::$app->getUser()->checkPermission("viewAssets:$volume->uid")
+                    && $volume->getFs()->hasUrls
+                ) {
+                    $sources[] = "volume:$volume->uid";
+                }
+            }
+            $sources = array_merge($sources, $this->_customElementSources(Asset::class));
+
+            if ($sources !== []) {
+                $options[] = [
+                    'label' => Asset::displayName(),
+                    'elementType' => Asset::class,
+                    'refHandle' => Asset::refHandle(),
+                    'sources' => array_values(array_unique($sources)),
+                ];
+            }
+        }
+
+        return $options;
+    }
+
+    private function _richTextEntrySources(?ElementInterface $element): array
+    {
+        $sources = [];
+        $showSingles = false;
+        $sites = Craft::$app->getSites()->getAllSites();
+
+        foreach (Craft::$app->getEntries()->getAllSections() as $section) {
+            if ($section->type === Section::TYPE_SINGLE) {
+                $showSingles = true;
+                continue;
+            }
+
+            if (!$element) {
+                continue;
+            }
+
+            $siteSettings = $section->getSiteSettings();
+            foreach ($sites as $site) {
+                if (isset($siteSettings[$site->id]) && $siteSettings[$site->id]->hasUrls) {
+                    $sources[] = "section:$section->uid";
+                    break;
+                }
+            }
+        }
+
+        $sources = array_values(array_unique($sources));
+        if ($showSingles) {
+            array_unshift($sources, 'singles');
+        }
+        if ($sources !== []) {
+            array_unshift($sources, '*');
+        }
+
+        return array_values(array_unique(array_merge(
+            $sources,
+            $this->_customElementSources(Entry::class),
+        )));
+    }
+
+    /** @param class-string<ElementInterface> $elementType */
+    private function _customElementSources(string $elementType): array
+    {
+        $sources = [];
+
+        foreach (Craft::$app->getElementSources()->getSources($elementType, 'modal') as $source) {
+            if (($source['type'] ?? null) === ElementSources::TYPE_CUSTOM && isset($source['key'])) {
+                $sources[] = $source['key'];
+            }
+        }
+
+        return $sources;
     }
 
     private function _requestSizeErrors(array $value): array

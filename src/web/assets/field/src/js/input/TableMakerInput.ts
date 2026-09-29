@@ -496,7 +496,7 @@ export class TableMakerInput {
                     import('@verbb/plugin-kit-web/components/dialog/pk-dialog.js'),
                 ]);
                 await customElements.whenDefined('pk-dialog');
-                this.richTextDialog = new RichTextCellDialog();
+                this.richTextDialog = new RichTextCellDialog(this.settings);
             }
 
             const value = await this.richTextDialog.open(
@@ -555,31 +555,14 @@ export class TableMakerInput {
             this.inlineRichTextHost = source;
             this.inlineRichTextCell = { rowId, columnId };
 
-            const { loadCraftCkeditor } = await import('./RichTextCellDialog.js');
+            const { loadCraftCkeditor, richTextEditorConfig } = await import('./RichTextCellDialog.js');
             const { createInline, plugins } = await loadCraftCkeditor();
             const editor = await createInline(source, {
+                ...richTextEditorConfig(this.settings),
                 accessibleFieldName: column.heading.trim()
                     ? Craft.t('tablemaker', 'Edit rich text for “{heading}”', { heading: column.heading.trim() })
                     : Craft.t('tablemaker', 'Edit rich text'),
-                linkOptions: [],
                 plugins,
-                toolbar: {
-                    items: [
-                        'bold',
-                        'italic',
-                        'link',
-                        '|',
-                        'bulletedList',
-                        'numberedList',
-                        '|',
-                        'undo',
-                        'redo',
-                    ],
-                },
-                ui: {
-                    viewportOffset: { top: 44 },
-                    poweredBy: { position: 'outside', label: '' },
-                },
             });
 
             if (this.inlineRichTextHost !== source || !source.isConnected) {
