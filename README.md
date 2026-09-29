@@ -1,18 +1,21 @@
 <p align="center"><img src="https://assets.verbb.io/plugins/table-maker/table-maker-icon.svg" width="100" height="100" alt="Table Maker icon"></p>
 <h1 align="center">Table Maker for Craft CMS</h1>
 
-Table Maker is a Craft CMS field that lets editors create structured tables on entries and other elements.
+Table Maker is a Craft CMS plugin that lets authors create the rows and columns their content needs within the boundaries configured for the field. Capture genuinely tabular information in Craft and render it with complete template control.
+
+Authors can add and label columns and rows directly in the field, making the format useful for comparison tables, schedules, specifications and other data whose dimensions vary between entries.
 
 ## Features
 
-- Editable tables with typed columns — text, dropdown, date, checkbox, row heading, and more.
-- Edit columns in a modal — reorder, widths, alignment, and options.
-- Limit column types, and min/max rows or columns, per field.
-- Add rich-text cells when Craft's CKEditor plugin is installed and enabled.
-- Paste from a spreadsheet, or insert a row above or below.
-- Optional caption on each table value.
-- Built-in HTML output, or loop columns and rows yourself in Twig.
-- GraphQL support for querying and saving table values.
+- Build tables with text, dropdown, date, checkbox, row-heading and other purpose-specific columns.
+- Reorder columns and configure their headings, widths, alignment and options in a focused editor.
+- Restrict available column types and set minimum or maximum row and column counts.
+- Add, remove or insert rows so the table matches the available information.
+- Paste spreadsheet data from the focused cell and let the table expand within its configured limits.
+- Enable formatted cells with modal or inline editing when Craft's CKEditor plugin is available.
+- Store an optional table caption and identify row headings for more meaningful HTML.
+- Keep column settings, rows and cells available to Twig, GraphQL queries and GraphQL mutations.
+- Use the built-in HTML output or build accessible, project-specific markup from the stored table value.
 
 ## Documentation
 
@@ -28,7 +31,7 @@ Get in touch with us via the [Table Maker Support page](https://verbb.io/craft-p
 
 ## Sponsor
 
-Table Maker is licensed under the MIT license, meaning it will always be free and open source – we love free stuff! If you'd like to show your support to the plugin regardless, [Sponsor](https://github.com/sponsors/verbb) development.
+Table Maker is licensed under the MIT license, meaning it will always be free and open source - we love free stuff! If you'd like to show your support to the plugin regardless, [Sponsor](https://github.com/sponsors/verbb) development.
 
 <h2></h2>
 
