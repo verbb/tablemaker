@@ -26,8 +26,6 @@
 - Fixed a medium-severity denial-of-service vulnerability.
 - Fix headings and cells not being HTML-encoded in `.table` output.
 - Fix GraphQL column type registry lookup.
-- Preserve large numbers and precise decimals through saves, HTML, GraphQL, and search output, and reject invalid number cells.
-- Prevent invalid ISO calendar dates from silently changing to another day.
 - Preserve column widths and alignment when their editing controls are hidden.
 - Preserve multiline whitespace and exact dropdown values when editing and saving tables.
 - Fix cloning / Neo block duplicate saves failing with undefined column keys when dropdown options were missing ([#61](https://github.com/verbb/tablemaker/issues/61)).
