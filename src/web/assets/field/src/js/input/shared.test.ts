@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ColumnsSchemaDialog } from './ColumnsSchemaDialog.js';
-import { loadCraftCkeditor } from './RichTextCellDialog.js';
+import { attachCkeditorUiToDialog, loadCraftCkeditor } from './RichTextCellDialog.js';
 import { defaultSelectValue, normalizeDropdownOptions } from './options.js';
 import {
     ensurePrefixedKey,
@@ -88,6 +88,32 @@ describe('table editor normalization', () => {
             licenseKey: 'GPL',
         });
     });
+
+    it('keeps detached CKEditor UI inside the modal dialog top layer', () => {
+        const container = { style: {} } as HTMLElement;
+        const appendChild = vi.fn();
+        const querySelector = vi.fn(() => ({
+            getBoundingClientRect: () => ({ left: 120, top: 80 }),
+        }));
+        const editor = {
+            ui: { view: { body: { bodyCollectionContainer: container } } },
+        } as unknown as Parameters<typeof attachCkeditorUiToDialog>[0];
+        const dialog = { appendChild, shadowRoot: { querySelector } } as unknown as HTMLElement;
+
+        attachCkeditorUiToDialog(editor, dialog);
+
+        expect(appendChild).toHaveBeenCalledWith(container);
+        expect(querySelector).toHaveBeenCalledWith('dialog');
+        expect(container.style).toMatchObject({
+            position: 'absolute',
+            left: '-120px',
+            top: '-80px',
+            width: '0',
+            height: '0',
+            overflow: 'visible',
+        });
+    });
+
     it('normalizes Craft maps and honours an explicit dropdown default', () => {
         expect(normalizeDropdownOptions({ basic: 'Basic', pro: 'Pro' })).toEqual([
             { label: 'Basic', value: 'basic', default: false },

@@ -1,6 +1,13 @@
 export interface CraftCkeditorInstance {
     getData(): string;
     destroy(): Promise<unknown>;
+    ui: {
+        view: {
+            body: {
+                bodyCollectionContainer?: HTMLElement;
+            };
+        };
+    };
     model: {
         document: {
             on(event: 'change:data', callback: () => void): void;
@@ -32,6 +39,38 @@ export interface CraftCkeditorRuntime {
     createInline: CraftInlineCkeditorCreate;
     plugins: unknown[];
 }
+
+/** Keep CKEditor's detached balloons in the same native-dialog top layer as the editor. */
+export const attachCkeditorUiToDialog = (
+    editor: CraftCkeditorInstance,
+    dialog: HTMLElement,
+): void => {
+    const container = editor.ui.view.body.bodyCollectionContainer;
+
+    if (container) {
+        // CKEditor normally mounts floating UI under document.body. A native modal
+        // dialog paints above that entire tree, so move this editor's own container
+        // into the dialog's light DOM where CKEditor's global styles still apply.
+        dialog.appendChild(container);
+
+        // The light-DOM node is rendered through the dialog body's slot. Plugin Kit's
+        // transformed native panel therefore becomes its containing block, while
+        // CKEditor writes viewport-based top/left coordinates to each balloon. Move
+        // the zero-size container back to the viewport origin so those coordinates
+        // remain correct instead of being offset below/right of the visible editor.
+        const panel = dialog.shadowRoot?.querySelector('dialog');
+
+        if (panel) {
+            const rect = panel.getBoundingClientRect();
+            container.style.position = 'absolute';
+            container.style.left = `${-rect.left}px`;
+            container.style.top = `${-rect.top}px`;
+            container.style.width = '0';
+            container.style.height = '0';
+            container.style.overflow = 'visible';
+        }
+    }
+};
 
 const importCkeditorModule: CkeditorModuleImporter = (specifier) => {
     return import(/* @vite-ignore */ specifier) as Promise<CkeditorModule>;
@@ -186,6 +225,7 @@ export class RichTextCellDialog {
                 return;
             }
 
+            attachCkeditorUiToDialog(editor, this.dialog);
             this.editor = editor;
             done.removeAttribute('disabled');
             editor.editing.view.focus();

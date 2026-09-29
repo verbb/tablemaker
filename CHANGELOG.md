@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Fixed
+- Fix the Rich text link toolbar action failing to show its link editor ([#71](https://github.com/verbb/tablemaker/issues/71)).
 - Only offer the **Rich text** column type when CKEditor 5.0 or later is installed and enabled, preventing CKEditor 4.x installations from attempting to load unavailable editor modules ([#70](https://github.com/verbb/tablemaker/issues/70)).
 
 ## 5.1.0 - 2026-09-29

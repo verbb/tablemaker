@@ -1,5 +1,5 @@
 {
-    "project": "tablemaker-react-tests",
+    "project": "tablemaker-craft5-tests",
     "suites": {
         "default": [
             "--exclude-group=slow",
