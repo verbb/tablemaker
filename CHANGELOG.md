@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 5.1.1 - 2026-09-30
 
 ### Added
 - Add configurable Entry, Category, and Asset link selectors to Rich text cells, with Craft reference tags resolved in rendered table HTML ([#71](https://github.com/verbb/tablemaker/issues/71)).
