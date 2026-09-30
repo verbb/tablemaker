@@ -7,7 +7,7 @@ Table Maker lets authors create the rows and columns their content needs, not on
 
 Authors can add and label columns and rows directly in the field, making the format useful for comparison tables, schedules, specifications, and other data whose dimensions vary between entries.
 
-![Table Maker field showing editable columns, rows and a caption in Craft.](../screenshots/output/docs/feature-tour/usage.png)
+![Table Maker field showing editable columns, rows and a caption in Craft.](../screenshots/table-maker-field.png)
 <!-- feature-section-end -->
 
 <!-- feature-media -->
@@ -15,7 +15,7 @@ Authors can add and label columns and rows directly in the field, making the for
 
 Choose the column types, headings, widths and alignment that make each table meaningful. Field settings can narrow the available types and set sensible row or column boundaries without forcing every entry into the same shape.
 
-![Table Maker’s focused column editor with heading, alignment and column-type controls.](../screenshots/output/docs/feature-tour/columns-modal.png)
+![Table Maker’s focused column editor with heading, alignment and column-type controls.](../screenshots/table-maker-columns.png)
 <!-- feature-media-end -->
 
 <!-- feature-grid -->
