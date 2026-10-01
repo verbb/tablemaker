@@ -78,6 +78,7 @@ class DualAccessMap implements ArrayAccess, IteratorAggregate, Countable, JsonSe
     {
         if ($offset === null) {
             $index = count($this->order);
+
             while (array_key_exists('item' . $index, $this->items)) {
                 $index++;
             }

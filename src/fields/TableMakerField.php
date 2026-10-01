@@ -278,6 +278,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public function getSettings(): array
     {
         $settings = parent::getSettings();
+
         // Checkbox select with “All” stores `*`; legacy null/empty means the same.
         if ($this->allowedColumnTypes === null || $this->allowedColumnTypes === '' || $this->allowedColumnTypes === []) {
             $settings['allowedColumnTypes'] = '*';
@@ -342,6 +343,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         }
 
         $data = TableValue::normalize($value, false);
+
         if ($data) {
             $data->siteId = $element?->siteId;
         }
@@ -360,6 +362,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         }
 
         $data = TableValue::normalize($value, true);
+
         if ($data) {
             $data->siteId = $element?->siteId;
         }
@@ -387,6 +390,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     {
         $data = TableValue::normalize($from->getFieldValue($this->handle), false) ?? new TableMakerData();
         $copy = TableValue::normalize($data->toStorage(), false);
+
         if ($copy) {
             $copy->siteId = $to->siteId;
         }
@@ -713,12 +717,15 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             // Match the defaults used by Add a row, without replacing deliberately
             // empty cells in existing rows.
             $defaults = [];
+
             foreach ($columns as $columnId => $column) {
                 $type = $column['type'] ?? 'singleline';
                 $defaults[$columnId] = in_array($type, ['checkbox', 'lightswitch'], true) ? false : '';
+
                 if ($type === 'select') {
                     $options = $column['options'] ?? [];
                     $defaults[$columnId] = $options[0]['value'] ?? '';
+
                     foreach ($options as $option) {
                         if (!empty($option['default'])) {
                             $defaults[$columnId] = $option['value'];
@@ -729,6 +736,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             }
 
             $nextIndex = 0;
+
             while (count($rows) < $this->minRows) {
                 while (array_key_exists('row' . $nextIndex, $rows)) {
                     $nextIndex++;
@@ -740,6 +748,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 
         if ($this->minColumns !== null && $this->minColumns > count($columns)) {
             $nextIndex = 0;
+
             while (count($columns) < $this->minColumns) {
                 while (array_key_exists('col' . $nextIndex, $columns)) {
                     $nextIndex++;
@@ -829,6 +838,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 
         if (in_array('entry', $enabled, true)) {
             $sources = $this->_richTextEntrySources($element);
+
             if ($sources !== []) {
                 $options[] = [
                     'label' => Entry::displayName(),
@@ -842,8 +852,10 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 
         if (in_array('category', $enabled, true) && $element) {
             $sources = [];
+
             foreach (Craft::$app->getCategories()->getAllGroups() as $group) {
                 $siteSettings = $group->getSiteSettings();
+
                 if (isset($siteSettings[$element->siteId]) && $siteSettings[$element->siteId]->hasUrls) {
                     $sources[] = "group:$group->uid";
                 }
@@ -863,6 +875,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 
         if (in_array('asset', $enabled, true)) {
             $sources = [];
+
             foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
                 if (
                     Craft::$app->getUser()->checkPermission("viewAssets:$volume->uid")
@@ -903,6 +916,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             }
 
             $siteSettings = $section->getSiteSettings();
+
             foreach ($sites as $site) {
                 if (isset($siteSettings[$site->id]) && $siteSettings[$site->id]->hasUrls) {
                     $sources[] = "section:$section->uid";
@@ -912,9 +926,11 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         }
 
         $sources = array_values(array_unique($sources));
+
         if ($showSingles) {
             array_unshift($sources, 'singles');
         }
+
         if ($sources !== []) {
             array_unshift($sources, '*');
         }
@@ -1000,6 +1016,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     private function serializeEditorValue(array $columns, array $rows, string $caption): string
     {
         $editorColumns = [];
+
         foreach ($columns as $columnId => $column) {
             $type = TableValue::normalizeType($column['type'] ?? 'singleline');
             $editorColumn = [
@@ -1023,6 +1040,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         }
 
         $editorRows = [];
+
         foreach ($rows as $rowId => $row) {
             $editorRow = [];
 
@@ -1048,6 +1066,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         ];
 
         $caption = trim($caption);
+
         if ($caption !== '') {
             $editorPayload['caption'] = $caption;
         }

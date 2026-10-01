@@ -121,6 +121,7 @@ class TableValue
 
         // Caption remains optional in stored values.
         $caption = self::normalizeCaption($caption);
+
         if ($caption !== '') {
             $out['caption'] = $caption;
         }
@@ -146,8 +147,7 @@ class TableValue
         array $attributes = [],
         string $caption = '',
         ?int $siteId = null,
-    ): string
-    {
+    ): string {
         $caption = self::normalizeCaption($caption);
         $inner = '';
 
@@ -312,6 +312,7 @@ class TableValue
 
                 if (is_string($value)) {
                     $value = trim($value);
+
                     if ($value === '') {
                         return null;
                     }
@@ -459,6 +460,7 @@ class TableValue
         $parts = [];
 
         $caption = self::normalizeCaption($caption);
+
         if ($caption !== '') {
             $parts[] = $caption;
         }
@@ -566,6 +568,7 @@ class TableValue
 
             if (!isset($allowed[$type])) {
                 $column['type'] = $fallback;
+
                 if ($fallback !== 'select') {
                     unset($column['options']);
                 }
@@ -676,6 +679,7 @@ class TableValue
 
             // Positional legacy row: [cell0, cell1, …] aligned to column order.
             $positional = $row !== [] && array_is_list($row) && $colIds !== [];
+
             if ($positional) {
                 $mapped = [];
 
@@ -698,6 +702,7 @@ class TableValue
                 $raw = !$positional && array_key_exists($sourceKey, $row)
                     ? $row[$sourceKey]
                     : ($row[$colId] ?? $row[self::stripPrefix($colId, 'col')] ?? null);
+
                 if ($jsonEncoded && is_string($raw)) {
                     $decoded = Json::decodeIfJson($raw);
                     $raw = is_string($decoded) ? $decoded : $raw;
