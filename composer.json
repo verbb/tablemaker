@@ -2,7 +2,7 @@
     "name": "verbb/tablemaker",
     "description": "A Craft CMS field for tables with controlled columns, rows and cell types.",
     "type": "craft-plugin",
-    "version": "5.1.1",
+    "version": "5.1.2",
     "keywords": [
         "craft",
         "cms",
