@@ -32,7 +32,7 @@
         "php": "^8.2",
         "craftcms/cms": "^5.6.0",
         "nystudio107/craft-plugin-vite": "^5.0.0",
-        "verbb/base": "^3.0.0"
+        "verbb/base": "^3.0.19"
     },
     "suggest": {
         "craftcms/ckeditor": "Enables the optional Rich text column type."
