@@ -117,6 +117,24 @@ it('preserves native decimal precision in public output after saving', function(
     'fractional digits' => [0.1234567890123456, '0.1234567890123456'],
 ]);
 
+it('sanitizes rich text after resolving element references', function() {
+    $referencedEntry = Entry::find()->id($this->entry->id)->status(null)->one();
+    $referencedEntry->title = '<img src="x" onerror="alert(1)">Current title';
+    Craft::$app->getElements()->setPlaceholderElement($referencedEntry);
+
+    $value = $this->tableField->normalizeValue([
+        'columns' => [['heading' => 'Reference', 'type' => 'richtext']],
+        'rows' => [['<p>{entry:' . $referencedEntry->id . ':title}</p>']],
+    ], $this->entry);
+
+    $html = (string)$value->getTable();
+
+    expect($value->rows['row0']['col0'])->toContain('{entry:' . $referencedEntry->id . ':title}')
+        ->and($html)->toContain('<p>Current title</p>')
+        ->and($html)->not->toContain('<img')
+        ->and($html)->not->toContain('onerror');
+});
+
 it('rejects invalid numbers without replacing saved table content', function(string $number) {
     $handle = $this->tableField->handle;
     $this->entry->setFieldValueFromRequest($handle, [

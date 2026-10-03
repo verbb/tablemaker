@@ -833,9 +833,15 @@ class TableValue
             // CraftLink stores a stable reference fragment beside the current URL.
             // Resolve it only for rendered output; raw cell data must retain the tag
             // so later URI changes can still be reflected.
-            return $siteId !== null
-                ? Craft::$app->getElements()->parseRefs($html, $siteId)
-                : $html;
+            if ($siteId !== null) {
+                $html = Craft::$app->getElements()->parseRefs($html, $siteId);
+
+                // Reference attributes are dynamic content, so enforce the same
+                // rich-text policy after Craft has inserted their current values.
+                $html = self::sanitizeRichText($html);
+            }
+
+            return $html;
         }
 
         return Html::encode($string);
