@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a medium-severity cross-site scripting vulnerability.
+- Fixed a low-severity content integrity vulnerability.
 
 ## 5.1.2 - 2026-10-02
 

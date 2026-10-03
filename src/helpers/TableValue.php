@@ -28,10 +28,18 @@ class TableValue
     /**
      * @return TableMakerData|null
      */
-    public static function normalize(mixed $value, bool $fromRequest = false): ?TableMakerData
-    {
+    public static function normalize(
+        mixed $value,
+        bool $fromRequest = false,
+        ?array $allowedColumnTypes = null,
+        array $existingColumns = [],
+    ): ?TableMakerData {
         if ($value instanceof TableMakerData) {
-            return $value;
+            if ($allowedColumnTypes === null) {
+                return $value;
+            }
+
+            $value = $value->toStorage();
         }
 
         if ($value === null || $value === '') {
@@ -50,7 +58,17 @@ class TableValue
         unset($value['table']);
 
         $columnKeys = [];
-        $columns = self::canonicalizeColumns(self::_restoreOrder($value['columns'] ?? [], $value['columnOrder'] ?? null), $columnKeys);
+        $submittedColumns = $value['columns'] ?? [];
+        $columns = self::canonicalizeColumns(self::_restoreOrder($submittedColumns, $value['columnOrder'] ?? null), $columnKeys);
+
+        if ($allowedColumnTypes !== null) {
+            $columns = self::constrainColumnTypes(
+                $columns,
+                $allowedColumnTypes,
+                self::_hasStableColumnIds($submittedColumns) ? $existingColumns : [],
+            );
+        }
+
         // The 5.0 serializer wrote positional lists with raw strings. Only the
         // unmarked keyed beta format used Craft's ambiguous shortcode encoding.
         $legacy = is_array($value['columns'] ?? null) && array_is_list($value['columns']);
@@ -543,21 +561,24 @@ class TableValue
     }
 
     /**
-     * Coerce column types that are not in the field’s allowlist back to singleline
-     * so CP-CSS / crafted payloads cannot smuggle disallowed types (#53).
+     * Coerce column types that are not in the field’s allowlist to its first type.
+     * Existing columns keep a grandfathered type only when their stable ID and
+     * normalized type both match the persisted value.
      *
      * @param array<string, array<string, mixed>> $columns
      * @param list<string> $allowedTypes
+     * @param array<string, array<string, mixed>> $existingColumns
      * @return array<string, array<string, mixed>>
      */
-    public static function constrainColumnTypes(array $columns, array $allowedTypes): array
+    public static function constrainColumnTypes(array $columns, array $allowedTypes, array $existingColumns = []): array
     {
         if ($allowedTypes === []) {
             return $columns;
         }
 
+        $allowedTypes = array_values(array_map(self::normalizeType(...), $allowedTypes));
         $allowed = array_fill_keys($allowedTypes, true);
-        $fallback = $allowedTypes[0] ?? 'singleline';
+        $fallback = $allowedTypes[0];
 
         foreach ($columns as $colId => $column) {
             if (!is_array($column)) {
@@ -565,8 +586,11 @@ class TableValue
             }
 
             $type = self::normalizeType($column['type'] ?? 'singleline');
+            $existingType = isset($existingColumns[$colId]) && is_array($existingColumns[$colId])
+                ? self::normalizeType($existingColumns[$colId]['type'] ?? 'singleline')
+                : null;
 
-            if (!isset($allowed[$type])) {
+            if (!isset($allowed[$type]) && $existingType !== $type) {
                 $column['type'] = $fallback;
 
                 if ($fallback !== 'select') {
@@ -602,6 +626,21 @@ class TableValue
 
         // Keep entries missing from partial or older ordering metadata.
         return $ordered + $items;
+    }
+
+    private static function _hasStableColumnIds(mixed $columns): bool
+    {
+        if (!is_array($columns) || $columns === []) {
+            return false;
+        }
+
+        foreach (array_keys($columns) as $key) {
+            if (!is_string($key) || preg_match('/^col\d+$/', $key) !== 1) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

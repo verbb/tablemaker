@@ -261,6 +261,42 @@ it('rejects sparse oversized request tables without overwriting saved content', 
         ->and(Entry::find()->id($this->entry->id)->status(null)->one()->getFieldValue($handle)->rows['row0']['col0'])->toBe('Basic');
 });
 
+it('enforces column type allowlists on CP requests while preserving matching stored columns', function() {
+    $handle = $this->tableField->handle;
+    $field = $this->entry->getFieldLayout()->getFieldByHandle($handle);
+    expect($field)->toBeInstanceOf(TableMakerField::class);
+    $field->allowedColumnTypes = ['singleline'];
+    expect(Craft::$app->getFields()->saveField($field))->toBeTrue();
+
+    $entry = Entry::find()->id($this->entry->id)->status(null)->one();
+    $entry->setFieldValueFromRequest($handle, [
+        'columns' => [
+            'col0' => ['heading' => 'Plan', 'type' => 'heading'],
+            'col1' => ['heading' => 'Tier', 'type' => 'select', 'options' => [['label' => 'Pro', 'value' => 'pro']]],
+        ],
+        'rows' => ['row0' => ['col0' => 'Basic', 'col1' => 'pro']],
+    ]);
+    expect(Craft::$app->getElements()->saveElement($entry))->toBeTrue();
+
+    $entry = Entry::find()->id($this->entry->id)->status(null)->one();
+    $saved = $entry->getFieldValue($handle);
+    expect(array_column($saved->columnsArray(), 'type'))->toBe(['heading', 'singleline'])
+        ->and($saved->columns['col1']['options'])->toBe([]);
+
+    $entry->setFieldValueFromRequest($handle, [
+        'columns' => [
+            'col0' => ['heading' => 'Plan', 'type' => 'select', 'options' => [['label' => 'Basic', 'value' => 'Basic']]],
+            'col1' => ['heading' => 'Tier', 'type' => 'singleline'],
+        ],
+        'rows' => ['row0' => ['col0' => 'Basic', 'col1' => 'pro']],
+    ]);
+    expect(Craft::$app->getElements()->saveElement($entry))->toBeTrue();
+
+    $saved = Entry::find()->id($this->entry->id)->status(null)->one()->getFieldValue($handle);
+    expect(array_column($saved->columnsArray(), 'type'))->toBe(['singleline', 'singleline'])
+        ->and($saved->columns['col0']['options'])->toBe([]);
+});
+
 it('executes GraphQL mutations and queries with actual schema permissions', function() {
     $handle = $this->tableField->handle;
     $schema = new GqlSchema([
@@ -295,6 +331,35 @@ it('executes GraphQL mutations and queries with actual schema permissions', func
     ], null, true);
     expect($oversized)->toHaveKey('errors');
     expect(Entry::find()->id($this->entry->id)->status(null)->one()->getFieldValue($handle)->caption)->toBe('API pricing');
+});
+
+it('enforces column type allowlists on GraphQL mutations', function() {
+    $handle = $this->tableField->handle;
+    $field = $this->entry->getFieldLayout()->getFieldByHandle($handle);
+    expect($field)->toBeInstanceOf(TableMakerField::class);
+    $field->allowedColumnTypes = ['singleline'];
+    expect(Craft::$app->getFields()->saveField($field))->toBeTrue();
+
+    $schema = new GqlSchema([
+        'name' => 'Restricted workflow', 'uid' => craft\helpers\StringHelper::UUID(),
+        'scope' => ["sections.{$this->section->uid}:read", "sections.{$this->section->uid}:save", "sites.{$this->entry->getSite()->uid}:read"],
+    ]);
+    $mutationName = "save_{$this->section->handle}_{$this->entryType->handle}_Entry";
+    $query = 'mutation Save($id: ID!, $table: ' . $handle . '_TableMakerInput) {' . $mutationName . '(id: $id, ' . $handle . ': $table) { ' . $handle . ' { columns { type options { value } } rows } }}';
+    $variables = ['id' => (string)$this->entry->id, 'table' => [
+        'columns' => [
+            ['heading' => 'Replacement plan', 'type' => 'heading'],
+            ['heading' => 'Tier', 'type' => 'heading'],
+        ],
+        'rows' => [['Basic', 'Pro']],
+    ]];
+
+    $result = Craft::$app->getGql()->executeQuery($schema, $query, $variables, null, true);
+
+    expect($result)->not->toHaveKey('errors')
+        ->and(array_column($result['data'][$mutationName][$handle]['columns'], 'type'))->toBe(['singleline', 'singleline']);
+    $saved = Entry::find()->id($this->entry->id)->status(null)->one()->getFieldValue($handle);
+    expect(array_column($saved->columnsArray(), 'type'))->toBe(['singleline', 'singleline']);
 });
 
 it('keeps GraphQL cells aligned when empty columns are omitted', function() {

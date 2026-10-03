@@ -454,6 +454,27 @@ describe('TableValue normalize + storage', function() {
         expect(TableValue::normalizeAlignment('centre'))->toBe('');
         expect(TableValue::normalizeAlignment('right'))->toBe('right');
     });
+
+    it('grandfathers only matching stable columns outside column type allowlists', function() {
+        $columns = [
+            'col0' => ['heading' => 'Existing', 'type' => 'heading'],
+            'col1' => ['heading' => 'Changed', 'type' => 'select', 'options' => [['label' => 'Pro', 'value' => 'pro']]],
+            'col2' => ['heading' => 'New', 'type' => 'heading'],
+        ];
+        $existing = [
+            'col0' => ['heading' => 'Existing', 'type' => 'heading'],
+            'col1' => ['heading' => 'Changed', 'type' => 'heading'],
+        ];
+
+        $constrained = TableValue::constrainColumnTypes($columns, ['singleline'], $existing);
+        $keyed = TableValue::normalize(['columns' => ['col0' => $columns['col0']]], true, ['singleline'], $existing);
+        $positional = TableValue::normalize(['columns' => [$columns['col0']]], true, ['singleline'], $existing);
+
+        expect(array_column($constrained, 'type'))->toBe(['heading', 'singleline', 'singleline'])
+            ->and($constrained['col1'])->not->toHaveKey('options')
+            ->and($keyed->columns['col0']['type'])->toBe('heading')
+            ->and($positional->columns['col0']['type'])->toBe('singleline');
+    });
 });
 
 describe('Table Maker Craft lifecycle', function() {
@@ -643,7 +664,7 @@ describe('Table Maker Craft lifecycle', function() {
         expect($field->validate())->toBeTrue();
     });
 
-    it('preserves existing columns when allowed editor types change', function() {
+    it('constrains column type allowlists without a persisted baseline', function() {
         $field = new TableMakerField(['name' => 'Restricted', 'handle' => 'restricted', 'allowedColumnTypes' => ['checkbox']]);
         $input = [
             'columns' => [
@@ -654,12 +675,11 @@ describe('Table Maker Craft lifecycle', function() {
         ];
         $stored = $field->normalizeValue($input, null);
         $requested = $field->normalizeValueFromRequest($input, null);
-        foreach ([$stored, $requested] as $value) {
-            expect(array_column($value->columnsArray(), 'type'))->toBe(['singleline', 'select']);
-            expect($value->columns[1]['options'][0]['value'])->toBe('plan');
-            expect($field->normalizeValue($field->serializeValue($value, null), null)->rowsArray())
-                ->toBe(['row0' => ['col0' => 'Keep this text', 'col1' => 'plan']]);
-        }
+        expect(array_column($stored->columnsArray(), 'type'))->toBe(['singleline', 'select'])
+            ->and($stored->columns[1]['options'][0]['value'])->toBe('plan')
+            ->and(array_column($requested->columnsArray(), 'type'))->toBe(['checkbox', 'checkbox'])
+            ->and($requested->columns[1])->not->toHaveKey('options')
+            ->and($requested->rowsArray())->toBe(['row0' => ['col0' => false, 'col1' => false]]);
         expect(array_keys($field->getAllowedColumnTypeOptions()))->toBe(['checkbox']);
     });
 

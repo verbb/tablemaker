@@ -24,6 +24,7 @@ use yii\db\Schema;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
+use Throwable;
 
 class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 {
@@ -361,7 +362,13 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             return new RejectedTableData($errors);
         }
 
-        $data = TableValue::normalize($value, true);
+        $allowedColumnTypes = self::normalizeAllowedColumnTypesSetting($this->allowedColumnTypes);
+        $data = TableValue::normalize(
+            $value,
+            true,
+            $allowedColumnTypes === '*' ? null : $allowedColumnTypes,
+            $this->_persistedColumns($element),
+        );
 
         if ($data) {
             $data->siteId = $element?->siteId;
@@ -819,6 +826,44 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Return the persisted column schema that may grandfather existing types.
+     * Request-populated and placeholder elements are deliberately not trusted.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    private function _persistedColumns(?ElementInterface $element): array
+    {
+        if (!$element?->id || !$element->siteId || !$this->id) {
+            return [];
+        }
+
+        try {
+            $persistedElement = Craft::$app->getElements()->getElementById(
+                $element->id,
+                $element::class,
+                $element->siteId,
+                ['ignorePlaceholders' => true],
+            );
+
+            if (!$persistedElement) {
+                return [];
+            }
+
+            $persistedField = $persistedElement->getFieldLayout()?->getFieldByHandle($this->handle);
+
+            if (!$persistedField || $persistedField->id !== $this->id) {
+                return [];
+            }
+
+            $value = TableValue::normalize($persistedElement->getFieldValue($this->handle));
+
+            return $value?->columnsArray() ?? [];
+        } catch (Throwable) {
+            return [];
+        }
+    }
 
     private static function _isSupportedCkeditorVersion(string $version): bool
     {
