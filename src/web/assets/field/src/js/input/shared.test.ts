@@ -89,29 +89,66 @@ describe('table editor normalization', () => {
         });
     });
 
-    it('keeps detached CKEditor UI inside the modal dialog top layer', () => {
-        vi.stubGlobal('window', { scrollX: 30, scrollY: 200 });
-        const container = {
-            style: {},
-            getBoundingClientRect: () => ({ left: 120, top: 80 }),
+    it('keeps Escape in the link UI and cleans up modal integration listeners', () => {
+        let popoverOpen = false;
+        const panel = {
+            isConnected: true,
+            setAttribute: vi.fn(),
+            matches: () => popoverOpen,
+            showPopover: vi.fn(() => { popoverOpen = true; }),
+            hidePopover: vi.fn(() => { popoverOpen = false; }),
         } as unknown as HTMLElement;
-        const appendChild = vi.fn();
+        const balloon = { visibleView: {} as object | null, view: { element: panel, isVisible: true }, on: vi.fn(), off: vi.fn() };
+        const container = {} as HTMLElement;
         const editor = {
             ui: { view: { body: { bodyCollectionContainer: container } } },
+            plugins: { get: () => balloon },
         } as unknown as Parameters<typeof attachCkeditorUiToDialog>[0];
-        const dialog = { appendChild } as unknown as HTMLElement;
+        const nativeDialog = new EventTarget() as EventTarget & { open: boolean };
+        nativeDialog.open = true;
+        const listeners = new Map<string, EventListener>();
+        const dialog = {
+            appendChild: vi.fn(),
+            shadowRoot: { querySelector: () => nativeDialog },
+            addEventListener: vi.fn((name, handler, capture) => listeners.set(`${name}:${!!capture}`, handler)),
+            removeEventListener: vi.fn(),
+        } as unknown as HTMLElement;
+        const cleanup = attachCkeditorUiToDialog(editor, dialog);
 
-        attachCkeditorUiToDialog(editor, dialog);
+        // Restoring a Craft selector can put the modal above an already open
+        // popover. The next link view must promote it again, not just reuse it.
+        balloon.on.mock.calls[0][1]();
+        expect(panel.hidePopover).toHaveBeenCalledTimes(1);
+        expect(panel.showPopover).toHaveBeenCalledTimes(2);
+        nativeDialog.dispatchEvent(new Event('toggle'));
+        expect(panel.showPopover).toHaveBeenCalledTimes(3);
+        balloon.visibleView = null;
+        balloon.on.mock.calls[0][1]();
+        expect(panel.showPopover).toHaveBeenCalledTimes(3);
 
-        expect(appendChild).toHaveBeenCalledWith(container);
-        expect(container.style).toMatchObject({
-            position: 'absolute',
-            left: '-150px',
-            top: '-280px',
-            width: '0',
-            height: '0',
-            overflow: 'visible',
-        });
+        const pointerDismiss = new Event('pk-hide', { cancelable: true });
+        Object.defineProperty(pointerDismiss, 'detail', { value: { source: 'pointer-dismiss' } });
+        listeners.get('pk-hide:false')!(pointerDismiss);
+        expect(pointerDismiss.defaultPrevented).toBe(true);
+
+        const escape = new Event('keydown', { cancelable: true });
+        Object.defineProperty(escape, 'key', { value: 'Escape' });
+        const stopPropagation = vi.spyOn(escape, 'stopPropagation');
+        listeners.get('keydown:true')!(escape);
+        listeners.get('keydown:false')!(escape);
+        expect(escape.defaultPrevented).toBe(true);
+        expect(stopPropagation).toHaveBeenCalled();
+
+        balloon.view.isVisible = false;
+        const outerEscape = new Event('keydown', { cancelable: true });
+        Object.defineProperty(outerEscape, 'key', { value: 'Escape' });
+        listeners.get('keydown:true')!(outerEscape);
+        expect(outerEscape.defaultPrevented).toBe(false);
+
+        cleanup();
+        expect(panel.hidePopover).toHaveBeenCalled();
+        expect(balloon.off).toHaveBeenCalledWith('change:visibleView', expect.any(Function));
+        expect(dialog.removeEventListener).toHaveBeenCalledTimes(3);
     });
 
     it('passes Craft element link options to both rich text editor modes', () => {

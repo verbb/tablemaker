@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Fix Rich text link popovers hiding the editor content and clipping link type menus in the cell modal.
+- Fix dismissing a Rich text link popover also closing the cell modal.
+
 ## 5.1.3 - 2026-10-05
 
 ### Fixed

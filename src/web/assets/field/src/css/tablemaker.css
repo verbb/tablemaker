@@ -182,3 +182,13 @@
     color: var(--pk-color-gray-550, #6b7785);
     font-size: var(--pk-font-size-sm, 13px);
 }
+
+/* CKEditor owns balloon placement; reset only the native popover box defaults.
+   Its top-layer box lets link type menus extend beyond the cell dialog. */
+.tm-richtext-dialog .ck-balloon-panel[popover] {
+    position: absolute;
+    margin: 0;
+    right: auto;
+    bottom: auto;
+    overflow: visible;
+}

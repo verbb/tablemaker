@@ -10,6 +10,14 @@ export interface CraftCkeditorInstance {
             };
         };
     };
+    plugins: {
+        get(name: 'ContextualBalloon'): {
+            visibleView: object | null;
+            view: { element: HTMLElement; isVisible: boolean };
+            on(event: 'change:visibleView', callback: () => void): void;
+            off(event: 'change:visibleView', callback: () => void): void;
+        };
+    };
     model: {
         document: {
             on(event: 'change:data', callback: () => void): void;
@@ -70,38 +78,88 @@ export const richTextEditorConfig = (settings: RichTextEditorSettings): Record<s
     },
 });
 
-/** Keep CKEditor's detached balloons in the same native-dialog top layer as the editor. */
+/** Keep the link balloon in the top layer without changing CKEditor's document coordinates. */
 export const attachCkeditorUiToDialog = (
     editor: CraftCkeditorInstance,
     dialog: HTMLElement,
-): void => {
+): (() => void) => {
     const container = editor.ui.view.body.bodyCollectionContainer;
+    const balloon = editor.plugins.get('ContextualBalloon');
+    const panel = balloon.view.element;
 
-    if (container) {
-        // CKEditor normally mounts floating UI under document.body. A native modal
-        // dialog paints above that entire tree, so move this editor's own container
-        // into the dialog's light DOM where CKEditor's global styles still apply.
-        dialog.appendChild(container);
-
-        // The light-DOM node is rendered through the dialog body's slot, which gives
-        // it a layout origin controlled by Plugin Kit's native-dialog internals.
-        // CKEditor writes document-based top/left coordinates to its balloons, so
-        // measure the container's real origin after reparenting and move it back to
-        // the document origin. This remains correct on deeply scrolled entry pages
-        // and does not depend on the dialog's internal positioning implementation.
-        container.style.position = 'absolute';
-        container.style.left = '0';
-        container.style.top = '0';
-        container.style.width = '0';
-        container.style.height = '0';
-        container.style.overflow = 'visible';
-
-        const rect = container.getBoundingClientRect();
-        const scrollX = typeof window === 'undefined' ? 0 : window.scrollX;
-        const scrollY = typeof window === 'undefined' ? 0 : window.scrollY;
-        container.style.left = `${-scrollX - rect.left}px`;
-        container.style.top = `${-scrollY - rect.top}px`;
+    if (!container) {
+        return () => undefined;
     }
+
+    // A descendant of the modal remains focusable. Promoting the balloon itself
+    // avoids the dialog's clipping/scrolling and gives CKEditor a document-based
+    // offset parent, including when the entry page is scrolled.
+    dialog.appendChild(container);
+    panel.setAttribute('popover', 'manual');
+    const showBalloon = () => {
+        if (!panel.isConnected) {
+            return;
+        }
+
+        // Re-promote even an open popover: a restored Craft host dialog may now
+        // sit above it in the top-layer stack.
+        if (panel.matches(':popover-open')) {
+            panel.hidePopover();
+        }
+        panel.showPopover();
+    };
+    showBalloon();
+    const updateBalloon = () => {
+        if (balloon.visibleView) {
+            showBalloon();
+        }
+    };
+    // Craft element selectors temporarily demote the native dialog, which also
+    // hides descendant popovers. Restore the balloon when CKEditor uses it again.
+    balloon.on('change:visibleView', updateBalloon);
+    // Plugin Kit's host-modal interop closes/reopens the native panel without a
+    // pk-open-change event. Its native toggle runs after showModal(), so the
+    // restored link balloon is promoted above the dialog, not behind it.
+    const nativeDialog = dialog.shadowRoot?.querySelector<HTMLDialogElement>('[part~="panel"]');
+    const restoreBalloon = () => {
+        if (nativeDialog?.open) {
+            showBalloon();
+        }
+    };
+    nativeDialog?.addEventListener('toggle', restoreBalloon);
+
+    let nestedEscape = false;
+    const captureEscape = (event: KeyboardEvent) => {
+        nestedEscape = event.key === 'Escape' && balloon.view.isVisible;
+    };
+    const containEscape = (event: KeyboardEvent) => {
+        if (event.key === 'Escape' && nestedEscape) {
+            // Let the editor handle the key first: its editing observer ignores
+            // events cancelled during capture. Then suppress outer dismissal.
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    };
+    const preventOuterDismissal = (event: Event) => {
+        const source = (event as CustomEvent<{ source: string }>).detail.source;
+        if (source === 'pointer-dismiss' && balloon.view.isVisible) {
+            event.preventDefault();
+        }
+    };
+    dialog.addEventListener('keydown', captureEscape, true);
+    dialog.addEventListener('keydown', containEscape);
+    dialog.addEventListener('pk-hide', preventOuterDismissal);
+
+    return () => {
+        balloon.off('change:visibleView', updateBalloon);
+        nativeDialog?.removeEventListener('toggle', restoreBalloon);
+        dialog.removeEventListener('keydown', captureEscape, true);
+        dialog.removeEventListener('keydown', containEscape);
+        dialog.removeEventListener('pk-hide', preventOuterDismissal);
+        if (panel.matches(':popover-open')) {
+            panel.hidePopover();
+        }
+    };
 };
 
 const importCkeditorModule: CkeditorModuleImporter = (specifier) => {
@@ -155,6 +213,7 @@ export class RichTextCellDialog {
     private editor: CraftCkeditorInstance | null = null;
     private resolvePromise: ((value: string | null) => void) | null = null;
     private mountToken = 0;
+    private detachEditorUi: (() => void) | null = null;
 
     constructor(private readonly settings: RichTextEditorSettings = {}) {
     }
@@ -243,7 +302,7 @@ export class RichTextCellDialog {
                 return;
             }
 
-            attachCkeditorUiToDialog(editor, this.dialog);
+            this.detachEditorUi = attachCkeditorUiToDialog(editor, this.dialog);
             this.editor = editor;
             done.removeAttribute('disabled');
             editor.editing.view.focus();
@@ -269,6 +328,9 @@ export class RichTextCellDialog {
         const resolve = this.resolvePromise;
         this.resolvePromise = null;
         this.mountToken += 1;
+
+        this.detachEditorUi?.();
+        this.detachEditorUi = null;
 
         if (this.editor) {
             void this.editor.destroy();
