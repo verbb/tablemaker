@@ -159,11 +159,17 @@ describe('table editor normalization', () => {
             sources: ['*', 'section:news'],
             criteria: { uri: ':notempty:' },
         }];
+        vi.stubGlobal('Craft', { t: (_category: string, text: string) => text });
         const config = richTextEditorConfig({ elementSiteId: 2, richTextLinkOptions: linkOptions });
 
         expect(config).toMatchObject({
             elementSiteId: 2,
             linkOptions,
+            advancedLinkFields: [{
+                label: 'Open in new tab?',
+                value: 'target',
+                conversion: { type: 'bool', value: '_blank', model: 'craftTarget', view: 'target' },
+            }],
             toolbar: { items: expect.arrayContaining(['link']) },
         });
     });

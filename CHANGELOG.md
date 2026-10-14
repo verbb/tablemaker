@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Add Craft CKEditor’s native “Open in new tab?” option to all Rich text cell links ([#74](https://github.com/verbb/tablemaker/issues/74)).
+
 ### Fixed
 - Fix Rich text link popovers hiding the editor content and clipping link type menus in the cell modal.
 - Fix dismissing a Rich text link popover also closing the cell modal.

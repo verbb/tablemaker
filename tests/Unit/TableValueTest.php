@@ -406,6 +406,25 @@ describe('TableValue normalize + storage', function() {
             ->and($html)->toContain('Second');
     });
 
+    it('preserves new-tab links through storage and rendering while rejecting other targets', function() {
+        $data = TableValue::normalize([
+            'columns' => [['heading' => 'Links', 'type' => 'richtext']],
+            'rows' => [[
+                '<p><a href="https://example.com" target="_blank">New tab</a> '
+                . '<a href="/same">Same tab</a> <a href="/named" target="unsafe" rel="opener" onclick="alert(1)">Named</a></p>',
+            ]],
+        ], true);
+        $cell = $data->rows['row0']['col0'];
+        $roundTrip = TableValue::normalize($data->toStorage());
+
+        expect($cell)->toContain('target="_blank"')
+            ->and($cell)->toMatch('/rel="(?:noopener noreferrer|noreferrer noopener)"/')
+            ->and($cell)->toContain('<a href="/same">Same tab</a>')
+            ->and($cell)->not->toContain('target="unsafe"', 'rel="opener"', 'onclick')
+            ->and($roundTrip->rows['row0']['col0'])->toBe($cell)
+            ->and((string)$roundTrip->getTable())->toContain($cell);
+    });
+
     it('sanitizes and renders rich-text cells as a limited HTML vocabulary', function() {
         $data = TableValue::normalize([
             'columns' => [['heading' => 'Description', 'type' => 'richtext']],

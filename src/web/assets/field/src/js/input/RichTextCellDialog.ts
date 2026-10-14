@@ -59,6 +59,16 @@ export interface RichTextEditorSettings {
 export const richTextEditorConfig = (settings: RichTextEditorSettings): Record<string, unknown> => ({
     elementSiteId: settings.elementSiteId ?? undefined,
     linkOptions: settings.richTextLinkOptions ?? [],
+    advancedLinkFields: [{
+        label: Craft.t('app', 'Open in new tab?'),
+        value: 'target',
+        conversion: {
+            type: 'bool',
+            value: '_blank',
+            model: 'craftTarget',
+            view: 'target',
+        },
+    }],
     toolbar: {
         items: [
             'bold',

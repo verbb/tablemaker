@@ -23,7 +23,7 @@ use yii\validators\EmailValidator;
  */
 class TableValue
 {
-    private const RICH_TEXT_ALLOWED_HTML = 'p,br,strong,b,em,i,a[href|title],ul,ol,li';
+    private const RICH_TEXT_ALLOWED_HTML = 'p,br,strong,b,em,i,a[href|title|target|rel],ul,ol,li';
 
     /**
      * @return TableMakerData|null
@@ -891,6 +891,10 @@ class TableValue
     {
         return HtmlPurifier::process($value, [
             'HTML.Allowed' => self::RICH_TEXT_ALLOWED_HTML,
+            'Attr.AllowedFrameTargets' => ['_blank'],
+            'Attr.AllowedRel' => ['noopener', 'noreferrer'],
+            'HTML.TargetNoopener' => true,
+            'HTML.TargetNoreferrer' => true,
         ]);
     }
 }
