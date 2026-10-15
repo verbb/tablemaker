@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 5.1.4 - 2026-10-15
 
 ### Added
 - Add Craft CKEditor’s native “Open in new tab?” option to all Rich text cell links ([#74](https://github.com/verbb/tablemaker/issues/74)).
