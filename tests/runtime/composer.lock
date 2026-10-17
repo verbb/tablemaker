@@ -10051,16 +10051,16 @@
         },
         {
             "name": "verbb/base",
-            "version": "3.0.14",
+            "version": "3.0.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/verbb/verbb-base.git",
-                "reference": "c847f893fa7278413b6554324447137b815e7d3e"
+                "reference": "0b60c166a79e2762aa968e062dc84ca6c0a9406e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/verbb/verbb-base/zipball/c847f893fa7278413b6554324447137b815e7d3e",
-                "reference": "c847f893fa7278413b6554324447137b815e7d3e",
+                "url": "https://api.github.com/repos/verbb/verbb-base/zipball/0b60c166a79e2762aa968e062dc84ca6c0a9406e",
+                "reference": "0b60c166a79e2762aa968e062dc84ca6c0a9406e",
                 "shasum": ""
             },
             "require": {
@@ -10097,21 +10097,21 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-08-14T11:53:23+00:00"
+            "time": "2026-10-04T21:22:12+00:00"
         },
         {
             "name": "verbb/tablemaker",
-            "version": "5.1.0-beta.1",
+            "version": "5.1.4",
             "dist": {
                 "type": "path",
                 "url": "../../..",
-                "reference": "329b30e591b425d7a4217d6e1cf737e57b542139"
+                "reference": "166afe35d3d8f49b7321bd3d30361fa8f796b04f"
             },
             "require": {
                 "craftcms/cms": "^5.6.0",
                 "nystudio107/craft-plugin-vite": "^5.0.0",
                 "php": "^8.2",
-                "verbb/base": "^3.0.0"
+                "verbb/base": "^3.0.19"
             },
             "require-dev": {
                 "craftcms/cms": "^5.6",
@@ -10119,6 +10119,9 @@
                 "pestphp/pest-plugin": "^3.0",
                 "vlucas/phpdotenv": "^5.6",
                 "yiisoft/yii2-shell": "^2.0.3"
+            },
+            "suggest": {
+                "craftcms/ckeditor": "Enables the optional Rich text column type."
             },
             "type": "craft-plugin",
             "extra": {
@@ -10162,7 +10165,7 @@
                     "homepage": "http://www.supercooldesign.co.uk/"
                 }
             ],
-            "description": "Create customizable and user-defined table fields.",
+            "description": "A Craft CMS field for tables with controlled columns, rows and cell types.",
             "keywords": [
                 "cms",
                 "craft",
@@ -11117,5 +11120,5 @@
     "prefer-lowest": false,
     "platform": {},
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }

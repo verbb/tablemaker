@@ -51,3 +51,4 @@ node_modules
 /.ddev/docker-compose.tests-local.yaml
 
 /.phpunit.result.cache
+/.ddev/config.zz-ci.yaml
