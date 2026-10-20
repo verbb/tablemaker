@@ -1,6 +1,6 @@
 {
   "../../../node_modules/@verbb/plugin-kit-web/dist/components/dialog/pk-dialog.js": {
-    "file": "assets/pk-dialog-DZTRadr9.js",
+    "file": "assets/pk-dialog-YuPbdUbR.js",
     "name": "pk-dialog",
     "src": "../../../node_modules/@verbb/plugin-kit-web/dist/components/dialog/pk-dialog.js",
     "isDynamicEntry": true,
@@ -126,7 +126,7 @@
     ]
   },
   "field/src/js/tablemaker.ts": {
-    "file": "assets/tablemaker-BZ-qI9Nj.js",
+    "file": "assets/tablemaker-E4zWAv5s.js",
     "name": "tablemaker",
     "src": "field/src/js/tablemaker.ts",
     "isEntry": true,
