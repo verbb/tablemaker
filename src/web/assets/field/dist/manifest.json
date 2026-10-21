@@ -1,6 +1,6 @@
 {
   "../../../node_modules/@verbb/plugin-kit-web/dist/components/dialog/pk-dialog.js": {
-    "file": "assets/pk-dialog-YuPbdUbR.js",
+    "file": "assets/pk-dialog-CGijyvsS.js",
     "name": "pk-dialog",
     "src": "../../../node_modules/@verbb/plugin-kit-web/dist/components/dialog/pk-dialog.js",
     "isDynamicEntry": true,
@@ -11,7 +11,7 @@
     ]
   },
   "../../../node_modules/@verbb/plugin-kit-web/dist/components/field/pk-field.js": {
-    "file": "assets/pk-field-B7Ku4TrP.js",
+    "file": "assets/pk-field-Dgwl7GR2.js",
     "name": "pk-field",
     "src": "../../../node_modules/@verbb/plugin-kit-web/dist/components/field/pk-field.js",
     "isDynamicEntry": true,
@@ -23,12 +23,12 @@
     ]
   },
   "../../../node_modules/@verbb/plugin-kit-web/dist/components/input/pk-input.js": {
-    "file": "assets/pk-input-Cj5nDcZs.js",
+    "file": "assets/pk-input-DDSg2ouN.js",
     "name": "pk-input",
     "src": "../../../node_modules/@verbb/plugin-kit-web/dist/components/input/pk-input.js",
     "isDynamicEntry": true,
     "imports": [
-      "_pk-input-BUbXj9We-WVO-OkmC.js"
+      "_pk-input-BUbXj9We-CQGO_qSx.js"
     ]
   },
   "_animate-with-class-CjTZI0NU-CR-bBYI-.js": {
@@ -57,29 +57,29 @@
       "_directive-C0vuPHAp.js"
     ]
   },
-  "_pk-input-BUbXj9We-WVO-OkmC.js": {
-    "file": "assets/pk-input-BUbXj9We-WVO-OkmC.js",
+  "_pk-input-BUbXj9We-CQGO_qSx.js": {
+    "file": "assets/pk-input-BUbXj9We-CQGO_qSx.js",
     "name": "pk-input-BUbXj9We",
     "imports": [
       "_directive-C0vuPHAp.js",
       "_form-control.styles-CQ93gnVf-ehs75Lb4.js"
     ]
   },
-  "_preload-helper-uBIymjUX.js": {
-    "file": "assets/preload-helper-uBIymjUX.js",
+  "_preload-helper-CRzLMJPS.js": {
+    "file": "assets/preload-helper-CRzLMJPS.js",
     "name": "preload-helper"
   },
   "_shared-3S4XvNhP.js": {
     "file": "assets/shared-3S4XvNhP.js",
     "name": "shared"
   },
-  "_tablemakerPkComponents-C9fGm5bi.js": {
-    "file": "assets/tablemakerPkComponents-C9fGm5bi.js",
+  "_tablemakerPkComponents-CVYBuW8h.js": {
+    "file": "assets/tablemakerPkComponents-CVYBuW8h.js",
     "name": "tablemakerPkComponents",
     "imports": [
       "_icons-k1pvx6yX-CkUe4Wxw.js",
       "_directive-C0vuPHAp.js",
-      "_pk-input-BUbXj9We-WVO-OkmC.js",
+      "_pk-input-BUbXj9We-CQGO_qSx.js",
       "_animate-with-class-CjTZI0NU-CR-bBYI-.js",
       "_form-control.styles-CQ93gnVf-ehs75Lb4.js",
       "_unsafe-html-DwZdmo2Q.js"
@@ -93,7 +93,7 @@
     ]
   },
   "field/src/js/input/ColumnsSchemaDialog.ts": {
-    "file": "assets/ColumnsSchemaDialog-qnuYd1JV.js",
+    "file": "assets/ColumnsSchemaDialog-ovSvF1yG.js",
     "name": "ColumnsSchemaDialog",
     "src": "field/src/js/input/ColumnsSchemaDialog.ts",
     "isDynamicEntry": true,
@@ -102,23 +102,23 @@
     ]
   },
   "field/src/js/input/RichTextCellDialog.ts": {
-    "file": "assets/RichTextCellDialog-Ij9X13BD.js",
+    "file": "assets/RichTextCellDialog-DdjqJTkt.js",
     "name": "RichTextCellDialog",
     "src": "field/src/js/input/RichTextCellDialog.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_preload-helper-uBIymjUX.js"
+      "_preload-helper-CRzLMJPS.js"
     ]
   },
   "field/src/js/plugin-kit-register.ts": {
-    "file": "assets/pluginKit-D2pAn6dm.js",
+    "file": "assets/pluginKit-Dus7RO1b.js",
     "name": "pluginKit",
     "src": "field/src/js/plugin-kit-register.ts",
     "isEntry": true,
     "imports": [
       "_icons-k1pvx6yX-CkUe4Wxw.js",
       "_directive-C0vuPHAp.js",
-      "_tablemakerPkComponents-C9fGm5bi.js",
+      "_tablemakerPkComponents-CVYBuW8h.js",
       "_animate-with-class-CjTZI0NU-CR-bBYI-.js"
     ],
     "css": [
@@ -126,13 +126,13 @@
     ]
   },
   "field/src/js/tablemaker.ts": {
-    "file": "assets/tablemaker-E4zWAv5s.js",
+    "file": "assets/tablemaker-BfmqOuAK.js",
     "name": "tablemaker",
     "src": "field/src/js/tablemaker.ts",
     "isEntry": true,
     "imports": [
-      "_tablemakerPkComponents-C9fGm5bi.js",
-      "_preload-helper-uBIymjUX.js",
+      "_tablemakerPkComponents-CVYBuW8h.js",
+      "_preload-helper-CRzLMJPS.js",
       "_shared-3S4XvNhP.js"
     ],
     "dynamicImports": [
