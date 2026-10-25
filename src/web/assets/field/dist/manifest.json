@@ -1,41 +1,41 @@
 {
   "../../../node_modules/@verbb/plugin-kit-web/dist/components/dialog/pk-dialog.js": {
-    "file": "assets/pk-dialog-CGijyvsS.js",
+    "file": "assets/pk-dialog-SqjhWELG.js",
     "name": "pk-dialog",
     "src": "../../../node_modules/@verbb/plugin-kit-web/dist/components/dialog/pk-dialog.js",
     "isDynamicEntry": true,
     "imports": [
-      "_icons-k1pvx6yX-CkUe4Wxw.js",
+      "_icons-k1pvx6yX-BH8atgfo.js",
       "_directive-C0vuPHAp.js",
-      "_animate-with-class-CjTZI0NU-CR-bBYI-.js"
+      "_animate-with-class-CjTZI0NU-D89nfXSr.js"
     ]
   },
   "../../../node_modules/@verbb/plugin-kit-web/dist/components/field/pk-field.js": {
-    "file": "assets/pk-field-Dgwl7GR2.js",
+    "file": "assets/pk-field-47f3YDeW.js",
     "name": "pk-field",
     "src": "../../../node_modules/@verbb/plugin-kit-web/dist/components/field/pk-field.js",
     "isDynamicEntry": true,
     "imports": [
-      "_icons-k1pvx6yX-CkUe4Wxw.js",
+      "_icons-k1pvx6yX-BH8atgfo.js",
       "_directive-C0vuPHAp.js",
-      "_form-control.styles-CQ93gnVf-ehs75Lb4.js",
-      "_unsafe-html-DwZdmo2Q.js"
+      "_has-slot-DJv86HKx-Bi3pfuDS.js",
+      "_unsafe-html-CM-SjOwA.js"
     ]
   },
   "../../../node_modules/@verbb/plugin-kit-web/dist/components/input/pk-input.js": {
-    "file": "assets/pk-input-DDSg2ouN.js",
+    "file": "assets/pk-input-D-4HMGsX.js",
     "name": "pk-input",
     "src": "../../../node_modules/@verbb/plugin-kit-web/dist/components/input/pk-input.js",
     "isDynamicEntry": true,
     "imports": [
-      "_pk-input-BUbXj9We-CQGO_qSx.js"
+      "_pk-input-CTw4ktd--BE0lXfoM.js"
     ]
   },
-  "_animate-with-class-CjTZI0NU-CR-bBYI-.js": {
-    "file": "assets/animate-with-class-CjTZI0NU-CR-bBYI-.js",
+  "_animate-with-class-CjTZI0NU-D89nfXSr.js": {
+    "file": "assets/animate-with-class-CjTZI0NU-D89nfXSr.js",
     "name": "animate-with-class-CjTZI0NU",
     "imports": [
-      "_icons-k1pvx6yX-CkUe4Wxw.js",
+      "_icons-k1pvx6yX-BH8atgfo.js",
       "_directive-C0vuPHAp.js"
     ]
   },
@@ -43,26 +43,26 @@
     "file": "assets/directive-C0vuPHAp.js",
     "name": "directive"
   },
-  "_form-control.styles-CQ93gnVf-ehs75Lb4.js": {
-    "file": "assets/form-control.styles-CQ93gnVf-ehs75Lb4.js",
-    "name": "form-control.styles-CQ93gnVf",
+  "_has-slot-DJv86HKx-Bi3pfuDS.js": {
+    "file": "assets/has-slot-DJv86HKx-Bi3pfuDS.js",
+    "name": "has-slot-DJv86HKx",
     "imports": [
       "_directive-C0vuPHAp.js"
     ]
   },
-  "_icons-k1pvx6yX-CkUe4Wxw.js": {
-    "file": "assets/icons-k1pvx6yX-CkUe4Wxw.js",
+  "_icons-k1pvx6yX-BH8atgfo.js": {
+    "file": "assets/icons-k1pvx6yX-BH8atgfo.js",
     "name": "icons-k1pvx6yX",
     "imports": [
       "_directive-C0vuPHAp.js"
     ]
   },
-  "_pk-input-BUbXj9We-CQGO_qSx.js": {
-    "file": "assets/pk-input-BUbXj9We-CQGO_qSx.js",
-    "name": "pk-input-BUbXj9We",
+  "_pk-input-CTw4ktd--BE0lXfoM.js": {
+    "file": "assets/pk-input-CTw4ktd--BE0lXfoM.js",
+    "name": "pk-input-CTw4ktd-",
     "imports": [
       "_directive-C0vuPHAp.js",
-      "_form-control.styles-CQ93gnVf-ehs75Lb4.js"
+      "_has-slot-DJv86HKx-Bi3pfuDS.js"
     ]
   },
   "_preload-helper-CRzLMJPS.js": {
@@ -73,23 +73,23 @@
     "file": "assets/shared-3S4XvNhP.js",
     "name": "shared"
   },
-  "_tablemakerPkComponents-CVYBuW8h.js": {
-    "file": "assets/tablemakerPkComponents-CVYBuW8h.js",
+  "_tablemakerPkComponents-S1ejNZib.js": {
+    "file": "assets/tablemakerPkComponents-S1ejNZib.js",
     "name": "tablemakerPkComponents",
     "imports": [
-      "_icons-k1pvx6yX-CkUe4Wxw.js",
+      "_icons-k1pvx6yX-BH8atgfo.js",
       "_directive-C0vuPHAp.js",
-      "_pk-input-BUbXj9We-CQGO_qSx.js",
-      "_animate-with-class-CjTZI0NU-CR-bBYI-.js",
-      "_form-control.styles-CQ93gnVf-ehs75Lb4.js",
-      "_unsafe-html-DwZdmo2Q.js"
+      "_pk-input-CTw4ktd--BE0lXfoM.js",
+      "_animate-with-class-CjTZI0NU-D89nfXSr.js",
+      "_has-slot-DJv86HKx-Bi3pfuDS.js",
+      "_unsafe-html-CM-SjOwA.js"
     ]
   },
-  "_unsafe-html-DwZdmo2Q.js": {
-    "file": "assets/unsafe-html-DwZdmo2Q.js",
+  "_unsafe-html-CM-SjOwA.js": {
+    "file": "assets/unsafe-html-CM-SjOwA.js",
     "name": "unsafe-html",
     "imports": [
-      "_icons-k1pvx6yX-CkUe4Wxw.js"
+      "_icons-k1pvx6yX-BH8atgfo.js"
     ]
   },
   "field/src/js/input/ColumnsSchemaDialog.ts": {
@@ -111,27 +111,27 @@
     ]
   },
   "field/src/js/plugin-kit-register.ts": {
-    "file": "assets/pluginKit-Dus7RO1b.js",
+    "file": "assets/pluginKit-BQqI_6Fh.js",
     "name": "pluginKit",
     "src": "field/src/js/plugin-kit-register.ts",
     "isEntry": true,
     "imports": [
-      "_icons-k1pvx6yX-CkUe4Wxw.js",
+      "_icons-k1pvx6yX-BH8atgfo.js",
       "_directive-C0vuPHAp.js",
-      "_tablemakerPkComponents-CVYBuW8h.js",
-      "_animate-with-class-CjTZI0NU-CR-bBYI-.js"
+      "_tablemakerPkComponents-S1ejNZib.js",
+      "_animate-with-class-CjTZI0NU-D89nfXSr.js"
     ],
     "css": [
-      "assets/pluginKit-L3ZLhEvQ.css"
+      "assets/pluginKit-Cvzm7hAh.css"
     ]
   },
   "field/src/js/tablemaker.ts": {
-    "file": "assets/tablemaker-BfmqOuAK.js",
+    "file": "assets/tablemaker-_k2tb5mt.js",
     "name": "tablemaker",
     "src": "field/src/js/tablemaker.ts",
     "isEntry": true,
     "imports": [
-      "_tablemakerPkComponents-CVYBuW8h.js",
+      "_tablemakerPkComponents-S1ejNZib.js",
       "_preload-helper-CRzLMJPS.js",
       "_shared-3S4XvNhP.js"
     ],
