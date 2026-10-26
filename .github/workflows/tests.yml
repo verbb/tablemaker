@@ -7,6 +7,18 @@ on:
 permissions:
   contents: read
 jobs:
+  dependency-audit:
+    name: Production dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --omit=dev
   php-check:
     name: PHP 8.2.0 syntax and imports
     runs-on: ubuntu-22.04
@@ -61,13 +73,14 @@ jobs:
             .cache/php-check/composer.json
             .cache/php-check/composer.lock
   pest:
-    name: PHP ${{ matrix.php }}
+    name: PHP ${{ matrix.php }} (${{ matrix.order }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         php: ["8.2", "8.3", "8.4"]
+        order: [default, random]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
@@ -77,7 +90,7 @@ jobs:
       - name: Validate Composer manifest
         run: composer validate --no-plugins --no-check-publish
       - name: Build production assets
-        run: npm ci && npm audit --omit=dev && npm run test:frontend && npm run build
+        run: npm ci && npm run test:frontend && npm run build
       - uses: ddev/github-action-setup-ddev@v1
         with:
           version: "1.25.4"
@@ -85,15 +98,60 @@ jobs:
       - name: Configure PHP runtime
         run: bash .github/scripts/configure-ddev.sh "${{ matrix.php }}"
       - name: Clean-install integration and performance tests
-        run: ddev test --suite=all
+        run: ddev test --suite=all --order-by=${{ matrix.order }} --random-order-seed=9122026
       - name: Test diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-diagnostics-php-${{ matrix.php }}
+          name: test-diagnostics-php-${{ matrix.php }}-${{ matrix.order }}
           include-hidden-files: true
           path: |
             .cache/verbb-tests/latest.log
             .cache/verbb-tests/junit.xml
             .cache/verbb-tests/result.json
+            .cache/verbb-tests/app/storage/logs/
+  pest-minimum:
+    name: PHP 8.2.0 (${{ matrix.order }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        order: [default, random]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Build production assets
+        run: npm ci && npm run build
+      - uses: ddev/github-action-setup-ddev@v1
+        with:
+          version: '1.25.4'
+          autostart: false
+      - name: Configure exact minimum service
+        run: cp .github/php-minimum/docker-compose.yaml .ddev/docker-compose.php-minimum.yaml
+      - name: Start isolated DDEV runtime
+        run: bash .github/scripts/configure-ddev.sh 8.3
+      - name: Verify exact minimum interpreter and integration lock
+        run: |
+          ddev exec --service php-minimum --raw -- php -r 'echo PHP_VERSION, PHP_EOL; exit(PHP_VERSION === "8.2.0" ? 0 : 1);'
+          ddev exec --service php-minimum --raw -- php .github/scripts/check-runtime-lock.php
+      - name: Clean-install integration and performance tests
+        run: ddev exec --service php-minimum --raw -- php tests/runtime/run.php --suite=all --order-by=${{ matrix.order }} --random-order-seed=9122026
+      - name: Verify installed dependency platform requirements
+        run: ddev exec --service php-minimum --raw -- composer check-platform-reqs --working-dir=.cache/verbb-tests/app --no-plugins
+      - name: Test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-8.2.0-${{ matrix.order }}
+          include-hidden-files: true
+          path: |
+            .cache/verbb-tests/latest.log
+            .cache/verbb-tests/junit.xml
+            .cache/verbb-tests/result.json
+            .cache/verbb-tests/app/composer.json
+            .cache/verbb-tests/app/composer.lock
             .cache/verbb-tests/app/storage/logs/
