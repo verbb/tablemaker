@@ -52,3 +52,5 @@ node_modules
 
 /.phpunit.result.cache
 /.ddev/config.zz-ci.yaml
+
+/.ddev/docker-compose.php-minimum.yaml

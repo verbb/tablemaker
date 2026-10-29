@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e4c0159768e5b94ff57dc41c986587a8",
+    "content-hash": "a88553a6d665e40c03ffa7827e05eed7",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -10101,11 +10101,11 @@
         },
         {
             "name": "verbb/tablemaker",
-            "version": "5.1.4",
+            "version": "5.1.5",
             "dist": {
                 "type": "path",
                 "url": "../../..",
-                "reference": "166afe35d3d8f49b7321bd3d30361fa8f796b04f"
+                "reference": "59ff63118969ffe5c2f6c9d12991f646c8481220"
             },
             "require": {
                 "craftcms/cms": "^5.6.0",
@@ -11120,5 +11120,9 @@
     "prefer-lowest": false,
     "platform": {},
     "platform-dev": {},
+    "platform-overrides": {
+        "php": "8.2.0",
+        "php-64bit": "8.2.0"
+    },
     "plugin-api-version": "2.6.0"
 }
