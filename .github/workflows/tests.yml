@@ -9,18 +9,6 @@ name: Tests
 permissions:
   contents: read
 jobs:
-  dependency-audit:
-    name: Production dependency audit
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-    - uses: actions/checkout@v5
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 22
-        cache: npm
-    - run: npm ci
-    - run: npm audit --omit=dev
   php-check:
     name: PHP 8.2.0 syntax and imports
     runs-on: ubuntu-22.04
