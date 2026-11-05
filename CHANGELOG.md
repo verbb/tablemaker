@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.1.7 - 2026-11-05
+
+### Removed
+- Remove npm audit from the test workflow.
+
 ## 5.1.6 - 2026-11-01
 
 ### Changed
