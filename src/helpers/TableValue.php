@@ -23,7 +23,9 @@ use yii\validators\EmailValidator;
  */
 class TableValue
 {
-    private const RICH_TEXT_ALLOWED_HTML = 'p,br,strong,b,em,i,a[href|title|target|rel],ul,ol,li';
+    // Every tag any rich-text toolbar option can produce. Fields share one policy,
+    // so turning a button off only changes the editor, not what saved HTML keeps.
+    private const RICH_TEXT_ALLOWED_HTML = 'p,br,strong,b,em,i,u,s,sub,sup,code,a[href|title|target|rel],ul,ol,li';
 
     /**
      * @return TableMakerData|null
@@ -414,6 +416,7 @@ class TableValue
             case 'number':
                 if (!is_numeric($value) || !is_finite((float)$value)) {
                     $error = Craft::t('tablemaker', 'Number cells must contain a finite number.');
+
                     return false;
                 }
 
@@ -424,12 +427,15 @@ class TableValue
                 }
 
                 $validator = new ColorValidator();
+
                 break;
             case 'url':
                 $validator = new UrlValidator();
+
                 break;
             case 'email':
                 $validator = new EmailValidator();
+
                 break;
             default:
                 return true;
@@ -596,6 +602,7 @@ class TableValue
                 if ($fallback !== 'select') {
                     unset($column['options']);
                 }
+
                 $columns[$colId] = $column;
             }
         }
@@ -746,6 +753,7 @@ class TableValue
                     $decoded = Json::decodeIfJson($raw);
                     $raw = is_string($decoded) ? $decoded : $raw;
                 }
+
                 $type = $columns[$colId]['type'] ?? 'singleline';
                 $cells[$colId] = self::normalizeCell($type, $raw, $fromRequest);
             }
@@ -886,7 +894,7 @@ class TableValue
         return Html::encode($string);
     }
 
-    /** Keep the cell contract as HTML text while enforcing Table Maker's small toolbar vocabulary. */
+    /** Keep the cell contract as HTML text while enforcing the vocabulary of Table Maker's toolbar options. */
     private static function sanitizeRichText(string $value): string
     {
         return HtmlPurifier::process($value, [

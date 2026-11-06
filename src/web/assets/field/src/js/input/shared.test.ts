@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ColumnsSchemaDialog } from './ColumnsSchemaDialog.js';
-import { attachCkeditorUiToDialog, loadCraftCkeditor, richTextEditorConfig } from './RichTextCellDialog.js';
+import {
+    attachCkeditorUiToDialog,
+    loadCraftCkeditor,
+    richTextEditorConfig,
+    richTextToolbarItems,
+} from './RichTextCellDialog.js';
 import { defaultSelectValue, normalizeDropdownOptions } from './options.js';
 import {
     ensurePrefixedKey,
@@ -73,7 +78,7 @@ describe('table editor normalization', () => {
                 InlineEditor: { create: createInline },
             });
 
-        const runtime = await loadCraftCkeditor(importer);
+        const runtime = await loadCraftCkeditor(undefined, importer);
 
         expect(importer).toHaveBeenCalledWith('@craftcms/ckeditor');
         expect(importer).toHaveBeenCalledWith('ckeditor5');
@@ -87,6 +92,34 @@ describe('table editor normalization', () => {
             toolbar: ['bold'],
             licenseKey: 'GPL',
         });
+    });
+
+    it('loads only the CKEditor plugins the configured toolbar needs', async () => {
+        const plugin = (name: string) => Object.defineProperty(() => undefined, 'name', { value: name });
+        const core = Object.fromEntries([
+            'Essentials', 'Paragraph', 'Bold', 'Italic', 'Code', 'AutoLink', 'LinkEditing', 'List', 'ListProperties',
+        ].map((name) => [name, plugin(name)]));
+        const importer = vi.fn(async (specifier: string) => specifier === '@craftcms/ckeditor'
+            ? { create: vi.fn(), CraftLink: plugin('CraftLink') }
+            : { ...core, InlineEditor: { create: vi.fn() } });
+
+        const runtime = await loadCraftCkeditor(['bold', 'code', 'unknown'], importer);
+        expect(runtime.plugins.map((loaded) => (loaded as { name: string }).name))
+            .toEqual(['Essentials', 'Paragraph', 'Bold', 'Code']);
+
+        // A toolbar option whose plugin is missing from the bundle reports CKEditor
+        // as unavailable, so the cell falls back to raw HTML editing.
+        await expect(loadCraftCkeditor(['underline'], importer)).rejects.toThrow();
+    });
+
+    it('builds grouped rich text toolbars from the field setting', () => {
+        expect(richTextToolbarItems()).toEqual([
+            'bold', 'italic', '|', 'link', '|', 'bulletedList', 'numberedList', '|', 'undo', 'redo',
+        ]);
+        expect(richTextToolbarItems(['numberedList', 'code', 'bold'])).toEqual([
+            'bold', 'code', '|', 'numberedList', '|', 'undo', 'redo',
+        ]);
+        expect(richTextToolbarItems([])).toEqual(['undo', 'redo']);
     });
 
     it('keeps Escape in the link UI and cleans up modal integration listeners', () => {

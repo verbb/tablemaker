@@ -426,7 +426,8 @@ export class TableMakerInput {
     private richTextPreview(html: string): { content: DocumentFragment; text: string } {
         const parsed = new DOMParser().parseFromString(html, 'text/html');
         const content = document.createDocumentFragment();
-        const allowedTags = new Set(['p', 'br', 'strong', 'b', 'em', 'i', 'a', 'ul', 'ol', 'li']);
+        // Mirrors the server's rich-text allowlist so every toolbar option previews.
+        const allowedTags = new Set(['p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'sub', 'sup', 'code', 'a', 'ul', 'ol', 'li']);
         const blockedTags = new Set(['script', 'style', 'iframe', 'object', 'embed', 'svg', 'math', 'form']);
 
         const appendPreviewNode = (source: Node, parent: Node): void => {
@@ -556,7 +557,7 @@ export class TableMakerInput {
             this.inlineRichTextCell = { rowId, columnId };
 
             const { loadCraftCkeditor, richTextEditorConfig } = await import('./RichTextCellDialog.js');
-            const { createInline, plugins } = await loadCraftCkeditor();
+            const { createInline, plugins } = await loadCraftCkeditor(this.settings.richTextToolbar);
             const editor = await createInline(source, {
                 ...richTextEditorConfig(this.settings),
                 accessibleFieldName: column.heading.trim()

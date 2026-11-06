@@ -37,6 +37,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public const EDIT_COLUMNS_POSITION_TABLE_HEADER = 'tableHeader';
     public const RICH_TEXT_EDITING_MODE_MODAL = 'modal';
     public const RICH_TEXT_EDITING_MODE_INLINE = 'inline';
+    public const RICH_TEXT_TOOLBAR_DEFAULT = ['bold', 'italic', 'link', 'bulletedList', 'numberedList'];
 
     private const MIN_CKEDITOR_VERSION = '5.0.0';
     private const REJECTED_ERRORS_KEY = '__tableMakerErrors';
@@ -215,6 +216,53 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         return count($filtered) === count($all) ? '*' : $filtered;
     }
 
+    /**
+     * Canonical storage for the rich-text toolbar: known item handles in toolbar order.
+     */
+    public static function normalizeRichTextToolbarSetting(mixed $value): array
+    {
+        // Fields saved before this setting existed keep the original toolbar.
+        if ($value === null) {
+            return self::RICH_TEXT_TOOLBAR_DEFAULT;
+        }
+
+        // An unchecked checkbox select posts an empty string.
+        if ($value === '') {
+            return [];
+        }
+
+        if (is_string($value)) {
+            $value = [$value];
+        }
+
+        if (!is_array($value)) {
+            return self::RICH_TEXT_TOOLBAR_DEFAULT;
+        }
+
+        return array_values(array_intersect(array_keys(self::allRichTextToolbarOptions()), $value));
+    }
+
+    /**
+     * Toolbar items Table Maker can offer (handle → label), in toolbar order.
+     * Each one must have matching CKEditor plugins in the field input and tags in
+     * {@see TableValue}'s rich-text allowlist.
+     */
+    public static function allRichTextToolbarOptions(): array
+    {
+        return [
+            'bold' => Craft::t('tablemaker', 'Bold'),
+            'italic' => Craft::t('tablemaker', 'Italic'),
+            'underline' => Craft::t('tablemaker', 'Underline'),
+            'strikethrough' => Craft::t('tablemaker', 'Strikethrough'),
+            'subscript' => Craft::t('tablemaker', 'Subscript'),
+            'superscript' => Craft::t('tablemaker', 'Superscript'),
+            'code' => Craft::t('tablemaker', 'Code'),
+            'link' => Craft::t('tablemaker', 'Link'),
+            'bulletedList' => Craft::t('tablemaker', 'Bulleted list'),
+            'numberedList' => Craft::t('tablemaker', 'Numbered list'),
+        ];
+    }
+
     /** Craft element types that can be selected from CKEditor's link UI. */
     public static function allRichTextLinkTypeOptions(): array
     {
@@ -234,6 +282,8 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
     public string $richTextEditingMode = self::RICH_TEXT_EDITING_MODE_MODAL;
     /** Craft element types offered alongside the standard URL link input. */
     public mixed $richTextLinkTypes = '*';
+    /** Formatting buttons shown in rich-text cell editors (#84). */
+    public mixed $richTextToolbar = self::RICH_TEXT_TOOLBAR_DEFAULT;
     public ?string $rowsAddRowLabel = null;
 
     /**
@@ -294,6 +344,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         $this->editColumnsPosition = self::normalizeEditColumnsPosition($this->editColumnsPosition);
         $this->richTextEditingMode = self::normalizeRichTextEditingMode($this->richTextEditingMode);
         $this->richTextLinkTypes = self::normalizeRichTextLinkTypesSetting($this->richTextLinkTypes);
+        $this->richTextToolbar = self::normalizeRichTextToolbarSetting($this->richTextToolbar);
 
         return parent::beforeSave($isNew);
     }
@@ -401,6 +452,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         if ($copy) {
             $copy->siteId = $to->siteId;
         }
+
         $to->setFieldValue($this->handle, $copy);
     }
 
@@ -516,6 +568,8 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             'settings' => $this->getSettings(),
             'allColumnTypeOptions' => self::allColumnTypeSettingOptions(),
             'allRichTextLinkTypeOptions' => self::allRichTextLinkTypeOptions(),
+            'allRichTextToolbarOptions' => self::allRichTextToolbarOptions(),
+            'richTextToolbar' => self::normalizeRichTextToolbarSetting($this->richTextToolbar),
             'ckeditorAvailable' => self::isCkeditorAvailable(),
             'unavailableAllowedColumnTypes' => $unavailableAllowedColumnTypes,
         ]);
@@ -736,6 +790,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                     foreach ($options as $option) {
                         if (!empty($option['default'])) {
                             $defaults[$columnId] = $option['value'];
+
                             break;
                         }
                     }
@@ -748,6 +803,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                 while (array_key_exists('row' . $nextIndex, $rows)) {
                     $nextIndex++;
                 }
+
                 $rows['row' . $nextIndex] = $defaults;
                 $nextIndex++;
             }
@@ -760,6 +816,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                 while (array_key_exists('col' . $nextIndex, $columns)) {
                     $nextIndex++;
                 }
+
                 $columns['col' . $nextIndex] = [
                     'heading' => '',
                     'align' => 'left',
@@ -801,6 +858,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             'ckeditorAvailable' => $ckeditorAvailable,
             'richTextEditingMode' => self::normalizeRichTextEditingMode($this->richTextEditingMode),
             'richTextLinkOptions' => $ckeditorAvailable ? $this->_richTextLinkOptions($element) : [],
+            'richTextToolbar' => self::normalizeRichTextToolbarSetting($this->richTextToolbar),
             'elementSiteId' => $element?->siteId,
             'enableWidthColumn' => $this->enableWidthColumn,
             'enableAlignmentColumn' => $this->enableAlignmentColumn,
@@ -905,6 +963,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                     $sources[] = "group:$group->uid";
                 }
             }
+
             $sources = array_merge($sources, $this->_customElementSources(Category::class));
 
             if ($sources !== []) {
@@ -929,6 +988,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                     $sources[] = "volume:$volume->uid";
                 }
             }
+
             $sources = array_merge($sources, $this->_customElementSources(Asset::class));
 
             if ($sources !== []) {
@@ -953,6 +1013,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
         foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             if ($section->type === Section::TYPE_SINGLE) {
                 $showSingles = true;
+
                 continue;
             }
 
@@ -965,6 +1026,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
             foreach ($sites as $site) {
                 if (isset($siteSettings[$site->id]) && $siteSettings[$site->id]->hasUrls) {
                     $sources[] = "section:$section->uid";
+
                     break;
                 }
             }
@@ -1042,6 +1104,7 @@ class TableMakerField extends Field implements CrossSiteCopyableFieldInterface
                     $errors[] = Craft::t('tablemaker', 'Table must have at most {count} submitted cells.', [
                         'count' => self::MAX_REQUEST_CELLS,
                     ]);
+
                     break;
                 }
             }

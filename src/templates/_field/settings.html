@@ -46,6 +46,20 @@
         values: settings.richTextLinkTypes ?? '*',
         showAllOption: true,
     }) }}
+
+    {{ forms.checkboxSelectField({
+        label: 'Rich Text Toolbar' | t('tablemaker'),
+        instructions: 'Choose the formatting buttons available when editing rich-text cells.' | t('tablemaker'),
+        name: 'richTextToolbar',
+        options: allRichTextToolbarOptions,
+        values: richTextToolbar,
+    }) }}
+{% else %}
+    {# Keep the saved toolbar while CKEditor is unavailable, including an empty one. #}
+    <input type="hidden" name="{{ 'richTextToolbar' | namespaceInputName }}" value="">
+    {% for item in richTextToolbar %}
+        <input type="hidden" name="{{ 'richTextToolbar[]' | namespaceInputName }}" value="{{ item }}">
+    {% endfor %}
 {% endif %}
 
 {{ forms.lightswitchField({

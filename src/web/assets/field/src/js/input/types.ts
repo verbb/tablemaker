@@ -39,6 +39,8 @@ export interface TableMakerSettings {
     richTextEditingMode?: RichTextEditingMode;
     /** Craft element selectors offered by the rich-text link control. */
     richTextLinkOptions?: RichTextLinkOption[];
+    /** Formatting options shown in rich-text cell editors, in toolbar order. */
+    richTextToolbar?: string[];
     /** Site used by Craft element selectors and reference tags. */
     elementSiteId?: number | null;
     enableWidthColumn?: boolean;

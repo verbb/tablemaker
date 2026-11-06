@@ -523,6 +523,27 @@ describe('Table Maker Craft lifecycle', function() {
             ->and(TableMakerField::normalizeRichTextLinkTypesSetting([]))->toBe([]);
     });
 
+    it('normalizes the rich text toolbar into known items in toolbar order', function() {
+        expect(TableMakerField::normalizeRichTextToolbarSetting(null))->toBe(TableMakerField::RICH_TEXT_TOOLBAR_DEFAULT)
+            ->and(TableMakerField::normalizeRichTextToolbarSetting(''))->toBe([])
+            ->and(TableMakerField::normalizeRichTextToolbarSetting('code'))->toBe(['code'])
+            ->and(TableMakerField::normalizeRichTextToolbarSetting(['numberedList', 'unsupported', 'code', 'bold']))
+                ->toBe(['bold', 'code', 'numberedList'])
+            ->and(TableMakerField::normalizeRichTextToolbarSetting(123))->toBe(TableMakerField::RICH_TEXT_TOOLBAR_DEFAULT)
+            ->and((new TableMakerField())->richTextToolbar)->toBe(TableMakerField::RICH_TEXT_TOOLBAR_DEFAULT);
+    });
+
+    it('keeps the HTML produced by every rich text toolbar option', function() {
+        $html = '<p><u>Under</u> <s>Struck</s> H<sub>2</sub>O x<sup>2</sup> <code>$value</code></p>';
+        $data = TableValue::normalize([
+            'columns' => [['heading' => 'Formula', 'type' => 'richtext']],
+            'rows' => [[$html . '<pre>block</pre>']],
+        ], true);
+
+        expect($data->rows['row0']['col0'])->toBe($html . 'block')
+            ->and((string)$data->getTable())->toContain('<td>' . $html);
+    });
+
     it('carries the owning site alongside raw rich text references', function() {
         $field = new TableMakerField(['name' => 'Links', 'handle' => 'links']);
         $owner = new GlobalSet(['siteId' => 42]);
@@ -567,6 +588,34 @@ describe('Table Maker Craft lifecycle', function() {
         $html = $field->getInputHtml(null, null);
 
         expect($html)->toContain('&quot;richTextEditingMode&quot;:&quot;inline&quot;');
+    });
+
+    it('passes the rich text toolbar to the field input', function() {
+        Tests\Support\CpRequestContext::activate('entries');
+        $field = new TableMakerField([
+            'name' => 'Code rich table',
+            'handle' => 'codeRichTable',
+            'richTextToolbar' => ['code', 'bold'],
+        ]);
+
+        $html = $field->getInputHtml(null, null);
+
+        expect($html)->toContain('&quot;richTextToolbar&quot;:[&quot;bold&quot;,&quot;code&quot;]');
+    });
+
+    it('preserves the rich text toolbar through the settings form while CKEditor is unavailable', function() {
+        Tests\Support\CpRequestContext::activate('settings/fields');
+        $field = new TableMakerField([
+            'name' => 'Code rich table',
+            'handle' => 'codeRichTable',
+            'richTextToolbar' => ['code'],
+        ]);
+
+        $html = $field->getSettingsHtml();
+
+        expect($html)->toMatch('/<input type="hidden" name="[^"]*richTextToolbar" value="">/')
+            ->and($html)->toMatch('/<input type="hidden" name="[^"]*richTextToolbar\[\]" value="code">/')
+            ->and($html)->not->toContain('value="bold"');
     });
 
     it('keeps rich text labelled but unavailable when CKEditor is not enabled', function() {

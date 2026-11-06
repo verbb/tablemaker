@@ -53,7 +53,58 @@ export interface CraftCkeditorRuntime {
 export interface RichTextEditorSettings {
     elementSiteId?: number | null;
     richTextLinkOptions?: RichTextLinkOption[];
+    richTextToolbar?: string[];
 }
+
+/** Toolbar used when the field has no saved toolbar setting. */
+export const RICH_TEXT_DEFAULT_TOOLBAR = ['bold', 'italic', 'link', 'bulletedList', 'numberedList'];
+
+// Toolbar options in display order, grouped between separators. Each option must
+// also be in the field setting's option list and the server's HTML allowlist.
+const RICH_TEXT_TOOLBAR_GROUPS = [
+    ['bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'code'],
+    ['link'],
+    ['bulletedList', 'numberedList'],
+];
+
+// CKEditor plugins each toolbar option needs. `CraftLink` comes from Craft's
+// module; the others are exported by the `ckeditor5` bundle.
+const RICH_TEXT_TOOLBAR_PLUGINS: Record<string, string[]> = {
+    bold: ['Bold'],
+    italic: ['Italic'],
+    underline: ['Underline'],
+    strikethrough: ['Strikethrough'],
+    subscript: ['Subscript'],
+    superscript: ['Superscript'],
+    code: ['Code'],
+    link: ['AutoLink', 'LinkEditing', 'CraftLink'],
+    bulletedList: ['List', 'ListProperties'],
+    numberedList: ['List', 'ListProperties'],
+};
+
+/** Order the field's toolbar options into CKEditor toolbar items, ending with undo/redo. */
+export const richTextToolbarItems = (selected: readonly string[] = RICH_TEXT_DEFAULT_TOOLBAR): string[] => {
+    const enabled = new Set(selected);
+    const items: string[] = [];
+
+    for (const group of RICH_TEXT_TOOLBAR_GROUPS) {
+        const groupItems = group.filter((item) => enabled.has(item));
+
+        if (groupItems.length) {
+            if (items.length) {
+                items.push('|');
+            }
+            items.push(...groupItems);
+        }
+    }
+
+    if (items.length) {
+        items.push('|');
+    }
+    items.push('undo', 'redo');
+
+    return items;
+};
 
 /** Shared safe CKEditor surface for both modal and inline rich-text cells. */
 export const richTextEditorConfig = (settings: RichTextEditorSettings): Record<string, unknown> => ({
@@ -70,17 +121,7 @@ export const richTextEditorConfig = (settings: RichTextEditorSettings): Record<s
         },
     }],
     toolbar: {
-        items: [
-            'bold',
-            'italic',
-            'link',
-            '|',
-            'bulletedList',
-            'numberedList',
-            '|',
-            'undo',
-            'redo',
-        ],
+        items: richTextToolbarItems(settings.richTextToolbar),
     },
     ui: {
         viewportOffset: { top: 44 },
@@ -176,8 +217,12 @@ const importCkeditorModule: CkeditorModuleImporter = (specifier) => {
     return import(/* @vite-ignore */ specifier) as Promise<CkeditorModule>;
 };
 
-/** Resolve CKEditor through the import map registered by Craft's CKEditor plugin. */
+/**
+ * Resolve CKEditor through the import map registered by Craft's CKEditor plugin,
+ * loading only the plugins the field's toolbar uses.
+ */
 export const loadCraftCkeditor = async (
+    toolbar: readonly string[] = RICH_TEXT_DEFAULT_TOOLBAR,
     importer: CkeditorModuleImporter = importCkeditorModule,
 ): Promise<CraftCkeditorRuntime> => {
     const [craftModule, coreModule] = await Promise.all([
@@ -186,17 +231,9 @@ export const loadCraftCkeditor = async (
     ]);
     const create = craftModule.create;
     const InlineEditor = coreModule.InlineEditor as { create?: CraftInlineCkeditorCreate } | undefined;
-    const plugins = [
-        coreModule.Essentials,
-        coreModule.Paragraph,
-        coreModule.Bold,
-        coreModule.Italic,
-        coreModule.AutoLink,
-        coreModule.LinkEditing,
-        craftModule.CraftLink,
-        coreModule.List,
-        coreModule.ListProperties,
-    ];
+    const pluginNames = new Set(['Essentials', 'Paragraph']);
+    toolbar.forEach((item) => RICH_TEXT_TOOLBAR_PLUGINS[item]?.forEach((name) => pluginNames.add(name)));
+    const plugins = [...pluginNames].map((name) => name === 'CraftLink' ? craftModule[name] : coreModule[name]);
 
     if (typeof create !== 'function' || typeof InlineEditor?.create !== 'function'
         || plugins.some((plugin) => typeof plugin !== 'function')) {
@@ -299,7 +336,7 @@ export class RichTextCellDialog {
         token: number,
     ): Promise<void> {
         try {
-            const { create, plugins } = await loadCraftCkeditor();
+            const { create, plugins } = await loadCraftCkeditor(this.settings.richTextToolbar);
 
             const editor = await create(source, {
                 ...richTextEditorConfig(this.settings),
