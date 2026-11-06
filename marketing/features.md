@@ -10,7 +10,7 @@ Authors can add and label columns and rows directly in the field, making the for
 ![A workshop schedule with dates, tracks, seat counts, booking switches and session descriptions.](../screenshots/table-maker-field.png)
 <!-- feature-section-end -->
 
-<!-- feature-section media-size="large" media-shadow="false" -->
+<!-- feature-section media-size="large" -->
 ## Structure without a rigid schema
 
 Choose the column types, headings, widths and alignment that make each table meaningful. Field settings can narrow the available types and set sensible row or column boundaries without forcing every entry into the same shape.
