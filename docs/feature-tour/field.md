@@ -1,18 +1,18 @@
 # Field
 
-Use a Table Maker field when editors need to manage both the columns and the content of a table. For example, a pricing page might compare plans by price and billing period. Each entry can have its own headings, rows and optional caption.
+Use a Table Maker field when editors need to manage both the columns and the content of a table. For example, a workshop schedule can combine dates, tracks, seat counts and booking status. Each entry can have its own headings, rows and optional caption.
 
-## Create a Pricing Table
+## Create a Workshop Schedule
 
-Create a Table Maker field under **Settings → Fields**, name it Pricing Table and give it the handle `pricingTable`. Add it to an entry type's field layout, then open an entry that uses that layout.
+Create a Table Maker field under **Settings → Fields**, name it Workshop Schedule and give it the handle `workshopSchedule`. Add it to an entry type's field layout, then open an entry that uses that layout.
 
-![Table Maker field with Plan and Price rows and a caption](../../screenshots/table-maker-field.png)
+![Workshop schedule with six column types and a caption](../../screenshots/table-maker-field.png)
 
-Use **Configure** to define the table. Add a Plan column with the **Row heading** type and a Price column with **Single-line text**. A row heading identifies the rest of its row: the generated HTML uses a `<th scope="row">` cell for each plan name.
+Use **Configure** to define the table. Add Workshop as a **Row heading**, Date as **Date**, Track as **Dropdown**, Seats as **Number**, Bookings open as **Lightswitch** and What you’ll learn as **Multi-line text**. A row heading identifies the rest of its row: the generated HTML uses a `<th scope="row">` cell for each workshop name.
 
 ![Edit columns dialog with heading, width and alignment controls](../../screenshots/table-maker-columns.png)
 
-Confirm the column changes, then enter Basic and Pro as plan names and $9 and $29 as their prices. Save the entry and reopen it to check the headings and values. [Rendering Tables](docs:template-guides/rendering-tables) shows how to display the result on the pricing page.
+Define Design, Development and Strategy as the Track options, then confirm the column changes. Add sessions such as Design systems and Content modelling, enter their dates and seat counts, and turn bookings on for the available sessions. Save the entry and reopen it to check the headings and values. [Rendering Tables](docs:template-guides/rendering-tables) shows how to display the schedule on your site.
 
 ## Field Settings
 
@@ -22,7 +22,7 @@ Use **Configure Button Position** to place the column editor action in the field
 
 Turn on **Enable Caption** when each table needs a descriptive title, such as “Monthly plans”. You can set its label, instructions and placeholder on the field. The caption appears below the editing grid and is available to Twig and GraphQL. Turning off the input does not remove a stored caption: it still renders, and editors can change it by turning the input back on.
 
-Use **Allowed Column Types** to limit the choices in **Configure**. For this pricing example, allow Row heading, Single-line text and Dropdown if editors need a billing-period column. Choose **All** to make every built-in type available. Changing this setting preserves existing columns and their values. An existing column keeps its current type as a choice; new columns and type changes use the allowed choices.
+Use **Allowed Column Types** to limit the choices in **Configure**. For this schedule, allow Row heading, Date, Dropdown, Number, Lightswitch and Multi-line text. Choose **All** to make every built-in type available. Changing this setting preserves existing columns and their values. An existing column keeps its current type as a choice; new columns and type changes use the allowed choices.
 
 **Rich text** is available as a column choice only when CKEditor 5.0 or later is installed and enabled. Rich-text cells show a compact formatted preview so paragraphs, emphasis, links and lists remain distinguishable from plain multiline text. By default, selecting that preview opens a focused modal editor with bold, italic, link and list controls. The field setting **Rich Text Editing Mode** can instead opt a simple table into inline editing; only the active cell creates an editor, and its row expands while it is being edited. Modal editing remains recommended for tables with several columns. **Rich Text Link Types** controls whether editors can select Entries, Categories and Assets as link targets; standard URL links remain available. Element links retain Craft reference tags so generated table HTML follows later URI changes. If CKEditor is disabled, uninstalled or older than version 5.0, existing rich-text columns and their content are preserved and the cells fall back to raw HTML textareas until a supported version is available again.
 
