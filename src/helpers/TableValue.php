@@ -10,6 +10,7 @@ use craft\helpers\Html;
 use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\validators\ColorValidator;
 use craft\validators\UrlValidator;
 
@@ -877,21 +878,58 @@ class TableValue
         if ($type === 'richtext') {
             $html = self::sanitizeRichText($string);
 
-            // CraftLink stores a stable reference fragment beside the current URL.
-            // Resolve it only for rendered output; raw cell data must retain the tag
-            // so later URI changes can still be reflected.
-            if ($siteId !== null) {
-                $html = Craft::$app->getElements()->parseRefs($html, $siteId);
+            // CraftLink's URL fragments are not ref tags. Convert them only for
+            // output so saved cells keep their stable IDs after URI changes.
+            $html = self::_resolveRichTextLinkRefs($html, $siteId);
+            $html = Craft::$app->getElements()->parseRefs($html, $siteId);
 
-                // Reference attributes are dynamic content, so enforce the same
-                // rich-text policy after Craft has inserted their current values.
-                $html = self::sanitizeRichText($html);
-            }
+            // Reference attributes are dynamic content, so enforce the same
+            // rich-text policy after Craft has inserted their current values.
+            $html = self::sanitizeRichText($html);
 
             return $html;
         }
 
         return Html::encode($string);
+    }
+
+    private static function _resolveRichTextLinkRefs(string $html, ?int $defaultSiteId): string
+    {
+        $resolved = [];
+
+        // Purification has normalized attribute quotes. Match anchor attributes
+        // only, leaving reference-like text in prose and code samples untouched.
+        return preg_replace_callback(
+            '/(<a\b[^>]*?\shref=")([^"?#{}]*)(\?[^"#{}]*)?(#[^"#{}]*)?(?:#|%23)(entry|category|asset):(\d+)(?:@(\d+))?(?::url)?"/',
+            function(array $matches) use ($defaultSiteId, &$resolved): string {
+                [, $prefix, $url, $query, $fragment, $type, $id, $siteId] = array_pad($matches, 8, '');
+                $ref = '{' . $type . ':' . $id . ($siteId !== '' ? '@' . $siteId : '') . ':url}';
+                $currentUrl = $resolved[$ref] ??= Craft::$app->getElements()->parseRefs($ref, $defaultSiteId);
+
+                // Deleted elements retain their last saved URL without the editor marker.
+                if ($currentUrl === $ref) {
+                    return $prefix . $url . $query . $fragment . '"';
+                }
+
+                // Keep custom suffixes, but let the element own its current route
+                // parameters (e.g. ?p=news/updated) and any intrinsic fragment.
+                if ($query !== '') {
+                    $currentQuery = parse_url($currentUrl, PHP_URL_QUERY);
+                    $currentUrl = UrlHelper::urlWithParams($currentUrl, Html::decode(ltrim($query, '?')));
+
+                    if ($currentQuery) {
+                        $currentUrl = UrlHelper::urlWithParams($currentUrl, $currentQuery);
+                    }
+                }
+
+                if ($fragment !== '' && !parse_url($currentUrl, PHP_URL_FRAGMENT)) {
+                    $currentUrl .= Html::decode($fragment);
+                }
+
+                return $prefix . Html::encode($currentUrl) . '"';
+            },
+            $html,
+        );
     }
 
     /** Keep the cell contract as HTML text while enforcing the vocabulary of Table Maker's toolbar options. */

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use craft\elements\Entry;
 use craft\fieldlayoutelements\CustomField;
+use craft\helpers\Html;
+use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
@@ -133,6 +135,67 @@ it('sanitizes rich text after resolving element references', function() {
         ->and($html)->toContain('<p>Current title</p>')
         ->and($html)->not->toContain('<img')
         ->and($html)->not->toContain('onerror');
+});
+
+it('resolves CraftLink fragments after the linked entry URI changes', function(string $marker, bool $explicitSite, string $suffix) {
+    $siteId = $this->entry->siteId;
+    $settings = $this->section->getSiteSettings();
+    $settings[$siteId]->hasUrls = true;
+    $settings[$siteId]->uriFormat = 'news/{slug}';
+    $this->section->setSiteSettings($settings);
+    expect(Craft::$app->getEntries()->saveSection($this->section))->toBeTrue();
+    expect(Craft::$app->getElements()->saveElement($this->entry))->toBeTrue();
+    $oldUrl = $this->entry->getUrl();
+    $ref = $marker . 'entry:' . $this->entry->id . ($explicitSite ? '@' . $siteId : '');
+    $sourceUrl = UrlHelper::urlWithParams($oldUrl, Html::decode($suffix));
+    $source = '<p><a href="' . Html::encode($sourceUrl) . $ref . '" target="_blank">Read more</a></p>';
+    $value = $this->tableField->normalizeValue([
+        'columns' => [['heading' => 'Reference', 'type' => 'richtext']],
+        'rows' => [[$source]],
+    ], $this->entry);
+    $stored = $value->toStorage();
+
+    $this->entry->slug = 'updated-link';
+    expect(Craft::$app->getElements()->saveElement($this->entry))->toBeTrue();
+    $currentUrl = $this->entry->getUrl();
+    $expectedUrl = Html::encode(UrlHelper::urlWithParams($currentUrl, Html::decode($suffix)));
+    expect($currentUrl)->not->toBe($oldUrl);
+
+    // An explicit link site must win over the owning cell's site.
+    $value->siteId = $explicitSite ? 999999 : $siteId;
+    $html = (string)$value->getTable();
+    expect($html)->toContain('href="' . $expectedUrl . '"')
+        ->and($html)->toContain('target="_blank"')
+        ->and($html)->not->toContain($marker . 'entry:', '{entry:')
+        ->and($value->toStorage())->toBe($stored);
+
+    // Standalone values without an owner still use Craft's default site.
+    $standalone = verbb\tablemaker\helpers\TableValue::normalize($stored);
+    expect((string)$standalone->getTable())->toContain('href="' . $expectedUrl . '"');
+})->with([
+    'explicit site' => ['#', true, ''],
+    'owning site and suffix' => ['#', false, '?source=table&amp;page=2#details'],
+    'encoded marker' => ['%23', true, '?source=table#details'],
+]);
+
+it('keeps ordinary links and falls back to saved URLs for missing CraftLink elements', function() {
+    $source = '<p><a href="https://example.test/page#details">Anchor</a> '
+        . '<a href="https://example.test/old?source=table#details#entry:999999999@1">Missing entry</a> '
+        . '<a href="https://example.test/category#category:999999999">Missing category</a> '
+        . '<a href="https://example.test/file.pdf%23asset:999999999">Missing asset</a></p>'
+        . '<p><code>href="https://example.test/sample#entry:123"</code></p>';
+    $value = $this->tableField->normalizeValue([
+        'columns' => [['heading' => 'Reference', 'type' => 'richtext']],
+        'rows' => [[$source]],
+    ], $this->entry);
+
+    expect((string)$value->getTable())->toContain(
+        'href="https://example.test/page#details"',
+        'href="https://example.test/old?source=table#details"',
+        'href="https://example.test/category"',
+        'href="https://example.test/file.pdf"',
+        '<code>href="https://example.test/sample#entry:123"</code>',
+    )->not->toContain('#entry:999999999', '#category:', '%23asset:');
 });
 
 it('rejects invalid numbers without replacing saved table content', function(string $number) {

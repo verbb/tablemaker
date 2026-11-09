@@ -5,6 +5,9 @@
 ### Added
 - Added a **Rich Text Toolbar** field setting to choose the formatting buttons in rich-text cells, with new underline, strikethrough, subscript, superscript and inline code options ([#84](https://github.com/verbb/tablemaker/issues/84)).
 
+### Fixed
+- Fixed rich-text element links retaining outdated URLs and reference fragments in rendered tables ([#84](https://github.com/verbb/tablemaker/issues/84)).
+
 ## 5.1.7 - 2026-11-05
 
 ### Removed
