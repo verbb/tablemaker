@@ -1,6 +1,6 @@
 # Rendering Tables
 
-A populated Table Maker field returns its columns, rows, caption and generated table markup. The examples below use the `pricingTable` field created in [Installation and Setup](docs:get-started/installation-setup#create-and-display-a-table).
+A populated Table Maker field returns its columns, rows, caption and generated table markup. The examples below use the `pricingTable` field created in [Installation and Setup](docs:get-started/installation-setup#first-steps).
 
 ## Use the Generated Table
 
