@@ -60,4 +60,4 @@ Use **Configure** to add, reorder or rename columns and change their types. Chan
 
 To bring in spreadsheet data, copy the cells and paste into the first target cell in the table. Table Maker fills neighbouring cells and adds rows within the field's maximum row limit. Create the destination columns first, then check dates, dropdown choices and other typed values after pasting.
 
-Use **Insert row above / below** in a row's actions menu when you need to insert a plan between existing rows. Save the entry after editing, then compare the public table with the editing grid. For an application that reads or writes the table through an API, follow [GraphQL](docs:developers/graphql).
+Use **Insert row above / below** in a row's actions menu when you need to insert a plan between existing rows. Save the entry after editing, then compare the public table with the editing grid. For an application that reads or writes the table through an API, follow [GraphQL Queries](docs:graphql/queries).

@@ -23,10 +23,12 @@
         ]
     },
     {
-        "title": "Developers",
+        "title": "GraphQL",
         "collapsable": false,
         "children": [
-            "developers/graphql"
+            "graphql/queries",
+            "graphql/mutations",
+            "graphql/interfaces-types"
         ]
     }
 ]
